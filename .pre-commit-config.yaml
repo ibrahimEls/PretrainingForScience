@@ -53,7 +53,7 @@ repos:
       - id: codespell
         args:
           # - --skip=logs/**,data/**,*.ipynb
-          - --ignore-words-list=hist,circularly,ot
+          - --ignore-words-list=fpr
   # jupyter notebook cell output clearing
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
