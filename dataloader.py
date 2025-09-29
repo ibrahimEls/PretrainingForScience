@@ -1,16 +1,18 @@
-import torch
-import h5py
-from argparse import ArgumentParser
-from torch.utils.data import Dataset, DataLoader
-import requests
-import re
 import os
-from urllib.parse import urljoin
-import numpy as np
-from pathlib import Path
-from pytorch_lightning import LightningDataModule
 import random
+import re
+from argparse import ArgumentParser
 from collections import defaultdict
+from pathlib import Path
+from urllib.parse import urljoin
+
+import h5py
+import numpy as np
+import requests
+import torch
+from pytorch_lightning import LightningDataModule
+from torch.utils.data import DataLoader, Dataset
+
 
 class PETDataModule(LightningDataModule):
     def __init__(
@@ -47,9 +49,9 @@ class PETDataModule(LightningDataModule):
                     path=self.path,
                     batch=self.batch_size,
                     num_workers=self.num_workers,
-                    rank=0,      # For single-GPU or single-node usage
+                    rank=0,  # For single-GPU or single-node usage
                     size=1,
-                    limit_num_samples=self.num_samples
+                    limit_num_samples=self.num_samples,
                 )
                 self.val_dataset = self.train_dataset
             else:
@@ -61,11 +63,11 @@ class PETDataModule(LightningDataModule):
                     path=self.path,
                     batch=self.batch_size,
                     num_workers=self.num_workers,
-                    rank=0,      # For single-GPU or single-node usage
+                    rank=0,  # For single-GPU or single-node usage
                     size=1,
-                    limit_num_samples=self.num_samples
+                    limit_num_samples=self.num_samples,
                 )
-                               
+
                 self.val_dataset = load_data(
                     self.dataset,
                     dataset_type="test",
@@ -76,7 +78,7 @@ class PETDataModule(LightningDataModule):
                     num_workers=self.num_workers,
                     rank=0,
                     size=1,
-                    limit_num_samples=self.num_samples
+                    limit_num_samples=self.num_samples,
                 )
 
     def train_dataloader(self):
@@ -84,10 +86,11 @@ class PETDataModule(LightningDataModule):
 
     def val_dataloader(self):
         return self.val_dataset
-    
+
     def test_dataloader(self):
         return self.val_dataset
-    
+
+
 def collate_point_cloud(batch):
     """
     Collate function for point clouds and labels with truncation performed per batch.
@@ -137,7 +140,6 @@ def collate_point_cloud(batch):
 
 
 def get_url(dataset_name, dataset_type, base_url="https://portal.nersc.gov/cfs/m4567/"):
-
     url = f"{base_url}/{dataset_name}/{dataset_type}/"
     try:
         requests.head(url, allow_redirects=True, timeout=5)
@@ -175,9 +177,10 @@ def download_h5_files(base_url, destination_folder):
         print(f"Downloaded {file_name}")
 
 
+import h5py
 import torch
 from torch.utils.data import Dataset
-import h5py
+
 
 class HEPDataset(Dataset):
     def __init__(
@@ -204,7 +207,7 @@ class HEPDataset(Dataset):
         """
         self.use_pid = use_pid
         self.use_add = use_add
-        
+
         self.pid_idx = pid_idx
         self.num_add = num_add
         self.label_shift = label_shift
@@ -217,7 +220,6 @@ class HEPDataset(Dataset):
         # Limit the number of samples if num_samples is not -1.
         if self.num_samples != -1:
             self.limit_samples(self.num_samples)
-
 
     def limit_samples(self, num_samples):
         """
@@ -253,7 +255,7 @@ class HEPDataset(Dataset):
         if self.use_pid:
             sample["pid"] = sample["X"][:, self.pid_idx].int()
             sample["X"] = torch.cat(
-                (sample["X"][:, :self.pid_idx], sample["X"][:, self.pid_idx + 1 :]),
+                (sample["X"][:, : self.pid_idx], sample["X"][:, self.pid_idx + 1 :]),
                 dim=1,
             )
         if self.use_add:
@@ -286,7 +288,6 @@ def load_data(
     size=1,
     limit_num_samples=-1,
 ):
-
     supported_datasets = [
         "top",
         "qg",
@@ -334,7 +335,7 @@ def load_data(
                 (file_idx + index_shift, sample_idx) for file_idx, sample_idx in indices
             )
             index_shift += len(h5_files)
-            if index_shift >= limit_num_samples and limit_num_samples!=-1:
+            if index_shift >= limit_num_samples and limit_num_samples != -1:
                 break
 
         else:
@@ -352,7 +353,7 @@ def load_data(
 
     # Shift labels if they are not used for pretrain
     label_shift = {"jetclass": 2, "aspen": 12, "jetclass2": 13}
-    
+
     data = HEPDataset(
         file_list,
         file_indices,
@@ -361,9 +362,8 @@ def load_data(
         use_add=use_add,
         num_add=num_add,
         label_shift=label_shift.get(dataset_name, 0),
-        num_samples=limit_num_samples
+        num_samples=limit_num_samples,
     )
-
 
     loader = DataLoader(
         data,

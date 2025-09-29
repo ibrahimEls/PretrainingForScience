@@ -1,15 +1,16 @@
-from sklearn import metrics
 import os
-import numpy as np
-import torch
-import torch.nn as nn
+import re
 from typing import Tuple
 
+import numpy as np
+import torch
 import torch.distributed as dist
-from torch.distributed import init_process_group, get_rank
+import torch.nn as nn
 import torch.nn.functional as F
 from pytorch_lightning.callbacks import Callback
-import re 
+from sklearn import metrics
+from torch.distributed import get_rank, init_process_group
+
 
 def get_latest_checkpoint_dir(base_dir: str) -> str:
     """
@@ -30,19 +31,24 @@ def get_latest_checkpoint_dir(base_dir: str) -> str:
                 max_version = v
 
     if max_version < 0:
-        raise FileNotFoundError(f"No 'version_{{n}}' subdirectories found in {base_dir!r}")
+        raise FileNotFoundError(
+            f"No 'version_{{n}}' subdirectories found in {base_dir!r}"
+        )
 
-    latest_dir = os.path.join(base_dir, f"version_{max_version}", "checkpoints", "last.ckpt")
+    latest_dir = os.path.join(
+        base_dir, f"version_{max_version}", "checkpoints", "last.ckpt"
+    )
 
     return latest_dir
 
 
 class TrainLossEarlyStopping(Callback):
     """
-    Stops training when the training loss (logged per-step) hasn’t improved 
+    Stops training when the training loss (logged per-step) hasn’t improved
     by at least `min_delta_pct` for `patience_steps` training steps,
     checking every `check_interval` steps.
     """
+
     def __init__(
         self,
         monitor: str = "train_loss_step",
@@ -55,7 +61,7 @@ class TrainLossEarlyStopping(Callback):
             monitor: name of the per-step training loss metric (must be logged
                      with `on_step=True`).
             min_delta_pct: relative improvement threshold, e.g. 0.01 == 1%.
-            patience_steps: how many steps with *no sufficient* improvement  
+            patience_steps: how many steps with *no sufficient* improvement
                             before stopping.
             check_interval: only evaluate every N steps for efficiency.
         """
@@ -70,34 +76,35 @@ class TrainLossEarlyStopping(Callback):
         self.global_step = 0
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
-            # 1) grab the fresh per-step tensor from outputs
-            current_tensor = outputs.get("loss")
-            if current_tensor is None:
-                return
+        # 1) grab the fresh per-step tensor from outputs
+        current_tensor = outputs.get("loss")
+        if current_tensor is None:
+            return
 
-            self.global_step += 1
-            # 2) only check every `check_interval` steps
-            if self.global_step % self.check_interval != 0:
-                return
+        self.global_step += 1
+        # 2) only check every `check_interval` steps
+        if self.global_step % self.check_interval != 0:
+            return
 
-            current = current_tensor.item()
-            # 3) did we get at least min_delta_pct relative improvement?
-            rel_improve = (self.best_loss - current) / max(self.best_loss, 1e-8)
-      
-            if rel_improve >= self.min_delta_pct or self.best_loss == float("inf"):
-                self.best_loss = current
-                self.bad_steps = 0
-            else:
-                self.bad_steps += self.check_interval
+        current = current_tensor.item()
+        # 3) did we get at least min_delta_pct relative improvement?
+        rel_improve = (self.best_loss - current) / max(self.best_loss, 1e-8)
 
-            # 4) if we’ve gone too long with no “significant” improvement, stop
-            if self.bad_steps >= self.patience_steps:
-                pl_module.print(
-                    f"[TrainLossEarlyStopping] no ≥{self.min_delta_pct*100:.2f}% "
-                    f"improvement in `{self.monitor}` over {self.patience_steps} steps. "
-                    "Stopping."
-                )
-                trainer.should_stop = True
+        if rel_improve >= self.min_delta_pct or self.best_loss == float("inf"):
+            self.best_loss = current
+            self.bad_steps = 0
+        else:
+            self.bad_steps += self.check_interval
+
+        # 4) if we’ve gone too long with no “significant” improvement, stop
+        if self.bad_steps >= self.patience_steps:
+            pl_module.print(
+                f"[TrainLossEarlyStopping] no ≥{self.min_delta_pct * 100:.2f}% "
+                f"improvement in `{self.monitor}` over {self.patience_steps} steps. "
+                "Stopping."
+            )
+            trainer.should_stop = True
+
 
 def print_metrics(y_preds_np, y_np, thresholds=[0.3, 0.5], background_class=0):
     # Compute multiclass AUC

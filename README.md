@@ -1,4 +1,5 @@
-# OmniLearnLightining
+# OmniLearnLightning
+
 ## Authors: Ibrahim Elsharkawy, Vinicius Mikuni
 
-Lighting Wrapper for Omnilearn
+Lightning Wrapper for Omnilearn

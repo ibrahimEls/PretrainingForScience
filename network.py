@@ -1,17 +1,17 @@
 import torch
 import torch.nn as nn
 
+from diffusion import MPFourier, get_logsnr_alpha_sigma, perturb
 from layers import (
-    NoScaleDropout,
-    InteractionBlock,
-    LocalEmbeddingBlock,
     MLP,
     AttBlock,
     DynamicTanh,
     InputBlock,
+    InteractionBlock,
+    LocalEmbeddingBlock,
+    NoScaleDropout,
     TokenAttBlock,
 )
-from diffusion import MPFourier, perturb, get_logsnr_alpha_sigma
 
 
 class PET2(nn.Module):
@@ -236,7 +236,7 @@ class PET_generator(nn.Module):
         self.num_classes = num_classes
 
         self.pid_embed = nn.Sequential(
-            nn.Embedding(num_classes+1, hidden_size),
+            nn.Embedding(num_classes + 1, hidden_size),
             MLP(
                 hidden_size,
                 int(mlp_ratio * hidden_size),
@@ -272,7 +272,7 @@ class PET_generator(nn.Module):
             ),
         )
 
-        self.out = nn.Linear(hidden_size, output_size+3)
+        self.out = nn.Linear(hidden_size, output_size + 3)
 
         self.initialize_weights()
 
@@ -286,8 +286,8 @@ class PET_generator(nn.Module):
 
     def forward(self, x, y):
         # Add tokens and label embedding
-        if torch.rand(1) < .25 and self.training:
-            y=torch.ones_like(y)*self.num_classes
+        if torch.rand(1) < 0.25 and self.training:
+            y = torch.ones_like(y) * self.num_classes
 
         mask = x[:, :, 3:4] != 0
         mask = torch.cat([torch.ones_like(mask[:, :1]), mask], 1)
@@ -301,6 +301,7 @@ class PET_generator(nn.Module):
             * mask[:, self.num_add + self.num_tokens + 1 :]
         )
         return self.out(x) * mask[:, self.num_add + self.num_tokens + 1 :]
+
 
 class PET_body(nn.Module):
     def __init__(
@@ -336,7 +337,7 @@ class PET_body(nn.Module):
         self.add_info = add_info
 
         self.embed = InputBlock(
-            in_features=input_dim+3,
+            in_features=input_dim + 3,
             hidden_features=int(mlp_ratio * hidden_size),
             out_features=hidden_size,
             norm_layer=norm_layer,

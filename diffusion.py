@@ -1,7 +1,8 @@
+import numpy as np
 import torch
 import torch.nn as nn
-import numpy as np
 from torchdiffeq import odeint
+
 
 class MPFourier(nn.Module):
     def __init__(self, num_channels, bandwidth=1):
@@ -31,6 +32,7 @@ def get_logsnr_alpha_sigma(time, shift=1.0):
     sigma = torch.sqrt(torch.sigmoid(-logsnr))
     return logsnr, alpha, sigma
 
+
 def get_ad_eps(x, mask):
     means = torch.tensor(
         [0.00027097, 0.0000285, 0.90671477, 1.29942334], device=x.device
@@ -46,11 +48,13 @@ def get_ad_eps(x, mask):
     eps = (torch.randn_like(x) * stds + means) * mask
     return eps
 
+
 def network_wrapper(model, z, condition, pid, add_info, y, time):
     base_model = model.module if hasattr(model, "module") else model
     x = base_model.body(z, condition, pid, add_info, time)
     x = base_model.generator(x, y)
     return x
+
 
 def perturb(x, time):
     mask = x[:, :, 3:4] != 0
@@ -59,4 +63,3 @@ def perturb(x, time):
     z = alpha * x + eps * sigma
     v = alpha * eps - sigma * x
     return z * mask, v * mask
-

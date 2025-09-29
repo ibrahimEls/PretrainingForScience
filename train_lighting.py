@@ -1,31 +1,52 @@
 import argparse
 import os
+
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.callbacks import RichProgressBar
+from pytorch_lightning.callbacks import ModelCheckpoint, RichProgressBar
 from pytorch_lightning.loggers import CSVLogger
+
 from dataloader import PETDataModule
 from lightining_model import PETLightning
 from utils import TrainLossEarlyStopping, get_latest_checkpoint_dir
-
 
 
 def main():
     parser = argparse.ArgumentParser(description="Train PET model in PyTorch Lightning")
 
     # Basic I/O
-    parser.add_argument("--outdir", type=str, default="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/", help="Output directory")
-    parser.add_argument("--ckpt", type=str, default="/pscratch/sd/i/ibrahime/checkpoints/lightning_logs/version_151/checkpoints/last.ckpt",help="Path to the model checkpoint to load")
+    parser.add_argument(
+        "--outdir",
+        type=str,
+        default="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/",
+        help="Output directory",
+    )
+    parser.add_argument(
+        "--ckpt",
+        type=str,
+        default="/pscratch/sd/i/ibrahime/checkpoints/lightning_logs/version_151/checkpoints/last.ckpt",
+        help="Path to the model checkpoint to load",
+    )
 
     # Data & training params
-    parser.add_argument("--dataset", type=str, default="jetclass", help="Name of the dataset to load")
+    parser.add_argument(
+        "--dataset", type=str, default="jetclass", help="Name of the dataset to load"
+    )
     parser.add_argument("--num_nodes", type=int, default=1, help="Number of Nodes")
-    parser.add_argument("--path", type=str, default="/pscratch/sd/i/ibrahime/datasets/", help="Path to dataset")
+    parser.add_argument(
+        "--path",
+        type=str,
+        default="/pscratch/sd/i/ibrahime/datasets/",
+        help="Path to dataset",
+    )
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
-    parser.add_argument("--num_workers", type=int, default=4, help="Number of DataLoader workers")
+    parser.add_argument(
+        "--num_workers", type=int, default=4, help="Number of DataLoader workers"
+    )
     parser.add_argument("--epoch", type=int, default=100, help="Number of epochs")
-    parser.add_argument("--dataset_size", type=int, default=100_000, help="dataset_size")
+    parser.add_argument(
+        "--dataset_size", type=int, default=100_000, help="dataset_size"
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -38,24 +59,30 @@ def main():
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--K", type=int, default=15)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--mode", type=str, default="pretrain", help="Training mode (classifier/generator/other)")
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="pretrain",
+        help="Training mode (classifier/generator/other)",
+    )
     parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
 
     # Training hyperparams
     parser.add_argument("--lr", type=float, default=5e-6, help="Learning rate")
-    parser.add_argument("--lr_factor", type=float, default=.1)
+    parser.add_argument("--lr_factor", type=float, default=0.1)
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay")
     parser.add_argument("--use_clip", action="store_true", help="Use clip loss or not")
-    parser.add_argument("--use_amp", action="store_true", help="Use 16-bit precision training (AMP)")
+    parser.add_argument(
+        "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
+    )
 
     # Additional features
-    parser.add_argument("--use_pid",type=bool, default=True)
-    parser.add_argument("--use_add",type=bool, default=True)
+    parser.add_argument("--use_pid", type=bool, default=True)
+    parser.add_argument("--use_add", type=bool, default=True)
 
     args = parser.parse_args()
-    
 
     if args.model_size == "micro":
         hidden_size = 32
@@ -85,7 +112,7 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
 
     batch_size = args.batch_size
-    
+
     data_module = PETDataModule(
         dataset=args.dataset,
         path=args.path,
@@ -93,7 +120,7 @@ def main():
         num_workers=args.num_workers,
         use_pid=args.use_pid,
         use_add=args.use_add,
-        num_samples=args.dataset_size
+        num_samples=args.dataset_size,
     )
 
     model = PETLightning(
@@ -119,31 +146,33 @@ def main():
         use_amp=args.use_amp,
         use_pid=args.use_pid,
         use_add=args.use_add,
-        ckpt_loaded = args.ckpt
+        ckpt_loaded=args.ckpt,
     )
-    
+
     if args.resume:
-        ckpt_path = get_latest_checkpoint_dir(base_dir=os.path.join(args.outdir,save_tag))
+        ckpt_path = get_latest_checkpoint_dir(
+            base_dir=os.path.join(args.outdir, save_tag)
+        )
         print(f"Resuming Training from {ckpt_path}")
-        model = PETLightning.load_from_checkpoint(ckpt_path, map_location="cpu",ckpt_loaded=ckpt_path)
-    
-    pseudo_epoch_len = int(1_000_000/(batch_size*4*10))//10
+        model = PETLightning.load_from_checkpoint(
+            ckpt_path, map_location="cpu", ckpt_loaded=ckpt_path
+        )
+
+    pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
     logger = CSVLogger(
-    save_dir=args.outdir,    # root folder
-    name=save_tag,      # subfolder under save_dir
+        save_dir=args.outdir,  # root folder
+        name=save_tag,  # subfolder under save_dir
     )
 
-    
     checkpoint_callback = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
         monitor="train_loss",
         mode="min",
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
-        save_last = True  # Check and save at every training ste
+        save_last=True,  # Check and save at every training ste
     )
-
 
     if args.num_nodes == 1:
         trainer = Trainer(
@@ -151,9 +180,11 @@ def main():
             accelerator="gpu" if torch.cuda.is_available() else "cpu",
             devices=4 if torch.cuda.is_available() else None,
             precision=16 if args.use_amp else 32,
-            callbacks=[checkpoint_callback],default_root_dir=args.outdir,
+            callbacks=[checkpoint_callback],
+            default_root_dir=args.outdir,
             logger=logger,
-            gradient_clip_val=1, gradient_clip_algorithm="norm"
+            gradient_clip_val=1,
+            gradient_clip_algorithm="norm",
         )
 
     else:
@@ -167,7 +198,7 @@ def main():
             precision=16 if args.use_amp else 32,
             callbacks=[checkpoint_callback, progress_bar],
             default_root_dir=args.outdir,
-            logger=logger
+            logger=logger,
         )
 
     # Train!
