@@ -188,8 +188,10 @@ class PETLightning(LightningModule):
         X, y = X.to(self.device), y.to(self.device)
 
         model_kwargs = {
-            k: batch[k].to(self.device) for k in ("pid", "add_info") if (k in batch)
-        }  # and batch[k]}
+            k: (batch[k].to(self.device) if batch[k] is not None else None)
+            for k in ("pid", "add_info")
+            if (k in batch)
+        }
 
         with amp.autocast(enabled=self.use_amp, device_type="cuda"):
             out = self(X, y, **model_kwargs)
@@ -207,8 +209,10 @@ class PETLightning(LightningModule):
         X, y = X.to(self.device), y.to(self.device)
 
         model_kwargs = {
-            k: batch[k].to(self.device) for k in ("pid", "add_info") if (k in batch)
-        }  # and batch[k]}
+            k: (batch[k].to(self.device) if batch[k] is not None else None)
+            for k in ("pid", "add_info")
+            if (k in batch)
+        }
 
         with torch.no_grad(), amp.autocast(enabled=self.use_amp, device_type="cuda"):
             out = self(X, y, **model_kwargs)
