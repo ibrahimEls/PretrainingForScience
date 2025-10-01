@@ -287,6 +287,9 @@ def get_bigram(add_timestamp: bool = False) -> str:
     rw = RandomWord()
     adjective = rw.word(include_parts_of_speech=["adjective"])
     noun = rw.word(include_parts_of_speech=["noun"])
+    # remove dashes or spaces just in case
+    adjective = adjective.replace("-", "").replace(" ", "")
+    noun = noun.replace("-", "").replace(" ", "")
     bigram = f"{adjective.capitalize()}-{noun.capitalize()}"
     if add_timestamp:
         timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
