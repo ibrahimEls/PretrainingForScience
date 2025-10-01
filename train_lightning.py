@@ -7,7 +7,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint, RichProgressBar
 from pytorch_lightning.loggers import CSVLogger
 
 from dataloader import PETDataModule
-from lightining_model import PETLightning
+from lightning_model import PETLightning
 from utils import TrainLossEarlyStopping, get_latest_checkpoint_dir
 
 
