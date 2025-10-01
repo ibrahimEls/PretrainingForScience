@@ -200,7 +200,14 @@ class PETLightning(LightningModule):
 
         # log everything
         for k, v in losses.items():
-            self.log(f"train_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
+            self.log(
+                f"train_{k}",
+                v,
+                prog_bar=True,
+                on_step=True,
+                on_epoch=True,
+                sync_dist=True,
+            )
 
         return losses["loss"]
 
@@ -219,7 +226,14 @@ class PETLightning(LightningModule):
             losses = self._compute_losses(out, y)
 
         for k, v in losses.items():
-            self.log(f"val_{k}", v, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(
+                f"val_{k}",
+                v,
+                prog_bar=True,
+                on_step=False,
+                on_epoch=True,
+                sync_dist=True,
+            )
 
         return losses["loss"]
 
