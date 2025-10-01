@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 from typing import Tuple
 
 import numpy as np
@@ -10,6 +11,7 @@ import torch.nn.functional as F
 from pytorch_lightning.callbacks import Callback
 from sklearn import metrics
 from torch.distributed import get_rank, init_process_group
+from wonderwords import RandomWord
 
 
 def get_latest_checkpoint_dir(base_dir: str) -> str:
@@ -276,3 +278,17 @@ def ddp_setup():
         torch.backends.cudnn.benchmark = True
 
     return local_rank, rank, dist.get_world_size()
+
+
+def get_bigram(add_timestamp: bool = False) -> str:
+    """Generates a random bigram consisting of an adjective and a noun.
+    I.e. "Happy-Dog", "Blue-Car", etc.
+    """
+    rw = RandomWord()
+    adjective = rw.word(include_parts_of_speech=["adjective"])
+    noun = rw.word(include_parts_of_speech=["noun"])
+    bigram = f"{adjective.capitalize()}-{noun.capitalize()}"
+    if add_timestamp:
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        bigram = f"{bigram}-{timestamp}"
+    return bigram
