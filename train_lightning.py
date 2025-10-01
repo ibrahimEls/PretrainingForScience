@@ -8,7 +8,7 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from dataloader import PETDataModule
 from lightning_model import PETLightning
-from utils import TrainLossEarlyStopping, get_latest_checkpoint_dir
+from utils import TrainLossEarlyStopping, get_bigram, get_latest_checkpoint_dir
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -205,9 +205,12 @@ def main():
 
     # Add wandb logger if requested
     if args.use_wandb:
+        if args.wandb_name is None:
+            args.wandb_name = get_bigram(add_timestamp=True)
+
         wandb_logger = WandbLogger(
             project=args.wandb_project,
-            name=args.wandb_name or save_tag,
+            name=args.wandb_name,
             tags=args.wandb_tags,
             save_dir=args.outdir,
         )
@@ -257,31 +260,34 @@ def main():
         save_last=True,  # Check and save at every training ste
     )
 
+    trainer_kwargs = dict(
+        callbacks=[
+            checkpoint_callback,
+            RichProgressBar(refresh_rate=10),
+        ],
+        default_root_dir=args.outdir,
+        logger=loggers,
+        precision=16 if args.use_amp else 32,
+        log_every_n_steps=10,
+        max_epochs=args.epoch,
+        gradient_clip_val=1,
+        gradient_clip_algorithm="norm",
+    )
+
     if args.num_nodes == 1:
         trainer = Trainer(
-            max_epochs=args.epoch,
             accelerator="gpu" if torch.cuda.is_available() else "cpu",
             devices=4 if torch.cuda.is_available() else None,
-            precision=16 if args.use_amp else 32,
-            callbacks=[checkpoint_callback],
-            default_root_dir=args.outdir,
-            logger=loggers,
-            gradient_clip_val=1,
-            gradient_clip_algorithm="norm",
+            **trainer_kwargs,
         )
 
     else:
-        progress_bar = RichProgressBar(refresh_rate=10)
         trainer = Trainer(
-            max_epochs=args.epoch,
             accelerator="gpu",
             strategy="ddp",
             devices=4,
             num_nodes=args.num_nodes,
-            precision=16 if args.use_amp else 32,
-            callbacks=[checkpoint_callback, progress_bar],
-            default_root_dir=args.outdir,
-            logger=loggers,
+            **trainer_kwargs,
         )
 
     # Train!
