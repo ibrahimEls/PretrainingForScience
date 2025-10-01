@@ -32,7 +32,7 @@ repos:
           - "--target-version"
           - "py310"
           - "--select"
-          - "I"
+          - "I,F401"
       # Run the formatter.
       - id: ruff-format
         types: [python]
