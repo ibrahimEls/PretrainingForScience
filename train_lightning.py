@@ -215,39 +215,8 @@ def main():
             save_dir=args.outdir,
         )
 
-        # Log hyperparameters to wandb
-        wandb_logger.experiment.config.update(
-            {
-                "model_size": args.model_size,
-                "hidden_size": hidden_size,
-                "num_transformers": num_transformers,
-                "num_heads": num_heads,
-                "batch_size": batch_size,
-                "learning_rate": lr,
-                "dataset": args.dataset,
-                "dataset_size": args.dataset_size,
-                "num_classes": args.num_classes,
-                "input_dim": args.input_dim,
-                "attn_drop": args.attn_drop,
-                "mlp_drop": args.mlp_drop,
-                "mlp_ratio": args.mlp_ratio,
-                "feature_drop": args.feature_drop,
-                "num_tokens": args.num_tokens,
-                "K": args.K,
-                "radius": args.radius,
-                "mode": args.mode,
-                "use_clip": args.use_clip,
-                "use_amp": args.use_amp,
-                "use_pid": args.use_pid,
-                "use_add": args.use_add,
-                "lr_factor": args.lr_factor,
-                "b1": args.b1,
-                "b2": args.b2,
-                "weight_decay": args.weight_decay,
-                "num_nodes": args.num_nodes,
-                "num_workers": args.num_workers,
-            }
-        )
+        # Log all arguments to wandb
+        wandb_logger.experiment.config.update(vars(args))
 
         loggers.append(wandb_logger)
 
