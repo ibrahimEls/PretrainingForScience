@@ -4,7 +4,7 @@ import os
 import torch
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import ModelCheckpoint, RichProgressBar
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from dataloader import PETDataModule
 from lightning_model import PETLightning
@@ -94,6 +94,27 @@ def main():
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
 
+    # Logging
+    parser.add_argument(
+        "--use_wandb", action="store_true", help="Use Weights & Biases logging"
+    )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        default="omnilearned",
+        help="Weights & Biases project name",
+    )
+    parser.add_argument(
+        "--wandb_name", type=str, default=None, help="Weights & Biases run name"
+    )
+    parser.add_argument(
+        "--wandb_tags",
+        type=str,
+        nargs="+",
+        default=None,
+        help="Weights & Biases tags for the run",
+    )
+
     args = parser.parse_args()
 
     if args.model_size == "micro":
@@ -172,10 +193,60 @@ def main():
 
     pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
-    logger = CSVLogger(
+    # Configure loggers
+    loggers = []
+
+    # Always include CSV logger for local logging
+    csv_logger = CSVLogger(
         save_dir=args.outdir,  # root folder
         name=save_tag,  # subfolder under save_dir
     )
+    loggers.append(csv_logger)
+
+    # Add wandb logger if requested
+    if args.use_wandb:
+        wandb_logger = WandbLogger(
+            project=args.wandb_project,
+            name=args.wandb_name or save_tag,
+            tags=args.wandb_tags,
+            save_dir=args.outdir,
+        )
+
+        # Log hyperparameters to wandb
+        wandb_logger.experiment.config.update(
+            {
+                "model_size": args.model_size,
+                "hidden_size": hidden_size,
+                "num_transformers": num_transformers,
+                "num_heads": num_heads,
+                "batch_size": batch_size,
+                "learning_rate": lr,
+                "dataset": args.dataset,
+                "dataset_size": args.dataset_size,
+                "num_classes": args.num_classes,
+                "input_dim": args.input_dim,
+                "attn_drop": args.attn_drop,
+                "mlp_drop": args.mlp_drop,
+                "mlp_ratio": args.mlp_ratio,
+                "feature_drop": args.feature_drop,
+                "num_tokens": args.num_tokens,
+                "K": args.K,
+                "radius": args.radius,
+                "mode": args.mode,
+                "use_clip": args.use_clip,
+                "use_amp": args.use_amp,
+                "use_pid": args.use_pid,
+                "use_add": args.use_add,
+                "lr_factor": args.lr_factor,
+                "b1": args.b1,
+                "b2": args.b2,
+                "weight_decay": args.weight_decay,
+                "num_nodes": args.num_nodes,
+                "num_workers": args.num_workers,
+            }
+        )
+
+        loggers.append(wandb_logger)
 
     checkpoint_callback = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
@@ -194,7 +265,7 @@ def main():
             precision=16 if args.use_amp else 32,
             callbacks=[checkpoint_callback],
             default_root_dir=args.outdir,
-            logger=logger,
+            logger=loggers,
             gradient_clip_val=1,
             gradient_clip_algorithm="norm",
         )
@@ -210,7 +281,7 @@ def main():
             precision=16 if args.use_amp else 32,
             callbacks=[checkpoint_callback, progress_bar],
             default_root_dir=args.outdir,
-            logger=logger,
+            logger=loggers,
         )
 
     # Train!
