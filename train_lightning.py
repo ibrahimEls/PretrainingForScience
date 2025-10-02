@@ -187,7 +187,23 @@ def main():
     pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
     run_name = get_bigram(add_timestamp=True)
-    run_dir = os.path.join(args.outdir, save_tag, run_name)
+
+    out_dir_save_tag = os.path.join(args.outdir, save_tag)
+    # count how many directories starting with v{number}_<remainder> exist there
+    version = 0
+    # run_dir = os.path.join(args.outdir, save_tag, run_name)
+    for name in (
+        os.listdir(out_dir_save_tag) if os.path.exists(out_dir_save_tag) else []
+    ):
+        if os.path.isdir(os.path.join(out_dir_save_tag, name)) and name.startswith("v"):
+            try:
+                ver_num = int(name.split("_")[0][1:])
+                if ver_num >= version:
+                    version = ver_num + 1
+            except ValueError:
+                pass
+    run_dir = os.path.join(out_dir_save_tag, f"v{version}_{run_name}")
+    os.makedirs(run_dir, exist_ok=True)
 
     print(f"Output directory of this run: {run_dir}")
 
