@@ -3,13 +3,14 @@ import os
 
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint, RichProgressBar
+from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
+from pytorch_lightning.strategies import DDPStrategy
 
 from dataloader import PETDataModule
 from lightning_model import PETLightning
 from utils import get_bigram, get_latest_checkpoint_dir
-from pytorch_lightning.strategies import DDPStrategy
+
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
 def str2bool(v):
@@ -71,8 +72,12 @@ def main():
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--K", type=int, default=15)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--mode",type=str,default="pretrain",
-                        help="Training mode (classifier/generator/other)" )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        default="pretrain",
+        help="Training mode (classifier/generator/other)",
+    )
     parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
 
     # Training hyperparams
@@ -217,13 +222,11 @@ def main():
         mode="min",
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
-        save_last=True,  
+        save_last=True,
     )
 
-    strategy = DDPStrategy(
-        find_unused_parameters=False,
-        gradient_as_bucket_view=True)
-    
+    strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
+
     trainer = Trainer(
         max_epochs=args.epoch,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
@@ -234,8 +237,9 @@ def main():
         logger=loggers,
         strategy=strategy,
         gradient_clip_val=1,
-        gradient_clip_algorithm="norm", accumulate_grad_batches=2,
-        enable_progress_bar=(args.num_nodes == 1)
+        gradient_clip_algorithm="norm",
+        accumulate_grad_batches=2,
+        enable_progress_bar=(args.num_nodes == 1),
     )
 
     # Train!

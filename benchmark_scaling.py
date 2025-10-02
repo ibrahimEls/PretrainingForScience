@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
-import os
-import time
-import math
 import argparse
 import json
-from dataclasses import dataclass, asdict
+import math
+import os
+import time
+from dataclasses import asdict, dataclass
 from typing import List, Tuple
 
 import torch
+from lightining_model import PETLightning
 from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.callbacks import Callback
+from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 from dataloader import PETDataModule
-from lightining_model import PETLightning
-from pytorch_lightning.strategies import DDPStrategy
+
 
 def parse_case(s: str) -> Tuple[int, int]:
     """
@@ -78,7 +79,7 @@ class ThroughputCallback(Callback):
         self.metrics = None
 
     def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx):
-        gs = trainer.global_step 
+        gs = trainer.global_step
         if self._done:
             return
 
@@ -93,7 +94,9 @@ class ThroughputCallback(Callback):
             if self._measured == self.measure_steps:
                 torch.cuda.synchronize() if torch.cuda.is_available() else None
                 elapsed = time.perf_counter() - self._start
-                steps_per_s = self.measure_steps / elapsed if elapsed > 0 else float("nan")
+                steps_per_s = (
+                    self.measure_steps / elapsed if elapsed > 0 else float("nan")
+                )
                 samples_per_s = steps_per_s * self.global_bs
                 self.metrics = {
                     "wall_time_s": elapsed,
@@ -101,7 +104,7 @@ class ThroughputCallback(Callback):
                     "samples_per_s": samples_per_s,
                 }
                 self._done = True
-                trainer.should_stop = True 
+                trainer.should_stop = True
 
     def get_metrics(self):
         return self.metrics or {}
@@ -111,7 +114,7 @@ def build_dm(args) -> PETDataModule:
     return PETDataModule(
         dataset=args.dataset,
         path=args.path,
-        batch_size=args.batch_size,         
+        batch_size=args.batch_size,
         num_workers=args.num_workers,
         use_pid=args.use_pid,
         use_add=args.use_add,
@@ -157,7 +160,9 @@ def build_model(args):
     return model
 
 
-def run_one_case(args, num_nodes: int, gpus_per_node: int, out_root: str) -> BenchResult:
+def run_one_case(
+    args, num_nodes: int, gpus_per_node: int, out_root: str
+) -> BenchResult:
     total_gpus = num_nodes * gpus_per_node
     devices = gpus_per_node
     accelerator = "gpu" if torch.cuda.is_available() else "cpu"
@@ -171,28 +176,25 @@ def run_one_case(args, num_nodes: int, gpus_per_node: int, out_root: str) -> Ben
     dm = build_dm(args)
     model = build_model(args)
 
-    global_bs = args.batch_size * max(1, total_gpus) 
+    global_bs = args.batch_size * max(1, total_gpus)
     cb = ThroughputCallback(args.warmup_steps, args.measure_steps, global_bs)
 
     print(f"Training with {total_gpus} GPUs with {devices} GPU per node")
     print(f"Effective Batch Size {global_bs}")
 
-    strategy = DDPStrategy(
-        find_unused_parameters=False,
-        gradient_as_bucket_view=True)
+    strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
-
-    if gpus_per_node ==1 and num_nodes == 1:        
+    if gpus_per_node == 1 and num_nodes == 1:
         trainer = Trainer(
             accelerator=accelerator,
             devices=devices,
             logger=logger,
-            max_steps=args.warmup_steps + args.measure_steps + 5,  
+            max_steps=args.warmup_steps + args.measure_steps + 5,
             limit_train_batches=args.warmup_steps + args.measure_steps + 5,
             limit_val_batches=0,
             precision=precision,
             enable_checkpointing=False,
-            enable_model_summary=False, 
+            enable_model_summary=False,
             callbacks=[cb],
             default_root_dir=case_dir,
         )
@@ -203,17 +205,18 @@ def run_one_case(args, num_nodes: int, gpus_per_node: int, out_root: str) -> Ben
             num_nodes=num_nodes,
             strategy=strategy,
             logger=logger,
-            max_steps=args.warmup_steps + args.measure_steps + 5, 
+            max_steps=args.warmup_steps + args.measure_steps + 5,
             limit_train_batches=args.warmup_steps + args.measure_steps + 5,
             limit_val_batches=0,
             enable_checkpointing=False,
             precision=precision,
             callbacks=[cb],
-            default_root_dir=case_dir, accumulate_grad_batches=2
+            default_root_dir=case_dir,
+            accumulate_grad_batches=2,
         )
 
     trainer.fit(model, dm)
-    print("Finsihed Traning!")
+    print("Finished Training!")
     m = cb.get_metrics()
 
     res = BenchResult(
@@ -239,6 +242,7 @@ def run_one_case(args, num_nodes: int, gpus_per_node: int, out_root: str) -> Ben
 @rank_zero_only
 def finalize(results: List[BenchResult], out_root: str, png_name: str, csv_name: str):
     import csv
+
     for r in results:
         r.speedup_vs_1gpu = math.nan
         r.efficiency_vs_linear = math.nan
@@ -248,50 +252,82 @@ def finalize(results: List[BenchResult], out_root: str, png_name: str, csv_name:
     with open(csv_path, "w", newline="") as f:
         writer = csv.writer(f)
         header = [
-            "case","num_nodes","gpus_per_node","total_gpus",
-            "batch_size_per_gpu","global_batch_size",
-            "steps_measured","warmup_steps",
-            "wall_time_s","steps_per_s","samples_per_s",
-            "speedup_vs_1gpu","efficiency_vs_linear_percent"
+            "case",
+            "num_nodes",
+            "gpus_per_node",
+            "total_gpus",
+            "batch_size_per_gpu",
+            "global_batch_size",
+            "steps_measured",
+            "warmup_steps",
+            "wall_time_s",
+            "steps_per_s",
+            "samples_per_s",
+            "speedup_vs_1gpu",
+            "efficiency_vs_linear_percent",
         ]
         writer.writerow(header)
         for r in results:
-            writer.writerow([
-                r.case, r.num_nodes, r.gpus_per_node, r.total_gpus,
-                r.batch_size_per_gpu, r.global_batch_size,
-                r.steps_measured, r.warmup_steps,
-                f"{r.wall_time_s:.6f}", f"{r.steps_per_s:.4f}", f"{r.samples_per_s:.2f}",
-                f"{r.speedup_vs_1gpu:.3f}", f"{r.efficiency_vs_linear:.1f}"
-            ])
+            writer.writerow(
+                [
+                    r.case,
+                    r.num_nodes,
+                    r.gpus_per_node,
+                    r.total_gpus,
+                    r.batch_size_per_gpu,
+                    r.global_batch_size,
+                    r.steps_measured,
+                    r.warmup_steps,
+                    f"{r.wall_time_s:.6f}",
+                    f"{r.steps_per_s:.4f}",
+                    f"{r.samples_per_s:.2f}",
+                    f"{r.speedup_vs_1gpu:.3f}",
+                    f"{r.efficiency_vs_linear:.1f}",
+                ]
+            )
 
     results_sorted = sorted(results, key=lambda x: x.total_gpus)
- 
+
     print("\n== Scaling Results ==")
     for r in results_sorted:
-        print(f"{r.case:>6s} | {r.total_gpus:2d} GPUs | {r.samples_per_s:10.1f} samples/s | "
-              f"speedup {r.speedup_vs_1gpu:5.2f} | efficiency {r.efficiency_vs_linear:5.1f}%")
+        print(
+            f"{r.case:>6s} | {r.total_gpus:2d} GPUs | {r.samples_per_s:10.1f} samples/s | "
+            f"speedup {r.speedup_vs_1gpu:5.2f} | efficiency {r.efficiency_vs_linear:5.1f}%"
+        )
     print(f"\nSaved: {csv_path}")
 
 
 def main():
-    p = argparse.ArgumentParser(description="Benchmark scaling (1 GPU, 4 GPU, multinode) for PET model")
-    p.add_argument("--outdir", type=str, required=True, help="Directory to store results")
-    p.add_argument("--cases", type=str, default="2n4g",
-                   help="Cases")
-    p.add_argument("--warmup_steps", type=int, default=20, help="Warmup steps before measuring")
-    p.add_argument("--measure_steps", type=int, default=100, help="Measured steps (per case)")
-    p.add_argument("--progress", action="store_true", help="Show progress bar (only for single-node cases)")
-
+    p = argparse.ArgumentParser(
+        description="Benchmark scaling (1 GPU, 4 GPU, multinode) for PET model"
+    )
+    p.add_argument(
+        "--outdir", type=str, required=True, help="Directory to store results"
+    )
+    p.add_argument("--cases", type=str, default="2n4g", help="Cases")
+    p.add_argument(
+        "--warmup_steps", type=int, default=20, help="Warmup steps before measuring"
+    )
+    p.add_argument(
+        "--measure_steps", type=int, default=100, help="Measured steps (per case)"
+    )
+    p.add_argument(
+        "--progress",
+        action="store_true",
+        help="Show progress bar (only for single-node cases)",
+    )
 
     p.add_argument("--dataset", type=str, default="jetclass")
     p.add_argument("--path", type=str, default="/pscratch/sd/i/ibrahime/datasets/")
     p.add_argument("--dataset_size", type=int, default=100_000)
-    p.add_argument("--batch_size", type=int, default=256)       # per GPU
+    p.add_argument("--batch_size", type=int, default=256)  # per GPU
     p.add_argument("--num_workers", type=int, default=4)
 
     p.add_argument("--input_dim", type=int, default=4)
     p.add_argument("--num_classes", type=int, default=10)
-    p.add_argument("--model_size", type=str, default="micro", choices=["micro","small","medium"])
+    p.add_argument(
+        "--model_size", type=str, default="micro", choices=["micro", "small", "medium"]
+    )
     p.add_argument("--attn_drop", type=float, default=0.0)
     p.add_argument("--mlp_drop", type=float, default=0.0)
     p.add_argument("--mlp_ratio", type=int, default=2)
@@ -317,17 +353,19 @@ def main():
 
     # Parse cases
     case_specs = [c.strip() for c in args.cases.split(",") if c.strip()]
-    parsed: List[Tuple[int,int]] = [parse_case(c) for c in case_specs]
+    parsed: List[Tuple[int, int]] = [parse_case(c) for c in case_specs]
     print(parsed)
 
     # Run ONE cases
     results: List[BenchResult] = []
-    for (num_nodes, gpus_per_node) in parsed:
+    for num_nodes, gpus_per_node in parsed:
         res = run_one_case(args, num_nodes, gpus_per_node, out_dir)
         results.append(res)
         break
 
-    finalize(results, out_dir, png_name="scaling_plot.png", csv_name="scaling_results.csv")
+    finalize(
+        results, out_dir, png_name="scaling_plot.png", csv_name="scaling_results.csv"
+    )
 
 
 if __name__ == "__main__":
