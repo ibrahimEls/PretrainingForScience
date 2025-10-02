@@ -35,6 +35,9 @@ class PETDataModule(LightningDataModule):
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
+
+        print(f"Setting up datamodule for stage: {stage}")
+
         loading_kwargs = dict(
             use_pid=self.use_pid,
             use_add=self.use_add,
@@ -45,7 +48,7 @@ class PETDataModule(LightningDataModule):
             size=1,
             limit_num_samples=self.num_samples,
         )
-        if stage == "fit" or stage is None:
+        if stage == "fit" or stage is None or stage == "validate":
             if self.dataset == "jetclass":
                 self.train_dataset = load_data(
                     self.dataset,
