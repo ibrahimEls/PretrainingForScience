@@ -35,49 +35,44 @@ class PETDataModule(LightningDataModule):
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
+        loading_kwargs = dict(
+            use_pid=self.use_pid,
+            use_add=self.use_add,
+            path=self.path,
+            batch=self.batch_size,
+            num_workers=self.num_workers,
+            rank=0,  # For single-GPU or single-node usage
+            size=1,
+            limit_num_samples=self.num_samples,
+        )
         if stage == "fit" or stage is None:
-            # Load training set
-
             if self.dataset == "jetclass":
                 self.train_dataset = load_data(
                     self.dataset,
                     dataset_type="equal_class",
-                    use_pid=self.use_pid,
-                    use_add=self.use_add,
-                    path=self.path,
-                    batch=self.batch_size,
-                    num_workers=self.num_workers,
-                    rank=0,  # For single-GPU or single-node usage
-                    size=1,
-                    limit_num_samples=self.num_samples,
+                    **loading_kwargs,
                 )
                 self.val_dataset = self.train_dataset
             else:
                 self.train_dataset = load_data(
                     self.dataset,
                     dataset_type="train",
-                    use_pid=self.use_pid,
-                    use_add=self.use_add,
-                    path=self.path,
-                    batch=self.batch_size,
-                    num_workers=self.num_workers,
-                    rank=0,  # For single-GPU or single-node usage
-                    size=1,
-                    limit_num_samples=self.num_samples,
+                    **loading_kwargs,
                 )
 
                 self.val_dataset = load_data(
                     self.dataset,
-                    dataset_type="test",
-                    use_pid=self.use_pid,
-                    use_add=self.use_add,
-                    path=self.path,
-                    batch=self.batch_size,
-                    num_workers=self.num_workers,
-                    rank=0,
-                    size=1,
-                    limit_num_samples=self.num_samples,
+                    dataset_type="val",
+                    **loading_kwargs,
                 )
+        elif stage == "test":
+            self.test_dataset = load_data(
+                self.dataset,
+                dataset_type="test",
+                **loading_kwargs,
+            )
+        else:
+            raise ValueError(f"Unknown stage: {stage}")
 
     def train_dataloader(self):
         return self.train_dataset
@@ -86,7 +81,7 @@ class PETDataModule(LightningDataModule):
         return self.val_dataset
 
     def test_dataloader(self):
-        return self.val_dataset
+        return self.test_dataset
 
 
 def collate_point_cloud(batch):
