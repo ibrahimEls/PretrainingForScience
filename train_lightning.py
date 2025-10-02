@@ -124,7 +124,7 @@ def main():
         hidden_size = 128
         num_transformers = 8
         num_heads = 8
-        batch_size = 128
+        batch_size = 64
         lr = 1e-4
         save_tag = f"super_gen_small_{args.dataset_size}"
 
@@ -220,49 +220,23 @@ def main():
         save_last=True,  
     )
 
-    trainer_kwargs = dict(
-        callbacks=[
-            checkpoint_callback,
-            RichProgressBar(refresh_rate=10),
-        ],
+    strategy = DDPStrategy(
+        find_unused_parameters=False,
+        gradient_as_bucket_view=True)
+    
+    trainer = Trainer(
+        max_epochs=args.epoch,
+        accelerator="gpu" if torch.cuda.is_available() else "cpu",
+        devices=4 if torch.cuda.is_available() else None,
+        precision=16 if args.use_amp else 32,
+        callbacks=[checkpoint_callback],
         default_root_dir=args.outdir,
         logger=loggers,
-        precision=16 if args.use_amp else 32,
-        log_every_n_steps=10,
-        max_epochs=args.epoch,
+        strategy=strategy,
         gradient_clip_val=1,
-        gradient_clip_algorithm="norm",
+        gradient_clip_algorithm="norm", accumulate_grad_batches=2,
+        enable_progress_bar=(args.num_nodes == 1)
     )
-
-    trainer_kwargs = dict(
-        callbacks=[
-            checkpoint_callback,
-            RichProgressBar(refresh_rate=10),
-        ],
-        default_root_dir=args.outdir,
-        logger=loggers,
-        precision=16 if args.use_amp else 32,
-        log_every_n_steps=10,
-        max_epochs=args.epoch,
-        gradient_clip_val=1,
-        gradient_clip_algorithm="norm",
-    )
-
-    if args.num_nodes == 1:
-        trainer = Trainer(
-            accelerator="gpu" if torch.cuda.is_available() else "cpu",
-            devices=4 if torch.cuda.is_available() else None,
-            **trainer_kwargs,
-        )
-
-    else:
-        trainer = Trainer(
-            accelerator="gpu",
-            strategy="ddp",
-            devices=4,
-            num_nodes=args.num_nodes,
-            **trainer_kwargs,
-        )
 
     # Train!
     trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
