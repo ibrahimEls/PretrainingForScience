@@ -9,7 +9,7 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from dataloader import PETDataModule
 from lightning_model import PETLightning
 from utils import get_bigram, get_latest_checkpoint_dir
-
+from pytorch_lightning.strategies import DDPStrategy
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
 def str2bool(v):
@@ -71,16 +71,11 @@ def main():
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--K", type=int, default=15)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument(
-        "--mode",
-        type=str,
-        default="pretrain",
-        help="Training mode (classifier/generator/other)",
-    )
+    parser.add_argument("--mode",type=str,default="pretrain",
+                        help="Training mode (classifier/generator/other)" )
     parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
 
     # Training hyperparams
-    parser.add_argument("--lr", type=float, default=5e-6, help="Learning rate")
     parser.add_argument("--lr_factor", type=float, default=0.1)
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
@@ -130,14 +125,14 @@ def main():
         num_transformers = 8
         num_heads = 8
         batch_size = 128
-        lr = 1e-3
+        lr = 1e-4
         save_tag = f"super_gen_small_{args.dataset_size}"
 
     elif args.model_size == "medium":
         hidden_size = 512
         num_transformers = 12
         num_heads = 16
-        batch_size = 64
+        batch_size = 32
         lr = 1e-5
         save_tag = f"super_gen_medium_{args.dataset_size}"
 
@@ -186,10 +181,6 @@ def main():
         ckpt_path = get_latest_checkpoint_dir(
             base_dir=os.path.join(args.outdir, save_tag)
         )
-        print(f"Resuming Training from {ckpt_path}")
-        model = PETLightning.load_from_checkpoint(
-            ckpt_path, map_location="cpu", ckpt_loaded=ckpt_path
-        )
 
     pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
@@ -226,7 +217,21 @@ def main():
         mode="min",
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
-        save_last=True,  # Check and save at every training ste
+        save_last=True,  
+    )
+
+    trainer_kwargs = dict(
+        callbacks=[
+            checkpoint_callback,
+            RichProgressBar(refresh_rate=10),
+        ],
+        default_root_dir=args.outdir,
+        logger=loggers,
+        precision=16 if args.use_amp else 32,
+        log_every_n_steps=10,
+        max_epochs=args.epoch,
+        gradient_clip_val=1,
+        gradient_clip_algorithm="norm",
     )
 
     trainer_kwargs = dict(
@@ -260,7 +265,7 @@ def main():
         )
 
     # Train!
-    trainer.fit(model, data_module)
+    trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
     print("Training is complete!")
     print(f"Best model checkpoint: {checkpoint_callback.best_model_path}")
 
