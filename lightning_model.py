@@ -1,8 +1,3 @@
-import argparse
-import json
-import os
-
-import numpy as np
 import torch
 import torch.amp as amp
 import torch.nn as nn
@@ -10,13 +5,10 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
-from dataloader import load_data
 from network import PET2
 from utils import (
     CLIPLoss,
-    get_checkpoint_name,
     get_param_groups,
-    is_master_node,
 )
 
 

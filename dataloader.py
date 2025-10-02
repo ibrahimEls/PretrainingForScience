@@ -1,8 +1,6 @@
 import os
-import random
 import re
 from argparse import ArgumentParser
-from collections import defaultdict
 from pathlib import Path
 from urllib.parse import urljoin
 

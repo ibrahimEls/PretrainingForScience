@@ -8,7 +8,7 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger
 
 from dataloader import PETDataModule
 from lightning_model import PETLightning
-from utils import TrainLossEarlyStopping, get_bigram, get_latest_checkpoint_dir
+from utils import get_bigram, get_latest_checkpoint_dir
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
