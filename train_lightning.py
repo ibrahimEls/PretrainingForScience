@@ -211,7 +211,7 @@ def main():
     loggers = []
 
     # Always include CSV logger for local logging
-    csv_logger = CSVLogger(save_dir=run_dir, name=None)
+    csv_logger = CSVLogger(save_dir=run_dir, name=None, version="")
     loggers.append(csv_logger)
 
     # Add wandb logger if requested
@@ -264,11 +264,6 @@ def main():
     trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
     print("Training is complete!")
     print(f"Best model checkpoint: {checkpoint_callback.best_model_path}")
-    # Test the best model on the test set
-    best_model_path = checkpoint_callback.best_model_path
-    print(f"Using best model from {best_model_path} for testing")
-    trainer.test(model=model, datamodule=data_module, ckpt_path=best_model_path)
-    print("Testing is complete!")
 
 
 if __name__ == "__main__":
