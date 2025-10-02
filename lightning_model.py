@@ -175,7 +175,8 @@ class PETLightning(LightningModule):
         losses["loss"] = loss
         return losses
 
-    def training_step(self, batch, batch_idx):
+    def _shared_step(self, batch, batch_idx, stage):
+        """Shared logic for train/val/test steps."""
         X, y = batch["X"].float(), batch["y"]
         X, y = X.to(self.device), y.to(self.device)
 
@@ -185,53 +186,41 @@ class PETLightning(LightningModule):
             if (k in batch)
         }
 
-        with amp.autocast(enabled=self.use_amp, device_type="cuda"):
-            out = self(X, y, **model_kwargs)
-            # PET2 now returns a dict with expected keys
-            losses = self._compute_losses(out, y)
+        # Use torch.no_grad() for validation and test, allow gradients for training
+        if stage == "train":
+            with amp.autocast(enabled=self.use_amp, device_type="cuda"):
+                out = self(X, y, **model_kwargs)
+                losses = self._compute_losses(out, y)
+        else:
+            with (
+                torch.no_grad(),
+                amp.autocast(enabled=self.use_amp, device_type="cuda"),
+            ):
+                out = self(X, y, **model_kwargs)
+                losses = self._compute_losses(out, y)
 
-        # log everything
+        # Log losses with appropriate prefix and settings
+        on_step = stage == "train"  # <-- only log on step during training
         for k, v in losses.items():
             self.log(
-                f"train_{k}",
+                f"{stage}_{k}",
                 v,
                 prog_bar=True,
-                on_step=True,
+                on_step=on_step,
                 on_epoch=True,
                 sync_dist=True,
             )
 
         return losses["loss"]
+
+    def training_step(self, batch, batch_idx):
+        return self._shared_step(batch, batch_idx, "train")
 
     def validation_step(self, batch, batch_idx):
-        X, y = batch["X"].float(), batch["y"]
-        X, y = X.to(self.device), y.to(self.device)
-
-        model_kwargs = {
-            k: (batch[k].to(self.device) if batch[k] is not None else None)
-            for k in ("pid", "add_info")
-            if (k in batch)
-        }
-
-        with torch.no_grad(), amp.autocast(enabled=self.use_amp, device_type="cuda"):
-            out = self(X, y, **model_kwargs)
-            losses = self._compute_losses(out, y)
-
-        for k, v in losses.items():
-            self.log(
-                f"val_{k}",
-                v,
-                prog_bar=True,
-                on_step=False,
-                on_epoch=True,
-                sync_dist=True,
-            )
-
-        return losses["loss"]
+        return self._shared_step(batch, batch_idx, "val")
 
     def test_step(self, batch, batch_idx):
-        # mirror validation
-        return self.validation_step(batch, batch_idx)
+        return self._shared_step(batch, batch_idx, "test")
 
     def configure_optimizers(self):
         # param groups
