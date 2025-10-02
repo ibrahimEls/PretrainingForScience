@@ -187,13 +187,17 @@ class PETLightning(LightningModule):
         }
 
         # Use torch.no_grad() for validation and test, allow gradients for training
-        context_manager = (
-            torch.no_grad() if stage in ("val", "test") else torch.nullcontext()
-        )
-
-        with context_manager, amp.autocast(enabled=self.use_amp, device_type="cuda"):
-            out = self(X, y, **model_kwargs)
-            losses = self._compute_losses(out, y)
+        if stage == "train":
+            with amp.autocast(enabled=self.use_amp, device_type="cuda"):
+                out = self(X, y, **model_kwargs)
+                losses = self._compute_losses(out, y)
+        else:
+            with (
+                torch.no_grad(),
+                amp.autocast(enabled=self.use_amp, device_type="cuda"),
+            ):
+                out = self(X, y, **model_kwargs)
+                losses = self._compute_losses(out, y)
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
