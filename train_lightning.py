@@ -129,7 +129,7 @@ def main():
         hidden_size = 128
         num_transformers = 8
         num_heads = 8
-        batch_size = 64
+        batch_size = 128
         lr = 1e-4
         save_tag = f"super_gen_small_{args.dataset_size}"
 
@@ -211,9 +211,19 @@ def main():
             save_dir=args.outdir,
         )
 
-        # Log all arguments to wandb
-        wandb_logger.experiment.config.update(vars(args))
+        hparams = {
+            k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
+            for k, v in vars(args).items()
+        }
 
+        wandb_logger = WandbLogger(
+            project=args.wandb_project,
+            name=args.wandb_name or get_bigram(add_timestamp=True),
+            tags=args.wandb_tags,
+            save_dir=args.outdir,
+        )
+
+        wandb_logger.log_hyperparams(hparams)
         loggers.append(wandb_logger)
 
     checkpoint_callback = ModelCheckpoint(
@@ -239,6 +249,7 @@ def main():
         gradient_clip_val=1,
         gradient_clip_algorithm="norm",
         accumulate_grad_batches=2,
+        num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
     )
 
