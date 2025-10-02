@@ -249,6 +249,7 @@ def main():
         gradient_clip_val=1,
         gradient_clip_algorithm="norm",
         accumulate_grad_batches=2,
+        num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
     )
 
