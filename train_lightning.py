@@ -105,9 +105,6 @@ def main():
         help="Weights & Biases project name",
     )
     parser.add_argument(
-        "--wandb_name", type=str, default=None, help="Weights & Biases run name"
-    )
-    parser.add_argument(
         "--wandb_tags",
         type=str,
         nargs="+",
@@ -189,36 +186,29 @@ def main():
 
     pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
+    run_name = get_bigram(add_timestamp=True)
+    run_dir = os.path.join(args.outdir, save_tag, run_name)
+
+    print(f"Output directory of this run: {run_dir}")
+
     # Configure loggers
     loggers = []
 
     # Always include CSV logger for local logging
-    csv_logger = CSVLogger(
-        save_dir=args.outdir,  # root folder
-        name=save_tag,  # subfolder under save_dir
-    )
+    csv_logger = CSVLogger(save_dir=run_dir, name=None)
     loggers.append(csv_logger)
 
     # Add wandb logger if requested
     if args.use_wandb:
-        if args.wandb_name is None:
-            args.wandb_name = get_bigram(add_timestamp=True)
-
-        wandb_logger = WandbLogger(
-            project=args.wandb_project,
-            name=args.wandb_name,
-            tags=args.wandb_tags,
-            save_dir=args.outdir,
-        )
-
         hparams = {
             k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
             for k, v in vars(args).items()
         }
+        hparams.update({"run_dir": run_dir})
 
         wandb_logger = WandbLogger(
             project=args.wandb_project,
-            name=args.wandb_name or get_bigram(add_timestamp=True),
+            name=run_name,
             tags=args.wandb_tags,
             save_dir=args.outdir,
         )
@@ -233,6 +223,7 @@ def main():
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
+        dirpath=run_dir + "/checkpoints/",
     )
 
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
@@ -243,7 +234,7 @@ def main():
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
         callbacks=[checkpoint_callback],
-        default_root_dir=args.outdir,
+        default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
         gradient_clip_val=1,
