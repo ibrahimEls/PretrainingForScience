@@ -3,7 +3,7 @@ import os
 
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
@@ -245,6 +245,7 @@ def main():
         save_last=True,
         dirpath=run_dir + "/checkpoints/",
     )
+    lr_monitor = LearningRateMonitor(logging_interval="step")
 
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
@@ -253,7 +254,7 @@ def main():
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, lr_monitor],
         default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
