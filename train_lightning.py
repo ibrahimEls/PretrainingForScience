@@ -208,8 +208,7 @@ def main():
     run_dir = os.path.join(out_dir_save_tag, run_name)
     if rank_zero_only.rank == 0:
         os.makedirs(run_dir, exist_ok=True)
-
-    print(f"Output directory of this run: {run_dir}")
+        print(f"Output directory of this run: {run_dir}")
 
     # Configure loggers
     loggers = []
@@ -225,6 +224,9 @@ def main():
             for k, v in vars(args).items()
         }
         hparams.update({"run_dir": run_dir})
+        # add SLURM job id if it exists
+        if "SLURM_JOB_ID" in os.environ:
+            hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
 
         wandb_logger = WandbLogger(
             project=args.wandb_project,
