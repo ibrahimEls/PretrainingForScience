@@ -3,9 +3,10 @@ import os
 
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
+from pytorch_lightning.utilities import rank_zero_only
 
 from dataloader import PETDataModule
 from lightning_model import PETLightning
@@ -138,8 +139,9 @@ def main():
         lr = 1e-5
         save_tag = f"super_gen_medium_{args.dataset_size}"
 
-    # Create output directory
-    os.makedirs(args.outdir, exist_ok=True)
+    # Create output directory only on rank 0
+    if rank_zero_only.rank == 0:
+        os.makedirs(args.outdir, exist_ok=True)
 
     batch_size = args.batch_size
 
@@ -204,7 +206,8 @@ def main():
     run_name = f"v{version}_{get_bigram(add_timestamp=True)}"
 
     run_dir = os.path.join(out_dir_save_tag, run_name)
-    os.makedirs(run_dir, exist_ok=True)
+    if rank_zero_only.rank == 0:
+        os.makedirs(run_dir, exist_ok=True)
 
     print(f"Output directory of this run: {run_dir}")
 
@@ -242,6 +245,7 @@ def main():
         save_last=True,
         dirpath=run_dir + "/checkpoints/",
     )
+    lr_monitor = LearningRateMonitor(logging_interval="step")
 
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
@@ -250,7 +254,7 @@ def main():
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_callback],
+        callbacks=[checkpoint_callback, lr_monitor],
         default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
