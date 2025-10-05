@@ -1,17 +1,15 @@
 import torch
 import torch.nn as nn
-
+from diffusion import MPFourier, get_logsnr_alpha_sigma, perturb
 from layers import (
-    NoScaleDropout,
-    InteractionBlock,
-    LocalEmbeddingBlock,
     MLP,
     AttBlock,
     DynamicTanh,
     InputBlock,
-    TokenAttBlock,
+    InteractionBlock,
+    LocalEmbeddingBlock,
+    NoScaleDropout,
 )
-from diffusion import MPFourier, perturb, get_logsnr_alpha_sigma
 
 
 class PET2(nn.Module):
@@ -181,7 +179,7 @@ class PET_generator(nn.Module):
             ),
         )
 
-        self.out = nn.Linear(hidden_size, output_size+3)
+        self.out = nn.Linear(hidden_size, output_size + 3)
 
         self.initialize_weights()
 
@@ -207,6 +205,7 @@ class PET_generator(nn.Module):
             * mask[:, self.num_add + self.num_tokens + 1 :]
         )
         return self.out(x) * mask[:, self.num_add + self.num_tokens + 1 :]
+
 
 class PET_body(nn.Module):
     def __init__(
@@ -242,7 +241,7 @@ class PET_body(nn.Module):
         self.add_info = add_info
 
         self.embed = InputBlock(
-            in_features=input_dim+3,
+            in_features=input_dim + 3,
             hidden_features=int(mlp_ratio * hidden_size),
             out_features=hidden_size,
             norm_layer=norm_layer,

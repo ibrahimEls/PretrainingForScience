@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-
 from diffusion import MPFourier, get_logsnr_alpha_sigma, perturb
 from layers import (
     MLP,

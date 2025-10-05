@@ -1,22 +1,14 @@
-import argparse
-import json
-import os
-
-import numpy as np
 import torch
-import torch.nn as nn
 import torch.amp as amp
-from pytorch_lightning import LightningModule
+import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
+from network import PET2
+from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
-from network import PET2
-from dataloader import load_data
 from utils import (
     CLIPLoss,
     get_param_groups,
-    get_checkpoint_name,
-    is_master_node,
 )
 
 
@@ -59,7 +51,7 @@ class PETLightning(LightningModule):
 
         # --- model ---
         self.model = PET2(
-            input_dim=input_dim-3,
+            input_dim=input_dim - 3,
             hidden_size=hidden_size,
             num_transformers=num_transformers,
             num_heads=num_heads,
@@ -79,22 +71,22 @@ class PETLightning(LightningModule):
 
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss(reduction="none")
-        self.loss_gen   = nn.L1Loss(reduction="none")
-        self.clip_loss  = CLIPLoss()
+        self.loss_gen = nn.L1Loss(reduction="none")
+        self.clip_loss = CLIPLoss()
 
         # --- flags & params ---
-        self.use_clip       = use_clip
+        self.use_clip = use_clip
         self.use_event_loss = use_event_loss
-        self.event_threshold= event_threshold
-        self.use_amp        = use_amp
-        self.fine_tune      = fine_tune
-        self.ckpt_loaded    = ckpt_loaded
+        self.event_threshold = event_threshold
+        self.use_amp = use_amp
+        self.fine_tune = fine_tune
+        self.ckpt_loaded = ckpt_loaded
 
         # optimizer params
-        self.lr            = lr
-        self.betas         = (b1, b2)
-        self.weight_decay  = weight_decay
-        self.lr_factor     = lr_factor
+        self.lr = lr
+        self.betas = (b1, b2)
+        self.weight_decay = weight_decay
+        self.lr_factor = lr_factor
 
     def forward(self, x, y=None, **kwargs):
         return self.model(x, y, **kwargs)
@@ -108,9 +100,10 @@ class PETLightning(LightningModule):
 
         # generation loss
         if outputs["z_pred"] is not None:
-            nonzero = (outputs["v"][:,:,0]!=0).sum(1)
-            gen = ( self.loss_gen(outputs["v"], outputs["z_pred"])
-                   .sum((1,2)) / nonzero ).mean()
+            nonzero = (outputs["v"][:, :, 0] != 0).sum(1)
+            gen = (
+                self.loss_gen(outputs["v"], outputs["z_pred"]).sum((1, 2)) / nonzero
+            ).mean()
             losses["loss_gen"] = gen
             loss = loss + gen
 
@@ -133,7 +126,7 @@ class PETLightning(LightningModule):
             losses = self._compute_losses(out, y)
 
         # log everything
-        for k,v in losses.items():
+        for k, v in losses.items():
             self.log(f"train_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
 
         return losses["loss"]
@@ -148,12 +141,11 @@ class PETLightning(LightningModule):
             if (k in batch)
         }
 
-
         with torch.no_grad(), amp.autocast(enabled=self.use_amp, device_type="cuda"):
             out = self(X, y, **model_kwargs)
             losses = self._compute_losses(out, y)
 
-        for k,v in losses.items():
+        for k, v in losses.items():
             self.log(f"val_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
 
         return losses["loss"]
@@ -183,7 +175,7 @@ class PETLightning(LightningModule):
             "lr_scheduler": {
                 "scheduler": scheduler,
                 "interval": "step",
-            }
+            },
         }
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
@@ -194,6 +186,8 @@ class PETLightning(LightningModule):
             self.model.body.load_state_dict(body_sd, strict=False)
 
             # classifier_head / generator_head if present...
-            for head in ("classifier_head","generator_head"):
+            for head in ("classifier_head", "generator_head"):
                 if head in ck and getattr(self.model, head[:-5], None) is not None:
-                    getattr(self.model, head[:-5]).load_state_dict(ck[head], strict=False)
+                    getattr(self.model, head[:-5]).load_state_dict(
+                        ck[head], strict=False
+                    )

@@ -2,10 +2,10 @@ import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
+from network import PET2
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
-from network import PET2
 from utils import (
     CLIPLoss,
     get_param_groups,

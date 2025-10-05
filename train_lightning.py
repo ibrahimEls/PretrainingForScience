@@ -1,5 +1,6 @@
 import argparse
-import os, sys
+import os
+import sys
 
 import torch
 from pytorch_lightning import Trainer
@@ -144,26 +145,31 @@ def main():
     if args.pretraining_mode == "super-gen":
         sys.path.append("Models/Super-Gen")
         from lightning_model import PETLightning
+
         save_tag = "super-gen" + save_tag
 
     elif args.pretraining_mode == "super-only":
         sys.path.append("Models/Super-Only")
         from lightning_model import PETLightning
+
         save_tag = "super-only" + save_tag
 
     elif args.pretraining_mode == "gen-only":
         sys.path.append("Models/Gen-Only")
         from lightning_model import PETLightning
+
         save_tag = "gen-only" + save_tag
-    
+
     elif args.pretraining_mode == "self-super":
         sys.path.append("Models/Self-Super")
         from lightning_model import PETLightning
+
         save_tag = "self-super" + save_tag
-    
+
     elif args.pretraining_mode == "naive-self-super":
         sys.path.append("Models/Naive-Self-Super")
         from lightning_model import PETLightning
+
         save_tag = "naive-self-super" + save_tag
 
     # Create output directory only on rank 0
@@ -280,8 +286,8 @@ def main():
         mode="min",
         save_top_k=5,
         save_last=True,
-        save_on_train_epoch_end=True, 
-        every_n_epochs=1
+        save_on_train_epoch_end=True,
+        every_n_epochs=1,
     )
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -293,7 +299,7 @@ def main():
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_step,ckpt_val, lr_monitor],
+        callbacks=[checkpoint_step, ckpt_val, lr_monitor],
         default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
@@ -302,7 +308,7 @@ def main():
         accumulate_grad_batches=2,
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
-        limit_val_batches=0
+        limit_val_batches=0,
     )
 
     # Training

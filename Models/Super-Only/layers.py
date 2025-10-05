@@ -1,6 +1,6 @@
+import einops
 import torch
 import torch.nn as nn
-import einops
 
 
 class LayerScale(nn.Module):
