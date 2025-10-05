@@ -1,5 +1,5 @@
 import argparse
-import os
+import os, sys
 
 import torch
 from pytorch_lightning import Trainer
@@ -9,7 +9,6 @@ from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
 
 from dataloader import PETDataModule
-from lightning_model import PETLightning
 from utils import get_bigram, get_latest_checkpoint_dir
 
 
@@ -91,9 +90,12 @@ def main():
         "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
     )
 
+    parser.add_argument("--pretraining_mode", type=str, default="super_gen")
+
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
+    parser.add_argument("--test", type=str2bool, default=False)
 
     # Logging
     parser.add_argument(
@@ -121,7 +123,7 @@ def main():
         num_heads = 4
         batch_size = 256
         lr = 1e-3
-        save_tag = f"super_gen_micro_{args.dataset_size}"
+        save_tag = f"_micro_{args.dataset_size}"
 
     elif args.model_size == "small":
         hidden_size = 128
@@ -129,7 +131,7 @@ def main():
         num_heads = 8
         batch_size = 128
         lr = 1e-4
-        save_tag = f"super_gen_small_{args.dataset_size}"
+        save_tag = f"_small_{args.dataset_size}"
 
     elif args.model_size == "medium":
         hidden_size = 512
@@ -137,7 +139,32 @@ def main():
         num_heads = 16
         batch_size = 32
         lr = 1e-5
-        save_tag = f"super_gen_medium_{args.dataset_size}"
+        save_tag = f"_medium_{args.dataset_size}"
+
+    if args.pretraining_mode == "super-gen":
+        sys.path.append("Models/Super-Gen")
+        from lightning_model import PETLightning
+        save_tag = "super-gen" + save_tag
+
+    elif args.pretraining_mode == "super-only":
+        sys.path.append("Models/Super-Only")
+        from lightning_model import PETLightning
+        save_tag = "super-only" + save_tag
+
+    elif args.pretraining_mode == "gen-only":
+        sys.path.append("Models/Gen-Only")
+        from lightning_model import PETLightning
+        save_tag = "gen-only" + save_tag
+    
+    elif args.pretraining_mode == "self-super":
+        sys.path.append("Models/Self-Super")
+        from lightning_model import PETLightning
+        save_tag = "self-super" + save_tag
+    
+    elif args.pretraining_mode == "naive-self-super":
+        sys.path.append("Models/Naive-Self-Super")
+        from lightning_model import PETLightning
+        save_tag = "naive-self-super" + save_tag
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
@@ -238,15 +265,25 @@ def main():
         wandb_logger.log_hyperparams(hparams)
         loggers.append(wandb_logger)
 
-    checkpoint_callback = ModelCheckpoint(
+    checkpoint_step = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
         monitor="train_loss",
         mode="min",
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
-        dirpath=run_dir + "/checkpoints/",
     )
+
+    ckpt_val = ModelCheckpoint(
+        filename=f"{save_tag}-epoch{{epoch:06d}}",
+        monitor="train_loss",
+        mode="min",
+        save_top_k=5,
+        save_last=True,
+        save_on_train_epoch_end=True, 
+        every_n_epochs=1
+    )
+
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
@@ -256,7 +293,7 @@ def main():
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_callback, lr_monitor],
+        callbacks=[checkpoint_step,ckpt_val, lr_monitor],
         default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
@@ -265,18 +302,20 @@ def main():
         accumulate_grad_batches=2,
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
+        limit_val_batches=0
     )
 
     # Training
     trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
     print("Training is complete!")
-    print(f"Best model checkpoint: {checkpoint_callback.best_model_path}")
+    print(f"Best model checkpoint: {checkpoint_step.best_model_path}")
 
     # Testing
-    best_model_path = checkpoint_callback.best_model_path
-    print(f"Using best model from {best_model_path} for testing")
-    trainer.test(model=model, datamodule=data_module, ckpt_path=best_model_path)
-    print("Testing is complete!")
+    if args.test:
+        best_model_path = checkpoint_step.best_model_path
+        print(f"Using best model from {best_model_path} for testing")
+        trainer.test(model=model, datamodule=data_module, ckpt_path=best_model_path)
+        print("Testing is complete!")
 
 
 if __name__ == "__main__":

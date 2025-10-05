@@ -52,10 +52,10 @@ class PETDataModule(LightningDataModule):
             if self.dataset == "jetclass":
                 self.train_dataset = load_data(
                     self.dataset,
-                    dataset_type="equal_class",
+                    dataset_type="train",
                     **loading_kwargs,
                 )
-                self.val_dataset = self.train_dataset
+                self.val_dataset = None
             else:
                 self.train_dataset = load_data(
                     self.dataset,

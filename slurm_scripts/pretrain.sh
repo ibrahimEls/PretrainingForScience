@@ -3,7 +3,7 @@
 #SBATCH -C gpu
 #SBATCH -q regular
 #SBATCH -t 10:00:00
-#SBATCH -N 10
+#SBATCH -N 32
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
@@ -11,10 +11,25 @@
 
 module load conda
 conda activate torchvenv
-cd /global/homes/i/ibrahime/FoundationModelStudy/OmnilearnLightning
+cd /global/homes/i/ibrahime/OmniLearnLightining/
 
-## Small Model
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=100_000_000 --num_workers=32 --num_nodes=8 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128
+### Small Model
+# Super-Gen
+#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=super-gen
 
-## Medium Model
-srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=100_000_000 --num_workers=32 --num_nodes=10 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32
+# Super-Only
+#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=super-only
+
+# Gen-Only
+#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=gen-only
+
+### Medium Model
+
+# Super-Gen
+srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=super-gen
+
+# Super-Only
+srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=super-only
+
+# Gen-Only
+srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=32 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=gen-only
