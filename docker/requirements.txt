@@ -2,6 +2,7 @@ awkward==2.8.9
 cupy-cuda12x==13.6.0
 diffusers==0.35.1
 einops==0.8.1
+fast-pytorch-kmeans==0.2.2
 fastjet==3.4.2.1
 h5py==3.14.0
 lightning==2.5.5
