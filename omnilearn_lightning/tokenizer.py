@@ -21,8 +21,6 @@ class KMeansTokenizer:
             include in the fitting process. If provided, only the points where mask is
             True will be used for fitting. Default is None.
         """
-        # if mask is provided: apply it to x (then x is (batch_size, num_points, num_features))
-        # if not, x is (num_samples, num_features)
         if mask is not None:
             x = x[mask]
         self.kmeans.fit(x)
@@ -43,7 +41,6 @@ class KMeansTokenizer:
         batch_size, num_points, num_features = x.shape
         x_reshaped = x.reshape(-1, num_features)
         labels = self.kmeans.predict(x_reshaped)
-        # reshape back to (batch_size, num_points)
         labels = labels.reshape(batch_size, num_points)
         return labels
 
@@ -62,9 +59,8 @@ class KMeansTokenizer:
         """
         batch_size, num_points, num_features = x.shape
         x_reshaped = x.reshape(-1, num_features)
-        centroids = self.kmeans.centroids
         # get the centroid for each point
-        tokenized = centroids[self.kmeans.predict(x_reshaped)]
+        tokenized = self.kmeans.centroids[self.kmeans.predict(x_reshaped)]
         # reshape back to (batch_size, num_points, num_features)
         tokenized = tokenized.reshape(batch_size, num_points, num_features)
         return tokenized
