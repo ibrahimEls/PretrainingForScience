@@ -1,20 +1,17 @@
-import sys
-
 import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
-from utils import (
+
+from ..diffusion import get_logsnr_alpha_sigma, perturb
+from ..layers import DynamicTanh
+from ..modules import PET_body, PET_generator
+from ..utils import (
     CLIPLoss,
     get_param_groups,
 )
-
-sys.path.append("../")
-from diffusion import get_logsnr_alpha_sigma, perturb
-from layers import DynamicTanh
-from modules import PET_body, PET_generator
 
 
 class PET2(nn.Module):

@@ -1,17 +1,15 @@
 import argparse
 import os
-import sys
 
 import torch
-from dataloader import PETDataModule
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
-from utils import get_bigram, get_latest_checkpoint_dir
 
-sys.path.append("Models/")
+from omnilearn_lightning.dataloader import PETDataModule
+from omnilearn_lightning.utils import get_bigram, get_latest_checkpoint_dir
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
