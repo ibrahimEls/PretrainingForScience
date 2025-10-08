@@ -1,3 +1,5 @@
+import sys
+
 import torch
 import torch.amp as amp
 import torch.nn as nn
@@ -10,11 +12,10 @@ from utils import (
     get_param_groups,
 )
 
-import sys
 sys.path.append("../")
-from modules import PET_body, PET_generator,PET_classifier
 from diffusion import get_logsnr_alpha_sigma, perturb
 from layers import DynamicTanh
+from modules import PET_body, PET_classifier, PET_generator
 
 
 class PET2(nn.Module):

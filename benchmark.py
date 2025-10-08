@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import argparse, sys
+import argparse
 import json
 import math
 import os
+import sys
 import time
 from dataclasses import asdict, dataclass
 from typing import List, Tuple
@@ -15,7 +16,9 @@ from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 from dataloader import PETDataModule
+
 sys.path.append("Models/")
+
 
 def parse_case(s: str) -> Tuple[int, int]:
     """
@@ -131,7 +134,6 @@ def build_model(args):
     else:
         raise ValueError(f"Unknown model_size: {args.model_size}")
 
-
     if args.pretraining_mode == "super-gen":
         from model_super_gen import PETLightning
 
@@ -146,7 +148,6 @@ def build_model(args):
 
     elif args.pretraining_mode == "naive-self-super":
         from model_naive_self_super import PETLightning
-
 
     model = PETLightning(
         input_dim=args.input_dim,
