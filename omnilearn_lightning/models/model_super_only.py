@@ -4,13 +4,11 @@ import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
+from torch.optim.lr_scheduler import OneCycleLR
 
 from ..layers import DynamicTanh
 from ..modules import PET_body, PET_classifier
-from ..utils import (
-    CLIPLoss,
-    get_param_groups,
-)
+from ..utils import get_param_groups
 
 
 class PET2(nn.Module):
@@ -176,7 +174,6 @@ class PETLightning(LightningModule):
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss(reduction="none")
         self.loss_gen = nn.L1Loss(reduction="none")
-        self.clip_loss = CLIPLoss()
 
         # --- flags & params ---
         self.use_clip = use_clip
@@ -273,28 +270,57 @@ class PETLightning(LightningModule):
         return self.validation_step(batch, batch_idx)
 
     def configure_optimizers(self):
-        # param groups
-        pg = get_param_groups(
-            self.model,
-            wd=self.weight_decay,
-            lr=self.lr,
-            lr_factor=self.lr_factor,
-            fine_tune=self.fine_tune,
-        )
-        optimizer = Lion(pg, betas=self.betas)
+        if self.fine_tune:
+            pg = get_param_groups(
+                self.model,
+                wd=self.weight_decay,
+                lr=self.lr,
+                lr_factor=self.lr_factor,
+                fine_tune=self.fine_tune,
+            )
 
-        scheduler = get_cosine_schedule_with_warmup(
-            optimizer,
-            num_warmup_steps=self.hparams.warmup_steps,
-            num_training_steps=self.hparams.total_steps,
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "interval": "step",
-            },
-        }
+            optimizer = torch.optim.AdamW(pg, betas=self.betas)
+
+            total = self.trainer.estimated_stepping_batches
+            scheduler = OneCycleLR(
+                optimizer,
+                max_lr=self.lr,
+                total_steps=total,
+                pct_start=0.1,
+                anneal_strategy="cos",
+            )
+
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "interval": "step",
+                    "frequency": 1,
+                },
+            }
+        else:
+            # param groups
+            pg = get_param_groups(
+                self.model,
+                wd=self.weight_decay,
+                lr=self.lr,
+                lr_factor=self.lr_factor,
+                fine_tune=self.fine_tune,
+            )
+            optimizer = Lion(pg, betas=self.betas)
+
+            scheduler = get_cosine_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=self.hparams.warmup_steps,
+                num_training_steps=self.hparams.total_steps,
+            )
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "interval": "step",
+                },
+            }
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         # if fine_tuning a pretrained body, filter shapes
