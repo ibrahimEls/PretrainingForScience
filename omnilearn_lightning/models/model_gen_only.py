@@ -1,5 +1,3 @@
-import sys
-
 import torch
 import torch.amp as amp
 import torch.nn as nn
@@ -7,14 +5,13 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
-from utils import (
+from ..diffusion import get_logsnr_alpha_sigma, perturb
+from ..layers import DynamicTanh
+from ..modules import PET_body, PET_generator
+from ..utils import (
     CLIPLoss,
     get_param_groups,
 )
-
-sys.path.append("../")
-from layers import DynamicTanh
-from modules import PET_body, PET_classifier
 
 
 class PET2(nn.Module):
@@ -76,20 +73,21 @@ class PET2(nn.Module):
         self.num_add = self.body.num_add
         self.classifier = None
         self.generator = None
-        if self.mode == "classifier" or self.mode == "pretrain":
-            self.classifier = PET_classifier(
-                hidden_size,
-                num_transformers=num_transformers_head,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-                mlp_drop=mlp_drop,
-                attn_drop=attn_drop,
-                num_tokens=num_tokens,
-                num_classes=num_classes,
-            )
 
+        self.generator = PET_generator(
+            input_dim,
+            hidden_size,
+            num_transformers=num_transformers_head,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio,
+            norm_layer=norm_layer,
+            act_layer=act_layer,
+            mlp_drop=mlp_drop,
+            attn_drop=attn_drop,
+            num_tokens=num_tokens,
+            num_add=self.num_add,
+            num_classes=num_classes,
+        )
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -106,17 +104,22 @@ class PET2(nn.Module):
         return {"norm", "scale", "token"}
 
     def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, x_body = (
+        z_pred, v, z_body = (
+            None,
             None,
             None,
         )
         time = torch.rand(size=(x.shape[0],)).to(x.device)
+        _, alpha, sigma = get_logsnr_alpha_sigma(time)
+        z, v = perturb(x, time)
+        z_body = self.body(z, cond, pid, add_info, time)
+        z_pred = self.generator(z_body, y)
 
-        if self.mode == "classifier" or self.mode == "pretrain":
-            x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
-            y_pred = self.classifier(x_body)
         return {
-            "y_pred": y_pred,
+            "z_pred": z_pred,
+            "v": v,
+            "z_body": z_body,
+            "alpha": alpha**2,
         }
 
 
@@ -206,28 +209,14 @@ class PETLightning(LightningModule):
         losses = {}
         loss = torch.tensor(0.0, device=self.device)
 
-        # classification loss
-        if outputs["y_pred"] is not None:
-            if self.use_event_loss:
-                mask = y >= self.event_threshold
-                if mask.any():
-                    ev = self.loss_class(
-                        outputs["y_pred"][mask][:, self.event_threshold :],
-                        y[mask] - self.event_threshold,
-                    ).mean()
-                    losses["loss_class_event"] = ev
-                    loss = loss + ev
-                inv = ~mask
-                if inv.any():
-                    cl = self.loss_class(
-                        outputs["y_pred"][inv][:, : self.event_threshold], y[inv]
-                    ).mean()
-                    losses["loss_class"] = cl
-                    loss = loss + cl
-            else:
-                cl = self.loss_class(outputs["y_pred"], y).mean()
-                losses["loss_class"] = cl
-                loss = loss + cl
+        # generation loss
+        if outputs["z_pred"] is not None:
+            nonzero = (outputs["v"][:, :, 0] != 0).sum(1)
+            gen = (
+                self.loss_gen(outputs["v"], outputs["z_pred"]).sum((1, 2)) / nonzero
+            ).mean()
+            losses["loss_gen"] = gen
+            loss = loss + gen
 
         losses["loss"] = loss
         return losses
@@ -268,7 +257,7 @@ class PETLightning(LightningModule):
             losses = self._compute_losses(out, y)
 
         for k, v in losses.items():
-            self.log(f"val_{k}", v, prog_bar=True, on_step=False, on_epoch=True)
+            self.log(f"val_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
 
         return losses["loss"]
 

@@ -1,6 +1,5 @@
 import argparse
 import os
-import sys
 
 import torch
 from pytorch_lightning import Trainer
@@ -9,10 +8,8 @@ from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
 
-from dataloader import PETDataModule
-from utils import get_bigram, get_latest_checkpoint_dir
-
-sys.path.append("Models/")
+from omnilearn_lightning.dataloader import PETDataModule
+from omnilearn_lightning.utils import get_bigram, get_latest_checkpoint_dir
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -93,7 +90,7 @@ def main():
         "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
     )
 
-    parser.add_argument("--pretraining_mode", type=str, default="super_gen")
+    parser.add_argument("--pretraining_mode", type=str, default="super-gen")
 
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
@@ -144,30 +141,36 @@ def main():
         lr = 1e-5
         save_tag = f"_medium_{args.dataset_size}"
 
+    else:
+        raise ValueError(f"Unknown model size: {args.model_size}")
+
     if args.pretraining_mode == "super-gen":
-        from model_super_gen import PETLightning
+        from omnilearn_lightning.models.model_super_gen import PETLightning
 
         save_tag = "super-gen" + save_tag
 
     elif args.pretraining_mode == "super-only":
-        from model_super_only import PETLightning
+        from omnilearn_lightning.models.model_super_only import PETLightning
 
         save_tag = "super-only" + save_tag
 
     elif args.pretraining_mode == "gen-only":
-        from model_gen_only import PETLightning
+        from omnilearn_lightning.models.model_gen_only import PETLightning
 
         save_tag = "gen-only" + save_tag
 
     elif args.pretraining_mode == "self-super":
-        from model_self_super import PETLightning
+        from omnilearn_lightning.models.model_self_super import PETLightning
 
         save_tag = "self-super" + save_tag
 
     elif args.pretraining_mode == "naive-self-super":
-        from model_naive_self_super import PETLightning
+        from omnilearn_lightning.models.model_naive_self_super import PETLightning
 
         save_tag = "naive-self-super" + save_tag
+
+    else:
+        raise ValueError(f"Unknown pretraining mode: {args.pretraining_mode}")
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
