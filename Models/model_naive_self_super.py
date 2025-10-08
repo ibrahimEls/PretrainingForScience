@@ -2,7 +2,6 @@ import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
-from network import PET2
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
@@ -10,6 +9,148 @@ from utils import (
     CLIPLoss,
     get_param_groups,
 )
+
+import sys
+sys.path.append("../")
+from modules import PET_body, PET_generator,PET_classifier
+from diffusion import get_logsnr_alpha_sigma, perturb
+from layers import DynamicTanh
+
+
+class PET2(nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        hidden_size,
+        num_transformers=2,
+        num_transformers_head=2,
+        num_heads=4,
+        mlp_ratio=2,
+        norm_layer=DynamicTanh,
+        act_layer=nn.GELU,
+        mlp_drop=0.1,
+        attn_drop=0.1,
+        feature_drop=0.0,
+        num_tokens=4,
+        K=15,
+        use_int=True,
+        conditional=False,
+        cond_dim=3,
+        pid=False,
+        pid_dim=9,
+        add_info=False,
+        add_dim=4,
+        use_time=False,
+        mode="classifier",
+        num_classes=2,
+    ):
+        super().__init__()
+        self.mode = mode
+        if self.mode not in ["classifier", "generator", "pretrain"]:
+            raise ValueError(f"Mode '{self.mode}' not supported.")
+
+        self.body = PET_body(
+            input_dim,
+            hidden_size,
+            num_transformers=num_transformers,
+            num_transf_local=num_transformers_head,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio,
+            norm_layer=norm_layer,
+            act_layer=act_layer,
+            mlp_drop=mlp_drop,
+            attn_drop=attn_drop,
+            feature_drop=feature_drop,
+            num_tokens=num_tokens,
+            K=K,
+            use_int=use_int,
+            conditional=conditional,
+            cond_dim=cond_dim,
+            pid=pid,
+            pid_dim=pid_dim,
+            add_info=add_info,
+            add_dim=add_dim,
+            use_time=use_time,
+        )
+
+        self.num_add = self.body.num_add
+        self.classifier = None
+        self.generator = None
+        if self.mode == "classifier" or self.mode == "pretrain":
+            self.classifier = PET_classifier(
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                num_tokens=num_tokens,
+                num_classes=num_classes,
+            )
+
+        if self.mode == "generator" or self.mode == "pretrain":
+            self.generator = PET_generator(
+                input_dim,
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                num_tokens=num_tokens,
+                num_add=self.num_add,
+                num_classes=num_classes,
+            )
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+        self.apply(_init_weights)
+
+    def no_weight_decay(self):
+        # Specify parameters that should not be decayed
+        return {"norm", "scale", "token"}
+
+    def forward(self, x, y, cond=None, pid=None, add_info=None):
+        y_pred, y_perturb, z_pred, v, x_body, z_body = (
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        )
+        time = torch.rand(size=(x.shape[0],)).to(x.device)
+        _, alpha, sigma = get_logsnr_alpha_sigma(time)
+        if self.mode == "generator" or self.mode == "pretrain":
+            z, v = perturb(x, time)
+            z_body = self.body(z, cond, pid, add_info, time)
+            z_pred = self.generator(z_body, y)
+
+        if self.mode == "classifier" or self.mode == "pretrain":
+            x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
+            y_pred = self.classifier(x_body)
+            if self.mode == "pretrain":
+                y_perturb = self.classifier(z_body)
+
+        return {
+            "y_pred": y_pred,
+            "y_perturb": y_perturb,
+            "z_pred": z_pred,
+            "v": v,
+            "x_body": x_body,
+            "z_body": z_body,
+            "alpha": alpha**2,
+        }
 
 
 class PETLightning(LightningModule):

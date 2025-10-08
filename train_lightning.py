@@ -11,7 +11,7 @@ from pytorch_lightning.utilities import rank_zero_only
 
 from dataloader import PETDataModule
 from utils import get_bigram, get_latest_checkpoint_dir
-
+sys.path.append("Models/")
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
 def str2bool(v):
@@ -143,33 +143,23 @@ def main():
         save_tag = f"_medium_{args.dataset_size}"
 
     if args.pretraining_mode == "super-gen":
-        sys.path.append("Models/Super-Gen")
-        from lightning_model import PETLightning
-
+        from model_super_gen import PETLightning
         save_tag = "super-gen" + save_tag
 
     elif args.pretraining_mode == "super-only":
-        sys.path.append("Models/Super-Only")
-        from lightning_model import PETLightning
-
+        from model_super_only import PETLightning
         save_tag = "super-only" + save_tag
 
     elif args.pretraining_mode == "gen-only":
-        sys.path.append("Models/Gen-Only")
-        from lightning_model import PETLightning
-
+        from model_gen_only import PETLightning
         save_tag = "gen-only" + save_tag
 
     elif args.pretraining_mode == "self-super":
-        sys.path.append("Models/Self-Super")
-        from lightning_model import PETLightning
-
+        from model_self_super import PETLightning
         save_tag = "self-super" + save_tag
 
     elif args.pretraining_mode == "naive-self-super":
-        sys.path.append("Models/Naive-Self-Super")
-        from lightning_model import PETLightning
-
+        from model_naive_self_super import PETLightning
         save_tag = "naive-self-super" + save_tag
 
     # Create output directory only on rank 0

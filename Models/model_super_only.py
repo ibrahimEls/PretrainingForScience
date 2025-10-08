@@ -2,7 +2,6 @@ import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
-from network import PET2
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
@@ -10,6 +9,113 @@ from utils import (
     CLIPLoss,
     get_param_groups,
 )
+
+import sys
+sys.path.append("../")
+from modules import PET_body, PET_classifier
+from layers import DynamicTanh
+
+class PET2(nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        hidden_size,
+        num_transformers=2,
+        num_transformers_head=2,
+        num_heads=4,
+        mlp_ratio=2,
+        norm_layer=DynamicTanh,
+        act_layer=nn.GELU,
+        mlp_drop=0.1,
+        attn_drop=0.1,
+        feature_drop=0.0,
+        num_tokens=4,
+        K=15,
+        use_int=True,
+        conditional=False,
+        cond_dim=3,
+        pid=False,
+        pid_dim=9,
+        add_info=False,
+        add_dim=4,
+        use_time=False,
+        mode="classifier",
+        num_classes=2,
+    ):
+        super().__init__()
+        self.mode = mode
+        if self.mode not in ["classifier", "generator", "pretrain"]:
+            raise ValueError(f"Mode '{self.mode}' not supported.")
+
+        self.body = PET_body(
+            input_dim,
+            hidden_size,
+            num_transformers=num_transformers,
+            num_transf_local=num_transformers_head,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio,
+            norm_layer=norm_layer,
+            act_layer=act_layer,
+            mlp_drop=mlp_drop,
+            attn_drop=attn_drop,
+            feature_drop=feature_drop,
+            num_tokens=num_tokens,
+            K=K,
+            use_int=use_int,
+            conditional=conditional,
+            cond_dim=cond_dim,
+            pid=pid,
+            pid_dim=pid_dim,
+            add_info=add_info,
+            add_dim=add_dim,
+            use_time=use_time,
+        )
+
+        self.num_add = self.body.num_add
+        self.classifier = None
+        self.generator = None
+        if self.mode == "classifier" or self.mode == "pretrain":
+            self.classifier = PET_classifier(
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                num_tokens=num_tokens,
+                num_classes=num_classes,
+            )
+
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+        self.apply(_init_weights)
+
+    def no_weight_decay(self):
+        # Specify parameters that should not be decayed
+        return {"norm", "scale", "token"}
+
+    def forward(self, x, y, cond=None, pid=None, add_info=None):
+        y_pred, x_body = (
+            None,
+            None,
+        )
+        time = torch.rand(size=(x.shape[0],)).to(x.device)
+
+        if self.mode == "classifier" or self.mode == "pretrain":
+            x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
+            y_pred = self.classifier(x_body)
+        return {
+            "y_pred": y_pred,
+        }
 
 
 class PETLightning(LightningModule):
@@ -98,14 +204,28 @@ class PETLightning(LightningModule):
         losses = {}
         loss = torch.tensor(0.0, device=self.device)
 
-        # generation loss
-        if outputs["z_pred"] is not None:
-            nonzero = (outputs["v"][:, :, 0] != 0).sum(1)
-            gen = (
-                self.loss_gen(outputs["v"], outputs["z_pred"]).sum((1, 2)) / nonzero
-            ).mean()
-            losses["loss_gen"] = gen
-            loss = loss + gen
+        # classification loss
+        if outputs["y_pred"] is not None:
+            if self.use_event_loss:
+                mask = y >= self.event_threshold
+                if mask.any():
+                    ev = self.loss_class(
+                        outputs["y_pred"][mask][:, self.event_threshold :],
+                        y[mask] - self.event_threshold,
+                    ).mean()
+                    losses["loss_class_event"] = ev
+                    loss = loss + ev
+                inv = ~mask
+                if inv.any():
+                    cl = self.loss_class(
+                        outputs["y_pred"][inv][:, : self.event_threshold], y[inv]
+                    ).mean()
+                    losses["loss_class"] = cl
+                    loss = loss + cl
+            else:
+                cl = self.loss_class(outputs["y_pred"], y).mean()
+                losses["loss_class"] = cl
+                loss = loss + cl
 
         losses["loss"] = loss
         return losses
@@ -146,7 +266,7 @@ class PETLightning(LightningModule):
             losses = self._compute_losses(out, y)
 
         for k, v in losses.items():
-            self.log(f"val_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
+            self.log(f"val_{k}", v, prog_bar=True, on_step=False, on_epoch=True)
 
         return losses["loss"]
 
