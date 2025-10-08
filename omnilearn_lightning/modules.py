@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 
-from diffusion import MPFourier
-from layers import (
+from .diffusion import MPFourier
+from .layers import (
     MLP,
     AttBlock,
     DynamicTanh,

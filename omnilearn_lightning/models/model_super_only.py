@@ -7,15 +7,14 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
-from utils import (
+from ..utils import (
     CLIPLoss,
     get_param_groups,
 )
 
 sys.path.append("../")
-from diffusion import get_logsnr_alpha_sigma, perturb
-from layers import DynamicTanh
-from modules import PET_body, PET_classifier, PET_generator
+from ..layers import DynamicTanh
+from ..modules import PET_body, PET_classifier
 
 
 class PET2(nn.Module):
@@ -91,21 +90,6 @@ class PET2(nn.Module):
                 num_classes=num_classes,
             )
 
-        if self.mode == "generator" or self.mode == "pretrain":
-            self.generator = PET_generator(
-                input_dim,
-                hidden_size,
-                num_transformers=num_transformers_head,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-                mlp_drop=mlp_drop,
-                attn_drop=attn_drop,
-                num_tokens=num_tokens,
-                num_add=self.num_add,
-                num_classes=num_classes,
-            )
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -122,35 +106,17 @@ class PET2(nn.Module):
         return {"norm", "scale", "token"}
 
     def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, y_perturb, z_pred, v, x_body, z_body = (
-            None,
-            None,
-            None,
-            None,
+        y_pred, x_body = (
             None,
             None,
         )
         time = torch.rand(size=(x.shape[0],)).to(x.device)
-        _, alpha, sigma = get_logsnr_alpha_sigma(time)
-        if self.mode == "generator" or self.mode == "pretrain":
-            z, v = perturb(x, time)
-            z_body = self.body(z, cond, pid, add_info, time)
-            z_pred = self.generator(z_body, y)
 
         if self.mode == "classifier" or self.mode == "pretrain":
             x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
             y_pred = self.classifier(x_body)
-            if self.mode == "pretrain":
-                y_perturb = self.classifier(z_body)
-
         return {
             "y_pred": y_pred,
-            "y_perturb": y_perturb,
-            "z_pred": z_pred,
-            "v": v,
-            "x_body": x_body,
-            "z_body": z_body,
-            "alpha": alpha**2,
         }
 
 
@@ -263,62 +229,10 @@ class PETLightning(LightningModule):
                 losses["loss_class"] = cl
                 loss = loss + cl
 
-        # generation loss
-        if outputs["z_pred"] is not None:
-            nonzero = (outputs["v"][:, :, 0] != 0).sum(1)
-            gen = (
-                self.loss_gen(outputs["v"], outputs["z_pred"]).sum((1, 2)) / nonzero
-            ).mean()
-            losses["loss_gen"] = gen
-            loss = loss + gen
-
-        # perturbation loss
-        if outputs["y_perturb"] is not None:
-            if self.use_event_loss:
-                mask = y >= self.event_threshold
-                if mask.any():
-                    lep = (
-                        outputs["alpha"][mask].squeeze(1)
-                        * self.loss_class(
-                            outputs["y_perturb"][mask][:, self.event_threshold :],
-                            y[mask] - self.event_threshold,
-                        )
-                    ).mean()
-                    losses["loss_event_perturb"] = lep
-                    loss = loss + lep
-                inv = ~mask
-                if inv.any():
-                    lp = (
-                        outputs["alpha"][inv].squeeze(1)
-                        * self.loss_class(
-                            outputs["y_perturb"][inv][:, : self.event_threshold], y[inv]
-                        )
-                    ).mean()
-                    losses["loss_perturb"] = lp
-                    loss = loss + lp
-            else:
-                lp = (
-                    outputs["alpha"].squeeze(1)
-                    * self.loss_class(outputs["y_perturb"], y)
-                ).mean()
-                losses["loss_perturb"] = lp
-                loss = loss + lp
-
-        # CLIP loss
-        if self.use_clip and outputs.get("x_body") is not None:
-            clip = self.clip_loss(
-                outputs["x_body"].view(outputs["x_body"].shape[0], -1),
-                outputs["z_body"].view(outputs["x_body"].shape[0], -1),
-                weight=outputs["alpha"].squeeze(1),
-            )
-            losses["loss_clip"] = clip
-            loss = loss + clip
-
         losses["loss"] = loss
         return losses
 
-    def _shared_step(self, batch, batch_idx, stage):
-        """Shared logic for train/val/test steps."""
+    def training_step(self, batch, batch_idx):
         X, y = batch["X"].float(), batch["y"]
         X, y = X.to(self.device), y.to(self.device)
 
@@ -328,41 +242,39 @@ class PETLightning(LightningModule):
             if (k in batch)
         }
 
-        # Use torch.no_grad() for validation and test, allow gradients for training
-        if stage == "train":
-            with amp.autocast(enabled=self.use_amp, device_type="cuda"):
-                out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
-        else:
-            with (
-                torch.no_grad(),
-                amp.autocast(enabled=self.use_amp, device_type="cuda"),
-            ):
-                out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
+        with amp.autocast(enabled=self.use_amp, device_type="cuda"):
+            out = self(X, y, **model_kwargs)
+            # PET2 now returns a dict with expected keys
+            losses = self._compute_losses(out, y)
 
-        # Log losses with appropriate prefix and settings
-        on_step = stage == "train"  # <-- only log on step during training
+        # log everything
         for k, v in losses.items():
-            self.log(
-                f"{stage}_{k}",
-                v,
-                prog_bar=True,
-                on_step=on_step,
-                on_epoch=True,
-                sync_dist=True,
-            )
+            self.log(f"train_{k}", v, prog_bar=True, on_step=True, on_epoch=False)
 
         return losses["loss"]
 
-    def training_step(self, batch, batch_idx):
-        return self._shared_step(batch, batch_idx, "train")
-
     def validation_step(self, batch, batch_idx):
-        return self._shared_step(batch, batch_idx, "val")
+        X, y = batch["X"].float(), batch["y"]
+        X, y = X.to(self.device), y.to(self.device)
+
+        model_kwargs = {
+            k: (batch[k].to(self.device) if batch[k] is not None else None)
+            for k in ("pid", "add_info")
+            if (k in batch)
+        }
+
+        with torch.no_grad(), amp.autocast(enabled=self.use_amp, device_type="cuda"):
+            out = self(X, y, **model_kwargs)
+            losses = self._compute_losses(out, y)
+
+        for k, v in losses.items():
+            self.log(f"val_{k}", v, prog_bar=True, on_step=False, on_epoch=True)
+
+        return losses["loss"]
 
     def test_step(self, batch, batch_idx):
-        return self._shared_step(batch, batch_idx, "test")
+        # mirror validation
+        return self.validation_step(batch, batch_idx)
 
     def configure_optimizers(self):
         # param groups

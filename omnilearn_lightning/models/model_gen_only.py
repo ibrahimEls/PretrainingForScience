@@ -6,7 +6,6 @@ import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
-
 from utils import (
     CLIPLoss,
     get_param_groups,
