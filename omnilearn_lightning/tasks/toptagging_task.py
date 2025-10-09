@@ -1,14 +1,21 @@
+import os
+
 import numpy as np
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+)
+from pytorch_lightning.loggers import CSVLogger, WandbLogger
+from pytorch_lightning.strategies import DDPStrategy
 from sklearn.metrics import roc_auc_score, roc_curve
 from tqdm import tqdm
 
 from ..dataloader import PETDataModule
 from ..models.model_super_only import PETLightning
-from ..utils import load_partial_checkpoint
+from ..utils import get_bigram, get_version_number, load_partial_checkpoint
 
 
 def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
@@ -16,7 +23,7 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     data_module = PETDataModule(
         dataset="top",
         path=args.path,
-        batch_size=256,
+        batch_size=args.batch_size,
         num_workers=args.num_workers,
         use_pid=args.use_pid,
         use_add=args.use_add,
@@ -63,9 +70,41 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     tag = tag + f"_top_{num_shots}-shot"
     print(f"Training with {num_shots}! Setting Patience to: {patience_val}")
 
-    model = load_partial_checkpoint(model, ckpt_path, task="top")
+    if args.from_scratch:
+        print("Training From Scratch")
+    else:
+        print(f"Loading Model From {ckpt_path}")
+        model = load_partial_checkpoint(model, ckpt_path, task="top")
+        print(f"Finetuning Model")
 
-    logger = CSVLogger(save_dir=args.outdir, name=tag, flush_logs_every_n_steps=5)
+    loggers = []
+    out_dir_save_tag = os.path.join(args.outdir, tag)
+    version = get_version_number(out_dir_save_tag)
+    run_name = f"v{version}_{get_bigram(add_timestamp=True)}"
+    run_dir = os.path.join(out_dir_save_tag, run_name)
+
+    csv_logger = CSVLogger(save_dir=args.outdir, name=tag, flush_logs_every_n_steps=5)
+    loggers.append(csv_logger)
+
+    if args.use_wandb:
+        hparams = {
+            k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
+            for k, v in vars(args).items()
+        }
+        hparams.update({"run_dir": run_dir})
+        # add SLURM job id if it exists
+        if "SLURM_JOB_ID" in os.environ:
+            hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
+
+        wandb_logger = WandbLogger(
+            project=args.wandb_project,
+            name=run_name,
+            tags=args.wandb_tags,
+            save_dir=args.outdir,
+        )
+
+        wandb_logger.log_hyperparams(hparams)
+        loggers.append(wandb_logger)
 
     checkpoint_callback = ModelCheckpoint(
         filename=tag + "-{epoch:06d}-{val_loss:.4f}",
@@ -75,22 +114,23 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
         save_last=True,
         verbose=False,
     )
+    lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    if num_shots < 100_000:
-        max_epochs = 1000
-    elif num_shots == 100_000:
-        max_epochs = 100
-    elif num_shots >= 1_000_000:
-        max_epochs = 20
+    max_epochs = 100
+    strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
     trainer = Trainer(
         max_epochs=max_epochs,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        devices=[gpuID] if torch.cuda.is_available() else None,
+        devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_callback, early_stop_callback],
+        callbacks=[checkpoint_callback, early_stop_callback, lr_monitor],
         default_root_dir=args.outdir,
-        logger=logger,
+        logger=loggers,
+        strategy=strategy,
+        accumulate_grad_batches=2,
+        num_nodes=args.num_nodes,
+        enable_progress_bar=(args.num_nodes == 1),
     )
 
     # Train the model

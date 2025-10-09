@@ -296,6 +296,7 @@ class PETLightning(LightningModule):
                     "scheduler": scheduler,
                     "interval": "step",
                     "frequency": 1,
+                    "name": "one_cycle",
                 },
             }
         else:

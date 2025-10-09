@@ -52,6 +52,8 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         }
         model.load_state_dict(filtered_state, strict=False)
 
+    return model
+
 
 def get_latest_checkpoint_dir(base_dir: str) -> str:
     """
@@ -334,3 +336,21 @@ def get_bigram(add_timestamp: bool = False) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         bigram = f"{bigram}-{timestamp}"
     return bigram
+
+
+def get_version_number(out_dir_save_tag):
+    # count how many directories starting with v{number}_<remainder> exist there
+    version = 0
+    # run_dir = os.path.join(args.outdir, save_tag, run_name)
+    for name in (
+        os.listdir(out_dir_save_tag) if os.path.exists(out_dir_save_tag) else []
+    ):
+        if os.path.isdir(os.path.join(out_dir_save_tag, name)) and name.startswith("v"):
+            try:
+                ver_num = int(name.split("_")[0][1:])
+                if ver_num >= version:
+                    version = ver_num + 1
+            except ValueError:
+                pass
+
+    return version

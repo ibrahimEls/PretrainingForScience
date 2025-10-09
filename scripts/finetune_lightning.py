@@ -1,4 +1,7 @@
 import argparse
+import sys
+
+sys.path.append("../")
 
 from omnilearn_lightning.tasks.diffusion_task import diffusion_task
 from omnilearn_lightning.tasks.quarkgluon_task import quark_gloun_task
@@ -30,7 +33,7 @@ def main():
         "--dataset", type=str, default="pretrain", help="Name of the dataset to load"
     )
     parser.add_argument(
-        "--dataset_size", type=int, default=1_000_000, help="Number of datapoints"
+        "--dataset_size", type=int, default=-1, help="Number of datapoints"
     )
     parser.add_argument(
         "--num_nodes", type=int, default=1, help="Name of the dataset to load"
@@ -77,7 +80,25 @@ def main():
     # Additional features
     parser.add_argument("--use_pid", action="store_true")
     parser.add_argument("--use_add", action="store_true")
+    parser.add_argument("--from_scratch", action="store_true")
 
+    # Logging
+    parser.add_argument(
+        "--use_wandb", action="store_true", help="Use Weights & Biases logging"
+    )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        default="omnilearned",
+        help="Weights & Biases project name",
+    )
+    parser.add_argument(
+        "--wandb_tags",
+        type=str,
+        nargs="+",
+        default="Finetune",
+        help="Weights & Biases tags for the run",
+    )
     args = parser.parse_args()
 
     if args.model_size == "micro":
@@ -93,7 +114,7 @@ def main():
         args.num_transformers = 8
         args.num_heads = 8
         args.batch_size = 128
-        args.lr = 3e-4
+        args.lr = 1e-4
         tag = f"super_gen_small_{args.task}_{args.dataset_size}"
 
     elif args.model_size == "medium":
@@ -101,7 +122,7 @@ def main():
         args.num_transformers = 12
         args.num_heads = 16
         args.batch_size = 32
-        args.lr = 3e-5
+        args.lr = 1e-5
         tag = f"super_gen_medium_{args.task}_{args.dataset_size}"
 
     if args.task == "top_tagging":
