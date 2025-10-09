@@ -14,6 +14,45 @@ from torch.distributed import get_rank, init_process_group
 from wonderwords import RandomWord
 
 
+def load_partial_checkpoint(model, ckpt_path, task="top"):
+    if task == "top":
+        ckpt = torch.load(ckpt_path, map_location="cpu")
+        ckpt_state_dict = ckpt["state_dict"]
+        filtered_state = {
+            key: value
+            for key, value in ckpt_state_dict.items()
+            if ("classifier.out" not in key)
+        }
+
+        model.load_state_dict(filtered_state, strict=False)
+
+    elif task == "qc":
+        ckpt = torch.load(ckpt_path, map_location="cpu")
+        ckpt_state_dict = ckpt["state_dict"]
+        filtered_state = {
+            key: value
+            for key, value in ckpt_state_dict.items()
+            if ("body.embed.mlp.fc1" not in key)
+            and ("classifier.out" not in key)
+            and ("body.local_physics.mlp.fc1" not in key)
+            and ("body.embed.norm.weight" not in key)
+        }
+        model.load_state_dict(filtered_state, strict=False)
+
+    elif task == "gen":
+        ckpt = torch.load(ckpt_path, map_location="cpu")
+        ckpt_state_dict = ckpt["state_dict"]
+        filtered_state = {
+            key: value
+            for key, value in ckpt_state_dict.items()
+            if (
+                "generator.pid_embed.0.weight" not in key
+                and "classifier.out" not in key
+            )
+        }
+        model.load_state_dict(filtered_state, strict=False)
+
+
 def get_latest_checkpoint_dir(base_dir: str) -> str:
     """
     Given a base directory containing subdirectories named 'version_{n}',
