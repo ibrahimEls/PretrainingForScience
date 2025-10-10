@@ -370,7 +370,9 @@ class PET_body(nn.Module):
 
         self.apply(_init_weights)
 
-    def forward(self, x, cond=None, pid=None, add_info=None, time=None):
+    def forward(
+        self, x, cond=None, pid=None, add_info=None, time=None, return_mask=False
+    ):
         B = x.shape[0]
         mask = x[:, :, 3:4] != 0
         token = self.token.expand(B, -1, -1)
@@ -428,4 +430,6 @@ class PET_body(nn.Module):
             x = blk(x, mask=mask, attn_mask=attn_mask)
 
         x = self.norm(x) * mask
+        if return_mask:
+            return x, mask
         return x
