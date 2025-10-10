@@ -55,7 +55,7 @@ def quark_gloun_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
         patience_val = 3
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
-        patience=patience_val,  # Number of epochs with no improvement after which training will be stopped
+        patience=patience_val,
         mode="min",
         verbose=False,
     )
@@ -122,7 +122,6 @@ def quark_gloun_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
         num_samples=-1,
     )
 
-    # Prepare dataloader
     data_module.setup("fit")
     dataloader = data_module.val_dataloader()
 
@@ -140,12 +139,11 @@ def quark_gloun_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
             out = best_model(inputs, labels, **model_kwargs)
             y_pred = out["y_pred"].softmax(dim=1)
             outputs = ((1 - y_pred[:, 0]) + (y_pred[:, 1])) / 2
-            # Compute loss
+
             loss = criterion(outputs.unsqueeze(1), labels.unsqueeze(1).float())
             total_loss += loss.item()
             n_batches += 1
 
-            # Collect scores and labels
             probs = torch.sigmoid(outputs).squeeze().cpu().numpy()
             all_scores.extend(probs)
             all_labels.extend(labels.cpu().numpy())
@@ -159,7 +157,6 @@ def quark_gloun_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     bkg_eff = fpr[idx]
     inv_bkg_eff = 1.0 / bkg_eff if bkg_eff > 0 else float("inf")
 
-    # Report
     print(f"Validation Loss: {avg_loss:.4f}")
     print(f"ROC AUC: {auc:.4f}")
     print(f"1/(background efficiency): {inv_bkg_eff:.4f}")

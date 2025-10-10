@@ -9,7 +9,11 @@ from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
 
 from omnilearn_lightning.dataloader import PETDataModule
-from omnilearn_lightning.utils import get_bigram, get_latest_checkpoint_dir
+from omnilearn_lightning.utils import (
+    get_bigram,
+    get_latest_checkpoint_dir,
+    get_version_number,
+)
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -222,20 +226,8 @@ def main():
     pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
 
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
-    # count how many directories starting with v{number}_<remainder> exist there
-    version = 0
-    # run_dir = os.path.join(args.outdir, save_tag, run_name)
-    for name in (
-        os.listdir(out_dir_save_tag) if os.path.exists(out_dir_save_tag) else []
-    ):
-        if os.path.isdir(os.path.join(out_dir_save_tag, name)) and name.startswith("v"):
-            try:
-                ver_num = int(name.split("_")[0][1:])
-                if ver_num >= version:
-                    version = ver_num + 1
-            except ValueError:
-                pass
 
+    version = get_version_number(out_dir_save_tag)
     run_name = f"v{version}_{get_bigram(add_timestamp=True)}"
 
     run_dir = os.path.join(out_dir_save_tag, run_name)
