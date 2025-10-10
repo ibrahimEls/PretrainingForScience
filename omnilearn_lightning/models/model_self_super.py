@@ -7,7 +7,7 @@ from pytorch_optimizer import Lion
 
 from ..diffusion import get_logsnr_alpha_sigma, perturb
 from ..layers import DynamicTanh
-from ..modules import PET_body, PET_classifier, PET_generator
+from ..modules import PET_body, PET_classifier, PET_generator, PET_masked_predictor
 from ..utils import (
     CLIPLoss,
     get_param_groups,
@@ -19,6 +19,7 @@ class PET2(nn.Module):
         self,
         input_dim,
         hidden_size,
+        codebook_size,
         num_transformers=2,
         num_transformers_head=2,
         num_heads=4,
@@ -43,7 +44,12 @@ class PET2(nn.Module):
     ):
         super().__init__()
         self.mode = mode
-        if self.mode not in ["classifier", "generator", "pretrain"]:
+        if self.mode not in [
+            "classifier",
+            "generator",
+            "masked_predictor",
+            "pretrain",
+        ]:
             raise ValueError(f"Mode '{self.mode}' not supported.")
 
         self.body = PET_body(
@@ -102,6 +108,23 @@ class PET2(nn.Module):
                 num_add=self.num_add,
                 num_classes=num_classes,
             )
+
+        if self.mode == "masked_predictor" or self.mode == "pretrain":
+            self.masked_predictor = PET_masked_predictor(
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                # num_tokens=num_tokens,
+                # num_add=self.num_add,
+                # num_classes=num_classes,
+                codebook_size=codebook_size,
+            )
+
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -118,7 +141,8 @@ class PET2(nn.Module):
         return {"norm", "scale", "token"}
 
     def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, y_perturb, z_pred, v, x_body, z_body = (
+        y_pred, y_perturb, z_pred, v, x_body, z_body, masked_pred = (
+            None,
             None,
             None,
             None,
@@ -139,6 +163,17 @@ class PET2(nn.Module):
             if self.mode == "pretrain":
                 y_perturb = self.classifier(z_body)
 
+        if self.mode == "masked_predictor" or self.mode == "pretrain":
+            x_body, mask_body = self.body(
+                x,
+                cond,
+                pid,
+                add_info,
+                torch.zeros_like(time),
+                return_mask=True,
+            )
+            masked_pred = self.masked_predictor(x_body, mask=mask_body)
+
         return {
             "y_pred": y_pred,
             "y_perturb": y_perturb,
@@ -147,6 +182,7 @@ class PET2(nn.Module):
             "x_body": x_body,
             "z_body": z_body,
             "alpha": alpha**2,
+            "masked_pred": masked_pred,
         }
 
 
@@ -166,6 +202,7 @@ class PETLightning(LightningModule):
         num_tokens: int = 4,
         K: int = 15,
         radius: float = 0.4,
+        codebook_size: int = -1,
         # optimizer / scheduler
         lr: float = 5e-4,
         lr_factor: float = 10.0,
@@ -191,6 +228,7 @@ class PETLightning(LightningModule):
         self.model = PET2(
             input_dim=input_dim - 3,
             hidden_size=hidden_size,
+            codebook_size=codebook_size,
             num_transformers=num_transformers,
             num_heads=num_heads,
             attn_drop=attn_drop,
