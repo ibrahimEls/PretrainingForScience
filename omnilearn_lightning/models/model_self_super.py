@@ -175,6 +175,10 @@ class PET2(nn.Module):
             )
             masked_pred = self.masked_predictor(x_body, mask=mask_body)
 
+            # remove tokens and time from masked_pred
+            masked_pred = masked_pred[:, self.body.num_tokens + 1 :, :]
+            masked_mask = mask_body[:, self.body.num_tokens + 1 :]
+
         return {
             "y_pred": y_pred,
             "y_perturb": y_perturb,
@@ -184,7 +188,7 @@ class PET2(nn.Module):
             "z_body": z_body,
             "alpha": alpha**2,
             "masked_pred": masked_pred,
-            "mask_body": mask_body,
+            "masked_mask": masked_mask,
         }
 
 
@@ -348,10 +352,8 @@ class PETLightning(LightningModule):
         # masked prediction loss
         if outputs["masked_pred"] is not None and y_masked is not None:
             # remove tokens and time from masked_pred
-            masked_pred = outputs["masked_pred"][:, self.model.body.num_tokens + 1 :]
-            mask_for_targets = outputs["mask_body"][
-                :, self.model.body.num_tokens + 1 :, 0
-            ]
+            masked_pred = outputs["masked_pred"]
+            mask_for_targets = outputs["masked_mask"][:, :, 0]
             # set the targets to -1 where the mask is 0
             y_masked[mask_for_targets == 0] = -1
 
@@ -361,7 +363,7 @@ class PETLightning(LightningModule):
             )
             lmp = self.loss_masked(
                 masked_pred.reshape(B * T, C),
-                y_masked.view(B * T),
+                y_masked.reshape(B * T),
             )
             losses["loss_masked"] = lmp
             loss = loss + lmp
