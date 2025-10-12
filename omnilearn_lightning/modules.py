@@ -407,6 +407,7 @@ class PET_body(nn.Module):
         x = torch.cat([token, x], 1)
 
         # Create a new mask based on the updated point cloud with additional tokens
+        # Note: this means that we pad the time as well if it's 0 (padded)
         mask = x[:, :, 3:4] != 0
 
         attn_mask = mask.float() @ mask.float().transpose(-1, -2)

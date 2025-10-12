@@ -141,7 +141,8 @@ class PET2(nn.Module):
         return {"norm", "scale", "token"}
 
     def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, y_perturb, z_pred, v, x_body, z_body, masked_pred = (
+        y_pred, y_perturb, z_pred, v, x_body, z_body, masked_pred, mask_body = (
+            None,
             None,
             None,
             None,
@@ -183,6 +184,7 @@ class PET2(nn.Module):
             "z_body": z_body,
             "alpha": alpha**2,
             "masked_pred": masked_pred,
+            "mask_body": mask_body,
         }
 
 
@@ -190,6 +192,7 @@ class PETLightning(LightningModule):
     def __init__(
         self,
         # model
+        tokenizer_ckpt: str,
         input_dim: int = 4,
         num_classes: int = 2,
         hidden_size: int = 64,
@@ -202,7 +205,6 @@ class PETLightning(LightningModule):
         num_tokens: int = 4,
         K: int = 15,
         radius: float = 0.4,
-        codebook_size: int = -1,
         # optimizer / scheduler
         lr: float = 5e-4,
         lr_factor: float = 10.0,
@@ -224,11 +226,15 @@ class PETLightning(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
+        with open(tokenizer_ckpt, "rb") as f:
+            print(f"Loading tokenizer from {tokenizer_ckpt}")
+            self.tokenizer = torch.load(f, weights_only=False, map_location=self.device)
+
         # --- model ---
         self.model = PET2(
             input_dim=input_dim - 3,
             hidden_size=hidden_size,
-            codebook_size=codebook_size,
+            codebook_size=self.tokenizer.n_clusters,
             num_transformers=num_transformers,
             num_heads=num_heads,
             attn_drop=attn_drop,
@@ -248,6 +254,7 @@ class PETLightning(LightningModule):
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss(reduction="none")
         self.loss_gen = nn.L1Loss(reduction="none")
+        self.loss_masked = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.clip_loss = CLIPLoss()
 
         # --- flags & params ---
@@ -267,7 +274,7 @@ class PETLightning(LightningModule):
     def forward(self, x, y=None, **kwargs):
         return self.model(x, y, **kwargs)
 
-    def _compute_losses(self, outputs, y):
+    def _compute_losses(self, outputs, y, y_masked=None):
         """
         outputs is a dict with keys: y_pred, z_pred, v, y_perturb, alpha, x_body, z_body
         """
@@ -338,6 +345,27 @@ class PETLightning(LightningModule):
                 losses["loss_perturb"] = lp
                 loss = loss + lp
 
+        # masked prediction loss
+        if outputs["masked_pred"] is not None and y_masked is not None:
+            # remove tokens and time from masked_pred
+            masked_pred = outputs["masked_pred"][:, self.model.body.num_tokens + 1 :]
+            mask_for_targets = outputs["mask_body"][
+                :, self.model.body.num_tokens + 1 :, 0
+            ]
+            # set the targets to -1 where the mask is 0
+            y_masked[mask_for_targets == 0] = -1
+
+            B, T, C = masked_pred.shape
+            assert y_masked.shape == (B, T), (
+                f"y_masked.shape: {y_masked.shape}, masked_pred.shape {masked_pred.shape}"
+            )
+            lmp = self.loss_masked(
+                masked_pred.reshape(B * T, C),
+                y_masked.view(B * T),
+            )
+            losses["loss_masked"] = lmp
+            loss = loss + lmp
+
         # CLIP loss
         if self.use_clip and outputs.get("x_body") is not None:
             clip = self.clip_loss(
@@ -356,6 +384,14 @@ class PETLightning(LightningModule):
         X, y = batch["X"].float(), batch["y"]
         X, y = X.to(self.device), y.to(self.device)
 
+        # tokenize the input point clouds
+        # make sure tokenizer is on the same device as the model
+        if self.tokenizer.kmeans.centroids.device != X.device:
+            self.tokenizer.kmeans.centroids = self.tokenizer.kmeans.centroids.to(
+                X.device
+            )
+        y_masked = self.tokenizer.predict(X)
+
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
             for k in ("pid", "add_info")
@@ -366,14 +402,14 @@ class PETLightning(LightningModule):
         if stage == "train":
             with amp.autocast(enabled=self.use_amp, device_type="cuda"):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
+                losses = self._compute_losses(out, y, y_masked=y_masked)
         else:
             with (
                 torch.no_grad(),
                 amp.autocast(enabled=self.use_amp, device_type="cuda"),
             ):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
+                losses = self._compute_losses(out, y, y_masked=y_masked)
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
