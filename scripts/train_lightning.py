@@ -95,6 +95,7 @@ def main():
     )
 
     parser.add_argument("--pretraining_mode", type=str, default="super-gen")
+    parser.add_argument("--tokenizer_ckpt", type=str, default=None)
 
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
@@ -166,6 +167,9 @@ def main():
     elif args.pretraining_mode == "self-super":
         from omnilearn_lightning.models.model_self_super import PETLightning
 
+        if args.tokenizer_ckpt is None:
+            raise ValueError("tokenizer_ckpt must be provided for self-super mode")
+
         save_tag = "self-super" + save_tag
 
     elif args.pretraining_mode == "naive-self-super":
@@ -216,6 +220,7 @@ def main():
         use_pid=args.use_pid,
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
+        tokenizer_ckpt=args.tokenizer_ckpt,
     )
 
     if args.resume:
