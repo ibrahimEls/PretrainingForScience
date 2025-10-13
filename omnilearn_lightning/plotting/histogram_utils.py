@@ -2,10 +2,11 @@
 File taken from https://github.com/umami-hep/puma/blob/v0.4.8/puma/utils/histogram.py
 """
 
-import numpy as np
-from gabbro.utils.pylogger import get_pylogger
+import logging
 
-logger = get_pylogger(__name__)
+import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 def save_divide(

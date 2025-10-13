@@ -1,5 +1,6 @@
 """Plotting functions"""
 
+import logging
 from typing import Union
 
 import awkward as ak
@@ -8,16 +9,15 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import vector
-from gabbro.utils.arrays import combine_ak_arrays
-from gabbro.utils.pylogger import get_pylogger
 from matplotlib.lines import Line2D
 
 import omnilearn_lightning.plotting.utils as plot_utils
+from omnilearn_lightning.array_utils import combine_ak_arrays
 
 from .histogram_utils import hist_ratio, hist_w_unc
 
 vector.register_awkward()
-logger = get_pylogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def binclip(x, bins, dropinf=False):
