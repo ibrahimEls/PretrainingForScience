@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import matplotlib.pyplot as plt
 import torch
+import wandb
 from pytorch_lightning import Callback, LightningModule
 
 from omnilearn_lightning.array_utils import ak_subtract, np_to_ak
@@ -75,12 +76,33 @@ class MaskedPredictionCallback(Callback):
             names=batch_tokenized_ak.fields,
         )
 
+        # Helper to save and log figures
+        def save_and_log(fig, name):
+            filename = (
+                f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
+            )
+            fig.savefig(filename)
+            for logger in trainer.loggers:
+                if logger.__class__.__name__ == "WandbLogger":
+                    logger.experiment.log(
+                        {f"mpm_visualization_{name}": wandb.Image(filename)}
+                    )
+                else:
+                    print(
+                        f"Logger {logger.__class__.__name__} not supported for image logging."
+                    )
+
+        save_and_log(fig, "particle_distributions")
+
         # plot the resolution of tokenized vs predicted
         fig, axarr = plot_features(
             {
                 "Tokenized - Predicted": ak_subtract(batch_tokenized_ak, batch_pred_ak),
+                "Original - Predicted": ak_subtract(batch_ak, batch_pred_ak),
+                "Original - Tokenized": ak_subtract(batch_ak, batch_tokenized_ak),
             },
             names=batch_tokenized_ak.fields,
         )
+        save_and_log(fig, "residuals")
 
         plt.show()
