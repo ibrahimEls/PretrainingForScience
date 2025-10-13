@@ -5,6 +5,7 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
+from ..array_utils import replace_masked_positions, set_fraction_ones_to_zeros
 from ..diffusion import get_logsnr_alpha_sigma, perturb
 from ..layers import DynamicTanh
 from ..modules import PET_body, PET_classifier, PET_generator, PET_masked_predictor
@@ -124,6 +125,9 @@ class PET2(nn.Module):
                 # num_classes=num_classes,
                 codebook_size=codebook_size,
             )
+            # initialize trainable mask token embeddings
+            # those are used to fill in the masked positions
+            self.mask_embeddings = torch.nn.Parameter(torch.randn(1000, hidden_size))
 
         self.initialize_weights()
 
@@ -140,8 +144,21 @@ class PET2(nn.Module):
         # Specify parameters that should not be decayed
         return {"norm", "scale", "token"}
 
-    def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, y_perturb, z_pred, v, x_body, z_body, masked_pred, mask_body = (
+    def forward(self, x, y, cond=None, pid=None, add_info=None, masking_fraction=0.0):
+        (
+            y_pred,
+            y_perturb,
+            z_pred,
+            v,
+            x_body,
+            z_body,
+            masked_pred,
+            mask_body,
+            masked_mask,
+            mask_masked_positions,
+        ) = (
+            None,
+            None,
             None,
             None,
             None,
@@ -165,6 +182,22 @@ class PET2(nn.Module):
                 y_perturb = self.classifier(z_body)
 
         if self.mode == "masked_predictor" or self.mode == "pretrain":
+            # this is where the masking happens
+            # --> we set the specified fraction of ones in the mask to zeros
+            #     and use that to mask the input point cloud
+            mask_before_masking = (x[:, :, 0] != 0).int()
+            mask_after_masking = set_fraction_ones_to_zeros(
+                mask_before_masking,
+                fraction=masking_fraction,
+            )
+            # multiply x by mask_after_masking to zero out some points
+            # as the padding mask is calculated from zero points
+            x = x * mask_after_masking.unsqueeze(-1)
+
+            mask_masked_positions = (
+                (mask_before_masking - mask_after_masking).bool().unsqueeze(-1)
+            )
+
             x_body, mask_body = self.body(
                 x,
                 cond,
@@ -173,7 +206,29 @@ class PET2(nn.Module):
                 torch.zeros_like(time),
                 return_mask=True,
             )
-            masked_pred = self.masked_predictor(x_body, mask=mask_body)
+
+            x_body_masked = x_body.clone()
+            replace_masked_positions(
+                x_body_masked[:, self.body.num_tokens + 1 :],
+                mask_is_valid=mask_before_masking.int(),
+                mask_is_valid_corrupted=mask_after_masking.int(),
+                mask_is_valid_but_masked=mask_masked_positions[:, :, 0].int(),
+                pos_encoding_feature=x[:, :, 3],
+                pos_encoding_type="sort_descending_in_masked_subset",
+                vectors_to_insert=self.mask_embeddings,
+            )
+
+            mask_for_masked_pred_head = torch.cat(
+                [
+                    torch.ones((x.shape[0], self.body.num_tokens + 1), device=x.device),
+                    mask_before_masking,
+                ],
+                dim=1,
+            ).unsqueeze(-1)
+
+            masked_pred = self.masked_predictor(
+                x_body_masked, mask=mask_for_masked_pred_head
+            )
 
             # remove tokens and time from masked_pred
             masked_pred = masked_pred[:, self.body.num_tokens + 1 :, :]
@@ -189,6 +244,7 @@ class PET2(nn.Module):
             "alpha": alpha**2,
             "masked_pred": masked_pred,
             "masked_mask": masked_mask,
+            "masked_mask_positions": mask_masked_positions,
         }
 
 
@@ -197,6 +253,7 @@ class PETLightning(LightningModule):
         self,
         # model
         tokenizer_ckpt: str,
+        masking_fraction: float = 0.4,
         input_dim: int = 4,
         num_classes: int = 2,
         hidden_size: int = 64,
@@ -353,7 +410,7 @@ class PETLightning(LightningModule):
         if outputs["masked_pred"] is not None and y_masked is not None:
             # remove tokens and time from masked_pred
             masked_pred = outputs["masked_pred"]
-            mask_for_targets = outputs["masked_mask"][:, :, 0]
+            mask_for_targets = outputs["masked_mask_positions"][:, :, 0]
             # set the targets to -1 where the mask is 0
             y_masked[mask_for_targets == 0] = -1
 
@@ -381,6 +438,7 @@ class PETLightning(LightningModule):
         losses["loss"] = loss
         losses["masked_pred"] = masked_pred
         losses["masked_mask"] = mask_for_targets
+        losses["masked_mask_positions"] = outputs["masked_mask_positions"]
         losses["y_masked"] = y_masked
 
         return losses
@@ -403,6 +461,7 @@ class PETLightning(LightningModule):
             for k in ("pid", "add_info")
             if (k in batch)
         }
+        model_kwargs["masking_fraction"] = self.hparams.masking_fraction
 
         # Use torch.no_grad() for validation and test, allow gradients for training
         if stage == "train":
