@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import awkward as ak
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import wandb
 from pytorch_lightning import Callback, LightningModule
@@ -98,6 +99,12 @@ class MaskedPredictionCallback(Callback):
                 "Predicted": x_part_ak_pred,
             },
             names=feature_names,
+            bins_dict={
+                "eta": np.linspace(-1, 1, 50),
+                "phi": np.linspace(-1, 1, 50),
+                "log_pt": np.linspace(-3, 6.5, 50),
+                "log_E": np.linspace(-3, 6.5, 50),
+            },
             ratio=True,
         )
 
@@ -127,6 +134,12 @@ class MaskedPredictionCallback(Callback):
                 "Original - Tokenized": ak_subtract(
                     x_part_ak_original, x_part_ak_tokenized
                 ),
+            },
+            bins_dict={
+                "eta": np.linspace(-1, 1, 50),
+                "phi": np.linspace(-1, 1, 50),
+                "log_pt": np.linspace(-3, 3, 50),
+                "log_E": np.linspace(-3, 3, 50),
             },
             names=feature_names,
         )
