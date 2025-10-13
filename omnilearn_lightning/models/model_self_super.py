@@ -185,7 +185,7 @@ class PET2(nn.Module):
             # this is where the masking happens
             # --> we set the specified fraction of ones in the mask to zeros
             #     and use that to mask the input point cloud
-            mask_before_masking = (x[:, :, 0] != 0).int()
+            mask_before_masking = (x[:, :, 3] != 0).int()
             mask_after_masking = set_fraction_ones_to_zeros(
                 mask_before_masking,
                 fraction=masking_fraction,

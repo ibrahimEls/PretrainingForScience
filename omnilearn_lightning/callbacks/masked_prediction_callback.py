@@ -145,4 +145,108 @@ class MaskedPredictionCallback(Callback):
         )
         save_and_log(fig, "residuals")
 
+        # ------ scatter plots for a few example jets ------
+
+        batch_in = self.validation_batches[0]
+        batch_out = self.validation_outputs[0]
+        mask_survived = batch_out["mask_valid_particle"].bool() & (
+            ~batch_out["mask_valid_particle_but_masked"].bool()
+        )
+        mask_masked = batch_out["mask_valid_particle_but_masked"][:, :, 0].bool()
+
+        x_part_ak_original_survived = np_to_ak(
+            batch_in["X"].cpu().numpy(),
+            mask=mask_survived[:, :, 0].cpu().numpy(),
+            names=feature_names.keys(),
+        )
+        x_part_ak_original_masked = np_to_ak(
+            batch_in["X"].cpu().numpy(),
+            mask=mask_masked[:, :].cpu().numpy(),
+            names=feature_names.keys(),
+        )
+        max_logits_pred = torch.argmax(batch_out["masked_pred"], dim=-1)
+        print(f"max_logits_pred.shape: {max_logits_pred.shape}")
+        # convert to centroids
+        pred_centroids = pl_module.tokenizer.kmeans.centroids[max_logits_pred]
+        print(f"pred_centroids.shape: {pred_centroids.shape}")
+        x_part_ak_pred_masked = np_to_ak(
+            pred_centroids.detach().cpu().numpy(),
+            mask=mask_masked[:, :].cpu().numpy(),
+            names=feature_names.keys(),
+        )
+
+        fig, ax = plt.subplots(2, 5, figsize=(13, 5.5))
+        # ax = ax.flatten()
+        for i_jet in range(5):
+            ax_top = ax[0, i_jet]
+            ax_bottom = ax[1, i_jet]
+
+            ax_top.scatter(
+                x_part_ak_original_survived[i_jet].phi,
+                x_part_ak_original_survived[i_jet].eta,
+                s=np.exp(x_part_ak_original_survived[i_jet].log_pt) * 1,
+                c="C0",
+                alpha=0.5,
+                label="Survived",
+            )
+            ax_top.scatter(
+                x_part_ak_original_masked[i_jet].phi,
+                x_part_ak_original_masked[i_jet].eta,
+                s=np.exp(x_part_ak_original_masked[i_jet].log_pt) * 1,
+                c="C1",
+                alpha=0.5,
+                label="Masked",
+            )
+
+            ax_bottom.scatter(
+                x_part_ak_original_survived[i_jet].phi,
+                x_part_ak_original_survived[i_jet].eta,
+                s=np.exp(x_part_ak_original_survived[i_jet].log_pt) * 1,
+                c="C0",
+                alpha=0.5,
+                label="Survived",
+            )
+            ax_bottom.scatter(
+                x_part_ak_pred_masked[i_jet].phi,
+                x_part_ak_pred_masked[i_jet].eta,
+                s=np.exp(x_part_ak_pred_masked[i_jet].log_pt) * 1,
+                c="C2",
+                alpha=0.5,
+                label="Predicted",
+            )
+            ax_top.set_title(f"Jet {i_jet + 1}")
+            ax_bottom.set_title(f"Jet {i_jet + 1}")
+
+            for _ax in [ax_top, ax_bottom]:
+                _ax.set_xlim(-1, 1)
+                _ax.set_ylim(-1, 1.4)
+                _ax.set_xlabel(feature_names["phi"])
+                _ax.set_ylabel(feature_names["eta"])
+                _ax.legend(loc="upper left", fontsize=8)
+
+                # draw a circle to indicate the jet radius of 0.8
+                circle = plt.Circle(
+                    (0, 0),
+                    0.8,
+                    color="black",
+                    fill=False,
+                    linestyle="--",
+                    linewidth=1,
+                    alpha=0.5,
+                )
+                _ax.add_artist(circle)
+                # make legend
+                handles, labels = _ax.get_legend_handles_labels()
+                handles = [
+                    _ax.scatter(
+                        [], [], s=20, alpha=0.5, label=label, color=h.get_edgecolor()[0]
+                    )
+                    for h, label in zip(handles, labels)
+                ]
+                _ax.legend(handles, labels, loc="upper left", ncol=1, fontsize=8)
+
+        fig.tight_layout()
+
+        save_and_log(fig, "example_jets")
+
         plt.show()
