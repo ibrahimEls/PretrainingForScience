@@ -9,7 +9,7 @@ import torch
 import wandb
 from pytorch_lightning import Callback, LightningModule
 
-from omnilearn_lightning.array_utils import ak_subtract, np_to_ak
+from omnilearn_lightning.array_utils import np_to_ak
 from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
 
@@ -53,50 +53,79 @@ class MaskedPredictionCallback(Callback):
         }
 
         # Prepare awkward arrays for all batches
-        all_batch_ak = []
-        all_batch_tokenized_ak = []
-        all_batch_pred_ak = []
+        # all_batch_ak = []
+        # all_batch_tokenized_ak = []
+        batches_survived_ak = []
+        batches_masked_pred_ak = []
+        batches_masked_true_ak = []
 
         for batch, output in zip(self.validation_batches, self.validation_outputs):
             batch_tokenized = pl_module.tokenizer.transform(batch["X"])
-            mask = output["mask_valid_particle"][:, :, 0].bool()
-            batch_tokenized[~mask] = 0  # set invalid points to 0
+            mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
+            mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
+                :, :, 0
+            ].bool()
+            print(f"mask_valid_particle.shape: {mask_valid_particle.shape}")
+            print(
+                f"mask_valid_particle_but_masked.shape: {mask_valid_particle_but_masked.shape}"
+            )
+            batch_tokenized[~mask_valid_particle] = 0  # set invalid points to 0
 
             predicted_tokens = output["masked_pred"].argmax(dim=-1)
             reconstructed = pl_module.tokenizer.kmeans.centroids[predicted_tokens]
 
-            all_batch_tokenized_ak.append(
-                np_to_ak(
-                    batch_tokenized.cpu().numpy(),
-                    names=feature_names.keys(),
-                    mask=mask.cpu().numpy(),
-                )
-            )
-            all_batch_ak.append(
-                np_to_ak(
-                    batch["X"].cpu().numpy(),
-                    names=feature_names.keys(),
-                    mask=mask.cpu().numpy(),
-                )
-            )
-            all_batch_pred_ak.append(
+            # all_batch_tokenized_ak.append(
+            #     np_to_ak(
+            #         batch_tokenized.cpu().numpy(),
+            #         names=feature_names.keys(),
+            #         mask=mask_valid_particle.cpu().numpy(),
+            #     )
+            # )
+            # all_batch_ak.append(
+            #     np_to_ak(
+            #         batch["X"].cpu().numpy(),
+            #         names=feature_names.keys(),
+            #         mask=mask_valid_particle.cpu().numpy(),
+            #     )
+            # )
+            batches_masked_pred_ak.append(
                 np_to_ak(
                     reconstructed.cpu().numpy(),
                     names=feature_names.keys(),
-                    mask=mask.cpu().numpy(),
+                    mask=mask_valid_particle_but_masked.cpu().numpy(),
+                )
+            )
+            batches_masked_true_ak.append(
+                np_to_ak(
+                    batch["X"].cpu().numpy(),
+                    names=feature_names.keys(),
+                    mask=mask_valid_particle_but_masked.cpu().numpy(),
+                )
+            )
+            batches_survived_ak.append(
+                np_to_ak(
+                    batch["X"].cpu().numpy(),
+                    names=feature_names.keys(),
+                    mask=(mask_valid_particle & ~mask_valid_particle_but_masked)
+                    .cpu()
+                    .numpy(),
                 )
             )
 
         # Concatenate awkward arrays
-        x_part_ak_original = ak.concatenate(all_batch_ak)
-        x_part_ak_tokenized = ak.concatenate(all_batch_tokenized_ak)
-        x_part_ak_pred = ak.concatenate(all_batch_pred_ak)
+        # x_part_ak_original = ak.concatenate(all_batch_ak)
+        # x_part_ak_tokenized = ak.concatenate(all_batch_tokenized_ak)
+        x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
+        x_part_ak_true = ak.concatenate(batches_masked_true_ak)
+        x_part_ak_survived = ak.concatenate(batches_survived_ak)
 
         fig, axarr = plot_features(
             {
-                "Original": x_part_ak_original,
-                "Tokenized": x_part_ak_tokenized,
+                # "Original": x_part_ak_original,
+                # "Tokenized": x_part_ak_tokenized,
+                "Survived": x_part_ak_survived,
                 "Predicted": x_part_ak_pred,
+                "True Masked": x_part_ak_true,
             },
             names=feature_names,
             bins_dict={
@@ -125,25 +154,25 @@ class MaskedPredictionCallback(Callback):
 
         save_and_log(fig, "particle_distributions")
 
-        fig, axarr = plot_features(
-            {
-                "Tokenized - Predicted": ak_subtract(
-                    x_part_ak_tokenized, x_part_ak_pred
-                ),
-                "Original - Predicted": ak_subtract(x_part_ak_original, x_part_ak_pred),
-                "Original - Tokenized": ak_subtract(
-                    x_part_ak_original, x_part_ak_tokenized
-                ),
-            },
-            bins_dict={
-                "eta": np.linspace(-1, 1, 50),
-                "phi": np.linspace(-1, 1, 50),
-                "log_pt": np.linspace(-3, 3, 50),
-                "log_E": np.linspace(-3, 3, 50),
-            },
-            names=feature_names,
-        )
-        save_and_log(fig, "residuals")
+        # fig, axarr = plot_features(
+        #     {
+        #         "Tokenized - Predicted": ak_subtract(
+        #             x_part_ak_tokenized, x_part_ak_pred
+        #         ),
+        #         "Original - Predicted": ak_subtract(x_part_ak_original, x_part_ak_pred),
+        #         "Original - Tokenized": ak_subtract(
+        #             x_part_ak_original, x_part_ak_tokenized
+        #         ),
+        #     },
+        #     bins_dict={
+        #         "eta": np.linspace(-1, 1, 50),
+        #         "phi": np.linspace(-1, 1, 50),
+        #         "log_pt": np.linspace(-3, 3, 50),
+        #         "log_E": np.linspace(-3, 3, 50),
+        #     },
+        #     names=feature_names,
+        # )
+        # save_and_log(fig, "residuals")
 
         # ------ scatter plots for a few example jets ------
 
