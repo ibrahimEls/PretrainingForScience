@@ -2,6 +2,7 @@
 
 from typing import Any, Dict
 
+import awkward as ak
 import matplotlib.pyplot as plt
 import torch
 import wandb
@@ -9,6 +10,7 @@ from pytorch_lightning import Callback, LightningModule
 
 from omnilearn_lightning.array_utils import ak_subtract, np_to_ak
 from omnilearn_lightning.plotting.feature_plotting import plot_features
+from omnilearn_lightning.plotting.utils import set_mpl_style
 
 
 class MaskedPredictionCallback(Callback):
@@ -40,43 +42,65 @@ class MaskedPredictionCallback(Callback):
             )
 
     def on_validation_epoch_end(self, trainer, pl_module: LightningModule) -> None:
-        batch = self.validation_batches[0]
-        output = self.validation_outputs[0]
+        set_mpl_style()
 
-        batch_tokenized = pl_module.tokenizer.transform(batch["X"])
-        mask = output["masked_mask"]
-        batch_tokenized[~mask] = 0  # set invalid points to 0
-        print(f"batch_tokenized.shape: {batch_tokenized.shape}")
+        feature_names = {
+            "eta": "Particle $\\Delta\\eta$",
+            "phi": "Particle $\\Delta\\phi$",
+            "log_pt": "Particle $\\log(p_{T})$",
+            "log_E": "Particle $\\log(E)$",
+        }
 
-        predicted_tokens = output["masked_pred"].argmax(dim=-1)
-        print(f"predicted_tokens.shape: {predicted_tokens.shape}")
-        # reconstruct to original features
-        reconstructed = pl_module.tokenizer.kmeans.centroids[predicted_tokens]
-        print(f"reconstructed.shape: {reconstructed.shape}")
+        # Prepare awkward arrays for all batches
+        all_batch_ak = []
+        all_batch_tokenized_ak = []
+        all_batch_pred_ak = []
 
-        feature_names = ["eta", "phi", "log_pt", "log_E"]
+        for batch, output in zip(self.validation_batches, self.validation_outputs):
+            batch_tokenized = pl_module.tokenizer.transform(batch["X"])
+            mask = output["masked_mask"]
+            batch_tokenized[~mask] = 0  # set invalid points to 0
 
-        # convert to awkward array for evaluation and plotting
-        batch_tokenized_ak = np_to_ak(
-            batch_tokenized.cpu().numpy(), names=feature_names, mask=mask.cpu().numpy()
-        )
-        batch_ak = np_to_ak(
-            batch["X"].cpu().numpy(), names=feature_names, mask=mask.cpu().numpy()
-        )
-        batch_pred_ak = np_to_ak(
-            reconstructed.cpu().numpy(), names=feature_names, mask=mask.cpu().numpy()
-        )
+            predicted_tokens = output["masked_pred"].argmax(dim=-1)
+            reconstructed = pl_module.tokenizer.kmeans.centroids[predicted_tokens]
+
+            all_batch_tokenized_ak.append(
+                np_to_ak(
+                    batch_tokenized.cpu().numpy(),
+                    names=feature_names.keys(),
+                    mask=mask.cpu().numpy(),
+                )
+            )
+            all_batch_ak.append(
+                np_to_ak(
+                    batch["X"].cpu().numpy(),
+                    names=feature_names.keys(),
+                    mask=mask.cpu().numpy(),
+                )
+            )
+            all_batch_pred_ak.append(
+                np_to_ak(
+                    reconstructed.cpu().numpy(),
+                    names=feature_names.keys(),
+                    mask=mask.cpu().numpy(),
+                )
+            )
+
+        # Concatenate awkward arrays
+        x_part_ak_original = ak.concatenate(all_batch_ak)
+        x_part_ak_tokenized = ak.concatenate(all_batch_tokenized_ak)
+        x_part_ak_pred = ak.concatenate(all_batch_pred_ak)
 
         fig, axarr = plot_features(
             {
-                "Original": batch_ak,
-                "Tokenized": batch_tokenized_ak,
-                "Predicted": batch_pred_ak,
+                "Original": x_part_ak_original,
+                "Tokenized": x_part_ak_tokenized,
+                "Predicted": x_part_ak_pred,
             },
-            names=batch_tokenized_ak.fields,
+            names=feature_names,
+            ratio=True,
         )
 
-        # Helper to save and log figures
         def save_and_log(fig, name):
             filename = (
                 f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
@@ -94,14 +118,17 @@ class MaskedPredictionCallback(Callback):
 
         save_and_log(fig, "particle_distributions")
 
-        # plot the resolution of tokenized vs predicted
         fig, axarr = plot_features(
             {
-                "Tokenized - Predicted": ak_subtract(batch_tokenized_ak, batch_pred_ak),
-                "Original - Predicted": ak_subtract(batch_ak, batch_pred_ak),
-                "Original - Tokenized": ak_subtract(batch_ak, batch_tokenized_ak),
+                "Tokenized - Predicted": ak_subtract(
+                    x_part_ak_tokenized, x_part_ak_pred
+                ),
+                "Original - Predicted": ak_subtract(x_part_ak_original, x_part_ak_pred),
+                "Original - Tokenized": ak_subtract(
+                    x_part_ak_original, x_part_ak_tokenized
+                ),
             },
-            names=batch_tokenized_ak.fields,
+            names=feature_names,
         )
         save_and_log(fig, "residuals")
 
