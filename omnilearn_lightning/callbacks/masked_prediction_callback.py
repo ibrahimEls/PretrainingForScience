@@ -59,7 +59,7 @@ class MaskedPredictionCallback(Callback):
 
         for batch, output in zip(self.validation_batches, self.validation_outputs):
             batch_tokenized = pl_module.tokenizer.transform(batch["X"])
-            mask = output["masked_mask"]
+            mask = output["mask_valid_particle"][:, :, 0].bool()
             batch_tokenized[~mask] = 0  # set invalid points to 0
 
             predicted_tokens = output["masked_pred"].argmax(dim=-1)

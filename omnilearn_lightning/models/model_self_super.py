@@ -154,8 +154,8 @@ class PET2(nn.Module):
             z_body,
             masked_pred,
             mask_body,
-            masked_mask,
-            mask_masked_positions,
+            mask_valid_particle,
+            mask_valid_particle_but_masked,
         ) = (
             None,
             None,
@@ -194,7 +194,7 @@ class PET2(nn.Module):
             # as the padding mask is calculated from zero points
             x = x * mask_after_masking.unsqueeze(-1)
 
-            mask_masked_positions = (
+            mask_valid_particle_but_masked = (
                 (mask_before_masking - mask_after_masking).bool().unsqueeze(-1)
             )
 
@@ -212,7 +212,7 @@ class PET2(nn.Module):
                 x_body_masked[:, self.body.num_tokens + 1 :],
                 mask_is_valid=mask_before_masking.int(),
                 mask_is_valid_corrupted=mask_after_masking.int(),
-                mask_is_valid_but_masked=mask_masked_positions[:, :, 0].int(),
+                mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
                 pos_encoding_feature=x[:, :, 3],
                 pos_encoding_type="sort_descending_in_masked_subset",
                 vectors_to_insert=self.mask_embeddings,
@@ -232,7 +232,9 @@ class PET2(nn.Module):
 
             # remove tokens and time from masked_pred
             masked_pred = masked_pred[:, self.body.num_tokens + 1 :, :]
-            masked_mask = mask_body[:, self.body.num_tokens + 1 :]
+            mask_valid_particle = mask_for_masked_pred_head[
+                :, self.body.num_tokens + 1 :
+            ]
 
         return {
             "y_pred": y_pred,
@@ -243,8 +245,8 @@ class PET2(nn.Module):
             "z_body": z_body,
             "alpha": alpha**2,
             "masked_pred": masked_pred,
-            "masked_mask": masked_mask,
-            "masked_mask_positions": mask_masked_positions,
+            "mask_valid_particle": mask_valid_particle,
+            "mask_valid_particle_but_masked": mask_valid_particle_but_masked,
         }
 
 
@@ -410,7 +412,7 @@ class PETLightning(LightningModule):
         if outputs["masked_pred"] is not None and y_masked is not None:
             # remove tokens and time from masked_pred
             masked_pred = outputs["masked_pred"]
-            mask_for_targets = outputs["masked_mask_positions"][:, :, 0]
+            mask_for_targets = outputs["mask_valid_particle_but_masked"][:, :, 0]
             # set the targets to -1 where the mask is 0
             y_masked[mask_for_targets == 0] = -1
 
@@ -437,8 +439,10 @@ class PETLightning(LightningModule):
 
         losses["loss"] = loss
         losses["masked_pred"] = masked_pred
-        losses["masked_mask"] = mask_for_targets
-        losses["masked_mask_positions"] = outputs["masked_mask_positions"]
+        losses["mask_valid_particle"] = outputs["mask_valid_particle"]
+        losses["mask_valid_particle_but_masked"] = outputs[
+            "mask_valid_particle_but_masked"
+        ]
         losses["y_masked"] = y_masked
 
         return losses
