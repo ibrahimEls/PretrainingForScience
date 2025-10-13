@@ -379,6 +379,10 @@ class PETLightning(LightningModule):
             loss = loss + clip
 
         losses["loss"] = loss
+        losses["masked_pred"] = masked_pred
+        losses["masked_mask"] = mask_for_targets
+        losses["y_masked"] = y_masked
+
         return losses
 
     def _shared_step(self, batch, batch_idx, stage):
@@ -416,6 +420,8 @@ class PETLightning(LightningModule):
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
         for k, v in losses.items():
+            if "loss" not in k:
+                continue
             self.log(
                 f"{stage}_{k}",
                 v,
@@ -425,7 +431,7 @@ class PETLightning(LightningModule):
                 sync_dist=True,
             )
 
-        return losses["loss"]
+        return losses
 
     def training_step(self, batch, batch_idx):
         return self._shared_step(batch, batch_idx, "train")
