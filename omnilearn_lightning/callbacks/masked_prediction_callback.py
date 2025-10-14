@@ -58,6 +58,7 @@ class MaskedPredictionCallback(Callback):
         batches_survived_ak = []
         batches_masked_pred_ak = []
         batches_masked_true_ak = []
+        batches_jet_labels = []
 
         for batch, output in zip(self.validation_batches, self.validation_outputs):
             batch_tokenized = pl_module.tokenizer.transform(batch["X"])
@@ -65,29 +66,17 @@ class MaskedPredictionCallback(Callback):
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
                 :, :, 0
             ].bool()
-            print(f"mask_valid_particle.shape: {mask_valid_particle.shape}")
-            print(
-                f"mask_valid_particle_but_masked.shape: {mask_valid_particle_but_masked.shape}"
-            )
             batch_tokenized[~mask_valid_particle] = 0  # set invalid points to 0
 
-            predicted_tokens = output["masked_pred"].argmax(dim=-1)
+            # predicted_tokens = output["masked_pred"].argmax(dim=-1)
+            probs = torch.nn.functional.softmax(output["masked_pred"], dim=-1)
+            # reshape to (batch_size * num_points, num_tokens)
+            probs = probs.view(-1, probs.shape[-1])
+            # sample once from the categorical distribution
+            predicted_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
+            predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
             reconstructed = pl_module.tokenizer.kmeans.centroids[predicted_tokens]
 
-            # all_batch_tokenized_ak.append(
-            #     np_to_ak(
-            #         batch_tokenized.cpu().numpy(),
-            #         names=feature_names.keys(),
-            #         mask=mask_valid_particle.cpu().numpy(),
-            #     )
-            # )
-            # all_batch_ak.append(
-            #     np_to_ak(
-            #         batch["X"].cpu().numpy(),
-            #         names=feature_names.keys(),
-            #         mask=mask_valid_particle.cpu().numpy(),
-            #     )
-            # )
             batches_masked_pred_ak.append(
                 np_to_ak(
                     reconstructed.cpu().numpy(),
@@ -111,18 +100,23 @@ class MaskedPredictionCallback(Callback):
                     .numpy(),
                 )
             )
+            batches_jet_labels.append(batch["y"].cpu().numpy())
 
         # Concatenate awkward arrays
-        # x_part_ak_original = ak.concatenate(all_batch_ak)
-        # x_part_ak_tokenized = ak.concatenate(all_batch_tokenized_ak)
         x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
         x_part_ak_true = ak.concatenate(batches_masked_true_ak)
         x_part_ak_survived = ak.concatenate(batches_survived_ak)
+        jet_labels = np.concatenate(batches_jet_labels)
+
+        # shuffle the jets
+        shuffle_idx = np.random.permutation(len(x_part_ak_pred))
+        x_part_ak_pred = x_part_ak_pred[shuffle_idx]
+        x_part_ak_true = x_part_ak_true[shuffle_idx]
+        x_part_ak_survived = x_part_ak_survived[shuffle_idx]
+        jet_labels = jet_labels[shuffle_idx]
 
         fig, axarr = plot_features(
             {
-                # "Original": x_part_ak_original,
-                # "Tokenized": x_part_ak_tokenized,
                 "Survived": x_part_ak_survived,
                 "Predicted": x_part_ak_pred,
                 "True Masked": x_part_ak_true,
@@ -141,7 +135,7 @@ class MaskedPredictionCallback(Callback):
             filename = (
                 f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
             )
-            fig.savefig(filename)
+            fig.savefig(filename, dpi=400)
             for logger in trainer.loggers:
                 if logger.__class__.__name__ == "WandbLogger":
                     logger.experiment.log(
@@ -154,104 +148,54 @@ class MaskedPredictionCallback(Callback):
 
         save_and_log(fig, "particle_distributions")
 
-        # fig, axarr = plot_features(
-        #     {
-        #         "Tokenized - Predicted": ak_subtract(
-        #             x_part_ak_tokenized, x_part_ak_pred
-        #         ),
-        #         "Original - Predicted": ak_subtract(x_part_ak_original, x_part_ak_pred),
-        #         "Original - Tokenized": ak_subtract(
-        #             x_part_ak_original, x_part_ak_tokenized
-        #         ),
-        #     },
-        #     bins_dict={
-        #         "eta": np.linspace(-1, 1, 50),
-        #         "phi": np.linspace(-1, 1, 50),
-        #         "log_pt": np.linspace(-3, 3, 50),
-        #         "log_E": np.linspace(-3, 3, 50),
-        #     },
-        #     names=feature_names,
-        # )
-        # save_and_log(fig, "residuals")
-
         # ------ scatter plots for a few example jets ------
 
-        batch_in = self.validation_batches[0]
-        batch_out = self.validation_outputs[0]
-        mask_survived = batch_out["mask_valid_particle"].bool() & (
-            ~batch_out["mask_valid_particle_but_masked"].bool()
-        )
-        mask_masked = batch_out["mask_valid_particle_but_masked"][:, :, 0].bool()
+        fig, ax = plt.subplots(2, 8, figsize=(20, 5.5))
 
-        x_part_ak_original_survived = np_to_ak(
-            batch_in["X"].cpu().numpy(),
-            mask=mask_survived[:, :, 0].cpu().numpy(),
-            names=feature_names.keys(),
-        )
-        x_part_ak_original_masked = np_to_ak(
-            batch_in["X"].cpu().numpy(),
-            mask=mask_masked[:, :].cpu().numpy(),
-            names=feature_names.keys(),
-        )
-        # max_logits_pred = torch.argmax(batch_out["masked_pred"], dim=-1)
-        # sample from the logits
-        probs = torch.nn.functional.softmax(batch_out["masked_pred"], dim=-1)
-        # reshape to (batch_size * num_points, num_tokens)
-        probs = probs.view(-1, probs.shape[-1])
-        # sample once from the categorical distribution
-        max_logits_pred = torch.multinomial(probs, num_samples=1).squeeze(-1)
-        max_logits_pred = max_logits_pred.view(batch_out["masked_pred"].shape[0], -1)
-        print(f"max_logits_pred.shape: {max_logits_pred.shape}")
-        # convert to centroids
-        pred_centroids = pl_module.tokenizer.kmeans.centroids[max_logits_pred]
-        print(f"pred_centroids.shape: {pred_centroids.shape}")
-        x_part_ak_pred_masked = np_to_ak(
-            pred_centroids.detach().cpu().numpy(),
-            mask=mask_masked[:, :].cpu().numpy(),
-            names=feature_names.keys(),
-        )
-
-        fig, ax = plt.subplots(2, 5, figsize=(13, 5.5))
         # ax = ax.flatten()
-        for i_jet in range(5):
+        for i_jet in range(8):
             ax_top = ax[0, i_jet]
             ax_bottom = ax[1, i_jet]
 
             ax_top.scatter(
-                x_part_ak_original_survived[i_jet].phi,
-                x_part_ak_original_survived[i_jet].eta,
-                s=np.exp(x_part_ak_original_survived[i_jet].log_pt) * 1,
+                x_part_ak_survived[i_jet].phi,
+                x_part_ak_survived[i_jet].eta,
+                s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
                 c="C0",
                 alpha=0.5,
                 label="Survived",
             )
             ax_top.scatter(
-                x_part_ak_original_masked[i_jet].phi,
-                x_part_ak_original_masked[i_jet].eta,
-                s=np.exp(x_part_ak_original_masked[i_jet].log_pt) * 1,
+                x_part_ak_true[i_jet].phi,
+                x_part_ak_true[i_jet].eta,
+                s=np.exp(x_part_ak_true[i_jet].log_pt) * 1,
                 c="C1",
                 alpha=0.5,
                 label="Masked",
             )
 
             ax_bottom.scatter(
-                x_part_ak_original_survived[i_jet].phi,
-                x_part_ak_original_survived[i_jet].eta,
-                s=np.exp(x_part_ak_original_survived[i_jet].log_pt) * 1,
+                x_part_ak_survived[i_jet].phi,
+                x_part_ak_survived[i_jet].eta,
+                s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
                 c="C0",
                 alpha=0.5,
                 label="Survived",
             )
             ax_bottom.scatter(
-                x_part_ak_pred_masked[i_jet].phi,
-                x_part_ak_pred_masked[i_jet].eta,
-                s=np.exp(x_part_ak_pred_masked[i_jet].log_pt) * 1,
+                x_part_ak_pred[i_jet].phi,
+                x_part_ak_pred[i_jet].eta,
+                s=np.exp(x_part_ak_pred[i_jet].log_pt) * 1,
                 c="C2",
                 alpha=0.5,
                 label="Predicted",
             )
-            ax_top.set_title(f"Jet {i_jet + 1}")
-            ax_bottom.set_title(f"Jet {i_jet + 1}")
+
+            # label
+            jet_label = jet_labels[i_jet]
+
+            ax_top.set_title(f"Jet {i_jet + 1}, $label={jet_label}$", fontsize=10)
+            ax_bottom.set_title(f"Jet {i_jet + 1}, $label={jet_label}$", fontsize=10)
 
             for _ax in [ax_top, ax_bottom]:
                 _ax.set_xlim(-1, 1)
