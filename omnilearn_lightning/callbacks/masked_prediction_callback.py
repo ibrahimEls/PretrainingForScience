@@ -193,7 +193,14 @@ class MaskedPredictionCallback(Callback):
             mask=mask_masked[:, :].cpu().numpy(),
             names=feature_names.keys(),
         )
-        max_logits_pred = torch.argmax(batch_out["masked_pred"], dim=-1)
+        # max_logits_pred = torch.argmax(batch_out["masked_pred"], dim=-1)
+        # sample from the logits
+        probs = torch.nn.functional.softmax(batch_out["masked_pred"], dim=-1)
+        # reshape to (batch_size * num_points, num_tokens)
+        probs = probs.view(-1, probs.shape[-1])
+        # sample once from the categorical distribution
+        max_logits_pred = torch.multinomial(probs, num_samples=1).squeeze(-1)
+        max_logits_pred = max_logits_pred.view(batch_out["masked_pred"].shape[0], -1)
         print(f"max_logits_pred.shape: {max_logits_pred.shape}")
         # convert to centroids
         pred_centroids = pl_module.tokenizer.kmeans.centroids[max_logits_pred]
