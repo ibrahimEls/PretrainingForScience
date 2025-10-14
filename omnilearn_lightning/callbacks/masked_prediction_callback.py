@@ -33,6 +33,8 @@ class MaskedPredictionCallback(Callback):
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
+        if trainer.global_rank != 0:
+            return  # only save from rank 0 to avoid duplication
         if len(self.validation_batches) < 10:
             # add batch to list
             self.validation_batches.append(
@@ -43,6 +45,8 @@ class MaskedPredictionCallback(Callback):
             )
 
     def on_validation_epoch_end(self, trainer, pl_module: LightningModule) -> None:
+        if trainer.global_rank != 0:
+            return  # only save from rank 0 to avoid duplication
         set_mpl_style()
 
         feature_names = {
@@ -58,14 +62,15 @@ class MaskedPredictionCallback(Callback):
         batches_masked_true_tokenized_ak = []
         batches_masked_true_ak = []
         batches_jet_labels = []
+        batches_pred_token_ids = []
 
         for batch, output in zip(self.validation_batches, self.validation_outputs):
-            batch_tokenized = pl_module.tokenizer.transform(batch["X"])
+            targets_transformed = pl_module.tokenizer.transform(batch["X"])
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
                 :, :, 0
             ].bool()
-            batch_tokenized[~mask_valid_particle] = 0  # set invalid points to 0
+            targets_transformed[~mask_valid_particle] = 0  # set invalid points to 0
 
             predicted_tokens = output["masked_pred"].argmax(dim=-1)
             # probs = torch.nn.functional.softmax(output["masked_pred"], dim=-1)
@@ -77,8 +82,14 @@ class MaskedPredictionCallback(Callback):
             predictions_reconstructed = pl_module.tokenizer.kmeans.centroids[
                 predicted_tokens
             ]
-            targets_reconstructed = pl_module.tokenizer.transform(batch["X"])
 
+            batches_pred_token_ids.append(
+                np_to_ak(
+                    predicted_tokens.unsqueeze(-1).cpu().numpy(),
+                    names=["token_id"],
+                    mask=mask_valid_particle_but_masked.cpu().numpy(),
+                )
+            )
             batches_masked_pred_ak.append(
                 np_to_ak(
                     predictions_reconstructed.cpu().numpy(),
@@ -104,7 +115,7 @@ class MaskedPredictionCallback(Callback):
             )
             batches_masked_true_tokenized_ak.append(
                 np_to_ak(
-                    batch_tokenized.cpu().numpy(),
+                    targets_transformed.cpu().numpy(),
                     names=feature_names.keys(),
                     mask=mask_valid_particle_but_masked.cpu().numpy(),
                 )
@@ -117,6 +128,7 @@ class MaskedPredictionCallback(Callback):
         x_part_ak_true = ak.concatenate(batches_masked_true_ak)
         x_part_ak_survived = ak.concatenate(batches_survived_ak)
         x_part_ak_true_tokenized = ak.concatenate(batches_masked_true_tokenized_ak)
+        x_part_ak_pred_token_ids = ak.concatenate(batches_pred_token_ids)
         jet_labels = np.concatenate(batches_jet_labels)
 
         # shuffle the jets
@@ -125,19 +137,26 @@ class MaskedPredictionCallback(Callback):
         x_part_ak_true = x_part_ak_true[shuffle_idx]
         x_part_ak_survived = x_part_ak_survived[shuffle_idx]
         x_part_ak_true_tokenized = x_part_ak_true_tokenized[shuffle_idx]
+        x_part_ak_pred_token_ids = x_part_ak_pred_token_ids[shuffle_idx]
         jet_labels = jet_labels[shuffle_idx]
 
         def save_and_log(fig, name):
             filename = (
                 f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
             )
-            fig.savefig(filename, dpi=300)
+            fig.savefig(filename, dpi=150)
             for logger in trainer.loggers:
                 if logger.__class__.__name__ == "WandbLogger":
                     print(f"Logging image {filename} to wandb")
                     logger.experiment.log(
                         {f"mpm_visualization_{name}": wandb.Image(filename)}
                     )
+
+        # calculate number of particles and number of unique selected token-IDs
+        num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
+        num_unique_tokens = len(
+            np.unique(ak.flatten(x_part_ak_pred_token_ids.token_id))
+        )
 
         # compare distributions of predicted vs true masked vs survived particles
         fig, axarr = plot_features(
@@ -154,6 +173,11 @@ class MaskedPredictionCallback(Callback):
                 "log_E": np.linspace(-3, 6.5, 50),
             },
             ratio=True,
+        )
+        fig.suptitle(
+            f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
+            fontsize=10,
+            y=1.04,
         )
         save_and_log(fig, "particle_distributions")
 
@@ -173,11 +197,16 @@ class MaskedPredictionCallback(Callback):
                 "log_E": np.linspace(-3, 3, 50),
             },
         )
+        fig.suptitle(
+            f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
+            fontsize=10,
+            y=1.08,
+        )
         save_and_log(fig, "particle_residuals")
 
         # ------ scatter plots for a few example jets ------
 
-        fig, ax = plt.subplots(3, 8, figsize=(20, 7.5))
+        fig, ax = plt.subplots(3, 8, figsize=(20, 7.8))
 
         # ax = ax.flatten()
         for i_jet in range(8):
