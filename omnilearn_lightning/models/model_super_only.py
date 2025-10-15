@@ -2,14 +2,116 @@ import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
-from network import PET2
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
+from torch.optim.lr_scheduler import OneCycleLR
 
-from utils import (
-    CLIPLoss,
-    get_param_groups,
-)
+from ..layers import DynamicTanh
+from ..modules import PET_body, PET_classifier
+from ..utils import get_param_groups
+
+
+class PET2(nn.Module):
+    def __init__(
+        self,
+        input_dim,
+        hidden_size,
+        num_transformers=2,
+        num_transformers_head=2,
+        num_heads=4,
+        mlp_ratio=2,
+        norm_layer=DynamicTanh,
+        act_layer=nn.GELU,
+        mlp_drop=0.1,
+        attn_drop=0.1,
+        feature_drop=0.0,
+        num_tokens=4,
+        K=15,
+        use_int=True,
+        conditional=False,
+        cond_dim=3,
+        pid=False,
+        pid_dim=9,
+        add_info=False,
+        add_dim=4,
+        use_time=False,
+        mode="classifier",
+        num_classes=2,
+    ):
+        super().__init__()
+        self.mode = mode
+        if self.mode not in ["classifier", "generator", "pretrain"]:
+            raise ValueError(f"Mode '{self.mode}' not supported.")
+
+        self.body = PET_body(
+            input_dim,
+            hidden_size,
+            num_transformers=num_transformers,
+            num_transf_local=num_transformers_head,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio,
+            norm_layer=norm_layer,
+            act_layer=act_layer,
+            mlp_drop=mlp_drop,
+            attn_drop=attn_drop,
+            feature_drop=feature_drop,
+            num_tokens=num_tokens,
+            K=K,
+            use_int=use_int,
+            conditional=conditional,
+            cond_dim=cond_dim,
+            pid=pid,
+            pid_dim=pid_dim,
+            add_info=add_info,
+            add_dim=add_dim,
+            use_time=use_time,
+        )
+
+        self.num_add = self.body.num_add
+        self.classifier = None
+        self.generator = None
+        if self.mode == "classifier" or self.mode == "pretrain":
+            self.classifier = PET_classifier(
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                num_tokens=num_tokens,
+                num_classes=num_classes,
+            )
+
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+        self.apply(_init_weights)
+
+    def no_weight_decay(self):
+        # Specify parameters that should not be decayed
+        return {"norm", "scale", "token"}
+
+    def forward(self, x, y, cond=None, pid=None, add_info=None):
+        y_pred, x_body = (
+            None,
+            None,
+        )
+        time = torch.rand(size=(x.shape[0],)).to(x.device)
+
+        if self.mode == "classifier" or self.mode == "pretrain":
+            x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
+            y_pred = self.classifier(x_body)
+        return {
+            "y_pred": y_pred,
+        }
 
 
 class PETLightning(LightningModule):
@@ -72,7 +174,6 @@ class PETLightning(LightningModule):
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss(reduction="none")
         self.loss_gen = nn.L1Loss(reduction="none")
-        self.clip_loss = CLIPLoss()
 
         # --- flags & params ---
         self.use_clip = use_clip
@@ -169,28 +270,58 @@ class PETLightning(LightningModule):
         return self.validation_step(batch, batch_idx)
 
     def configure_optimizers(self):
-        # param groups
-        pg = get_param_groups(
-            self.model,
-            wd=self.weight_decay,
-            lr=self.lr,
-            lr_factor=self.lr_factor,
-            fine_tune=self.fine_tune,
-        )
-        optimizer = Lion(pg, betas=self.betas)
+        if self.fine_tune:
+            pg = get_param_groups(
+                self.model,
+                wd=self.weight_decay,
+                lr=self.lr,
+                lr_factor=self.lr_factor,
+                fine_tune=self.fine_tune,
+            )
 
-        scheduler = get_cosine_schedule_with_warmup(
-            optimizer,
-            num_warmup_steps=self.hparams.warmup_steps,
-            num_training_steps=self.hparams.total_steps,
-        )
-        return {
-            "optimizer": optimizer,
-            "lr_scheduler": {
-                "scheduler": scheduler,
-                "interval": "step",
-            },
-        }
+            optimizer = torch.optim.AdamW(pg, betas=self.betas)
+
+            total = self.trainer.estimated_stepping_batches
+            scheduler = OneCycleLR(
+                optimizer,
+                max_lr=self.lr,
+                total_steps=total,
+                pct_start=0.1,
+                anneal_strategy="cos",
+            )
+
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "interval": "step",
+                    "frequency": 1,
+                    "name": "one_cycle",
+                },
+            }
+        else:
+            # param groups
+            pg = get_param_groups(
+                self.model,
+                wd=self.weight_decay,
+                lr=self.lr,
+                lr_factor=self.lr_factor,
+                fine_tune=self.fine_tune,
+            )
+            optimizer = Lion(pg, betas=self.betas)
+
+            scheduler = get_cosine_schedule_with_warmup(
+                optimizer,
+                num_warmup_steps=self.hparams.warmup_steps,
+                num_training_steps=self.hparams.total_steps,
+            )
+            return {
+                "optimizer": optimizer,
+                "lr_scheduler": {
+                    "scheduler": scheduler,
+                    "interval": "step",
+                },
+            }
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         # if fine_tuning a pretrained body, filter shapes

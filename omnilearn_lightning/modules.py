@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from diffusion import MPFourier
-from layers import (
+
+from .diffusion import MPFourier
+from .layers import (
     MLP,
     AttBlock,
     DynamicTanh,
@@ -11,109 +12,6 @@ from layers import (
     NoScaleDropout,
     TokenAttBlock,
 )
-
-
-class PET2(nn.Module):
-    def __init__(
-        self,
-        input_dim,
-        hidden_size,
-        num_transformers=2,
-        num_transformers_head=2,
-        num_heads=4,
-        mlp_ratio=2,
-        norm_layer=DynamicTanh,
-        act_layer=nn.GELU,
-        mlp_drop=0.1,
-        attn_drop=0.1,
-        feature_drop=0.0,
-        num_tokens=4,
-        K=15,
-        use_int=True,
-        conditional=False,
-        cond_dim=3,
-        pid=False,
-        pid_dim=9,
-        add_info=False,
-        add_dim=4,
-        use_time=False,
-        mode="classifier",
-        num_classes=2,
-    ):
-        super().__init__()
-        self.mode = mode
-        if self.mode not in ["classifier", "generator", "pretrain"]:
-            raise ValueError(f"Mode '{self.mode}' not supported.")
-
-        self.body = PET_body(
-            input_dim,
-            hidden_size,
-            num_transformers=num_transformers,
-            num_transf_local=num_transformers_head,
-            num_heads=num_heads,
-            mlp_ratio=mlp_ratio,
-            norm_layer=norm_layer,
-            act_layer=act_layer,
-            mlp_drop=mlp_drop,
-            attn_drop=attn_drop,
-            feature_drop=feature_drop,
-            num_tokens=num_tokens,
-            K=K,
-            use_int=use_int,
-            conditional=conditional,
-            cond_dim=cond_dim,
-            pid=pid,
-            pid_dim=pid_dim,
-            add_info=add_info,
-            add_dim=add_dim,
-            use_time=use_time,
-        )
-
-        self.num_add = self.body.num_add
-        self.classifier = None
-        self.generator = None
-        if self.mode == "classifier" or self.mode == "pretrain":
-            self.classifier = PET_classifier(
-                hidden_size,
-                num_transformers=num_transformers_head,
-                num_heads=num_heads,
-                mlp_ratio=mlp_ratio,
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-                mlp_drop=mlp_drop,
-                attn_drop=attn_drop,
-                num_tokens=num_tokens,
-                num_classes=num_classes,
-            )
-
-        self.initialize_weights()
-
-    def initialize_weights(self):
-        def _init_weights(m):
-            if isinstance(m, nn.Linear):
-                torch.nn.init.xavier_uniform_(m.weight)
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
-
-        self.apply(_init_weights)
-
-    def no_weight_decay(self):
-        # Specify parameters that should not be decayed
-        return {"norm", "scale", "token"}
-
-    def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, x_body = (
-            None,
-            None,
-        )
-        time = torch.rand(size=(x.shape[0],)).to(x.device)
-
-        if self.mode == "classifier" or self.mode == "pretrain":
-            x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
-            y_pred = self.classifier(x_body)
-        return {
-            "y_pred": y_pred,
-        }
 
 
 class PET_classifier(nn.Module):
@@ -178,6 +76,95 @@ class PET_classifier(nn.Module):
 
         x = self.fc(x[:, : self.num_tokens].reshape(B, -1))
         return self.out(x)
+
+
+class PET_generator(nn.Module):
+    def __init__(
+        self,
+        output_size,
+        hidden_size,
+        num_transformers=2,
+        num_heads=4,
+        mlp_ratio=2,
+        norm_layer=DynamicTanh,
+        act_layer=nn.LeakyReLU,
+        mlp_drop=0.1,
+        attn_drop=0.1,
+        num_tokens=4,
+        num_add=1,
+        num_classes=2,
+    ):
+        super().__init__()
+        self.num_tokens = num_tokens
+        self.num_add = num_add
+        self.num_classes = num_classes
+
+        self.pid_embed = nn.Sequential(
+            nn.Embedding(num_classes + 1, hidden_size),
+            MLP(
+                hidden_size,
+                int(mlp_ratio * hidden_size),
+                act_layer=act_layer,
+                drop=mlp_drop,
+            ),
+        )
+
+        self.in_blocks = nn.ModuleList(
+            [
+                AttBlock(
+                    dim=hidden_size,
+                    num_heads=num_heads,
+                    mlp_ratio=mlp_ratio,
+                    attn_drop=attn_drop,
+                    mlp_drop=mlp_drop,
+                    act_layer=act_layer,
+                    norm_layer=norm_layer,
+                    num_tokens=num_tokens,
+                    skip=False,
+                    use_int=False,
+                )
+                for _ in range(num_transformers)
+            ]
+        )
+
+        self.fc = nn.Sequential(
+            MLP(
+                hidden_size,
+                int(mlp_ratio * hidden_size),
+                act_layer=act_layer,
+                drop=mlp_drop,
+            ),
+        )
+
+        self.out = nn.Linear(hidden_size, output_size + 3)
+
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+        self.apply(_init_weights)
+
+    def forward(self, x, y):
+        # Add tokens and label embedding
+        if torch.rand(1) < 0.25 and self.training:
+            y = torch.ones_like(y) * self.num_classes
+
+        mask = x[:, :, 3:4] != 0
+        mask = torch.cat([torch.ones_like(mask[:, :1]), mask], 1)
+        x = torch.cat([self.pid_embed(y).unsqueeze(1), x], 1) * mask
+
+        for ib, blk in enumerate(self.in_blocks):
+            x = blk(x, mask=mask)
+
+        x = (
+            self.fc(x[:, self.num_add + self.num_tokens + 1 :])
+            * mask[:, self.num_add + self.num_tokens + 1 :]
+        )
+        return self.out(x) * mask[:, self.num_add + self.num_tokens + 1 :]
 
 
 class PET_body(nn.Module):

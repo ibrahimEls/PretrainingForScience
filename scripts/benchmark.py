@@ -8,14 +8,13 @@ from dataclasses import asdict, dataclass
 from typing import List, Tuple
 
 import torch
-from lightining_model import PETLightning
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import Callback
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
-from dataloader import PETDataModule
+from omnilearn_lightning.dataloader import PETDataModule
 
 
 def parse_case(s: str) -> Tuple[int, int]:
@@ -131,6 +130,21 @@ def build_model(args):
         hidden_size, num_transformers, num_heads, lr = 512, 12, 16, 1e-5
     else:
         raise ValueError(f"Unknown model_size: {args.model_size}")
+
+    if args.pretraining_mode == "super-gen":
+        from omnilearn_lightning.models.model_super_gen import PETLightning
+
+    elif args.pretraining_mode == "super-only":
+        from omnilearn_lightning.models.model_super_only import PETLightning
+
+    elif args.pretraining_mode == "gen-only":
+        from omnilearn_lightning.models.model_gen_only import PETLightning
+
+    elif args.pretraining_mode == "self-super":
+        from omnilearn_lightning.models.model_self_super import PETLightning
+
+    elif args.pretraining_mode == "naive-self-super":
+        from omnilearn_lightning.models.model_naive_self_super import PETLightning
 
     model = PETLightning(
         input_dim=args.input_dim,
@@ -346,6 +360,7 @@ def main():
     p.add_argument("--use_amp", action="store_true")
     p.add_argument("--use_pid", action="store_true")
     p.add_argument("--use_add", action="store_true")
+    p.add_argument("--pretraining_mode", type=str, default="super_gen")
 
     args = p.parse_args()
     out_dir = args.outdir + "_" + args.model_size
