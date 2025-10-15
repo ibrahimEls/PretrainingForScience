@@ -192,8 +192,8 @@ class MaskedPredictionCallback(Callback):
         # jet-level distributions
         fig, axarr = plot_features(
             {
-                "Survived + True Masked (Full Res)": p4s_survived_and_target_fullres_sum,
-                "Survived + True Masked (Tokenized)": p4s_survived_and_target_sum,
+                "Survived + Masked (Full Res)": p4s_survived_and_target_fullres_sum,
+                "Survived + Masked (Tokenized)": p4s_survived_and_target_sum,
                 "Survived + Predicted": p4s_survived_and_pred_sum,
             },
             names={
@@ -212,10 +212,10 @@ class MaskedPredictionCallback(Callback):
         # jet-level residuals
         fig_res, axarr_res = plot_features(
             {
-                "Predicted - True Masked (Full Res)": ak_subtract(
+                "Predicted - Masked (Full Res)": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_fullres_sum
                 ),
-                "Predicted - True Masked (Tokenized)": ak_subtract(
+                "Predicted - Masked (Tokenized)": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_sum
                 ),
             },
@@ -243,7 +243,7 @@ class MaskedPredictionCallback(Callback):
             {
                 "Survived": x_part_ak_survived,
                 "Predicted": x_part_ak_pred,
-                "True Masked": x_part_ak_true,
+                "Masked": x_part_ak_true,
             },
             names=feature_names,
             bins_dict={
@@ -265,8 +265,8 @@ class MaskedPredictionCallback(Callback):
         # plot residuals of predicted vs true masked particles
         fig, axarr = plot_features(
             {
-                "Predicted - True Masked": ak_subtract(x_part_ak_pred, x_part_ak_true),
-                "Predicted - True Masked (Tokenized)": ak_subtract(
+                "Predicted - Masked": ak_subtract(x_part_ak_pred, x_part_ak_true),
+                "Predicted - Masked (tokenized)": ak_subtract(
                     x_part_ak_pred, x_part_ak_true_tokenized
                 ),
             },
