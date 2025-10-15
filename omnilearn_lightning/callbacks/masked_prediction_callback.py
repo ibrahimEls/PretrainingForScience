@@ -192,8 +192,8 @@ class MaskedPredictionCallback(Callback):
         # jet-level distributions
         fig, axarr = plot_features(
             {
-                "Survived + Masked (Full Res)": p4s_survived_and_target_fullres_sum,
-                "Survived + Masked (Tokenized)": p4s_survived_and_target_sum,
+                "Survived + Masked": p4s_survived_and_target_fullres_sum,
+                "Survived + Masked (tokenized)": p4s_survived_and_target_sum,
                 "Survived + Predicted": p4s_survived_and_pred_sum,
             },
             names={
@@ -206,16 +206,17 @@ class MaskedPredictionCallback(Callback):
             },
             flatten=False,
             decorate_ax_kwargs={"yscale": 1.5},
+            legend_kwargs={"loc": "upper left"},
         )
         save_and_log(fig, "jet_distributions")
 
         # jet-level residuals
         fig_res, axarr_res = plot_features(
             {
-                "Predicted - Masked (Full Res)": ak_subtract(
+                "Predicted - Masked": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_fullres_sum
                 ),
-                "Predicted - Masked (Tokenized)": ak_subtract(
+                "Predicted - Masked (tokenized)": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_sum
                 ),
             },
@@ -229,6 +230,7 @@ class MaskedPredictionCallback(Callback):
             },
             flatten=False,
             decorate_ax_kwargs={"yscale": 1.5},
+            legend_kwargs={"loc": "upper left"},
         )
         save_and_log(fig_res, "jet_residuals")
 
