@@ -9,7 +9,7 @@ import torch
 import wandb
 from pytorch_lightning import Callback, LightningModule
 
-from omnilearn_lightning.array_utils import ak_subtract, np_to_ak
+from omnilearn_lightning.array_utils import ak_subtract, np_to_ak, p4s_from_ptetaphimass
 from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
 
@@ -140,17 +140,97 @@ class MaskedPredictionCallback(Callback):
         x_part_ak_pred_token_ids = x_part_ak_pred_token_ids[shuffle_idx]
         jet_labels = jet_labels[shuffle_idx]
 
+        p4_conversion_kwargs = dict(
+            field_name_eta="eta",
+            field_name_phi="phi",
+            field_name_pt="log_pt",
+            pt_is_log=True,
+        )
+        p4s_survived_and_target = p4s_from_ptetaphimass(
+            ak.concatenate([x_part_ak_survived, x_part_ak_true_tokenized], axis=1),
+            **p4_conversion_kwargs,
+        )
+        p4s_survived_and_target_fullres = p4s_from_ptetaphimass(
+            ak.concatenate([x_part_ak_survived, x_part_ak_true], axis=1),
+            **p4_conversion_kwargs,
+        )
+        p4s_survived_and_pred = p4s_from_ptetaphimass(
+            ak.concatenate([x_part_ak_survived, x_part_ak_pred], axis=1),
+            **p4_conversion_kwargs,
+        )
+
+        def sum_p4_and_get_feats(p4s_particles):
+            p4s_sum = ak.sum(p4s_particles, axis=1)
+            return ak.Array(
+                {
+                    "pt": p4s_sum.pt,
+                    "mass": p4s_sum.mass,
+                    "eta": p4s_sum.eta,
+                    "phi": p4s_sum.phi,
+                }
+            )
+
+        # calculate sum of each of them
+        p4s_survived_and_target_sum = sum_p4_and_get_feats(p4s_survived_and_target)
+        p4s_survived_and_target_fullres_sum = sum_p4_and_get_feats(
+            p4s_survived_and_target_fullres
+        )
+        p4s_survived_and_pred_sum = sum_p4_and_get_feats(p4s_survived_and_pred)
+
         def save_and_log(fig, name):
             filename = (
                 f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
             )
-            fig.savefig(filename, dpi=150)
+            fig.savefig(filename, dpi=150, bbox_inches="tight")
             for logger in trainer.loggers:
                 if logger.__class__.__name__ == "WandbLogger":
                     print(f"Logging image {filename} to wandb")
                     logger.experiment.log(
                         {f"mpm_visualization_{name}": wandb.Image(filename)}
                     )
+
+        # jet-level distributions
+        fig, axarr = plot_features(
+            {
+                "Survived + True Masked (Full Res)": p4s_survived_and_target_fullres_sum,
+                "Survived + True Masked (Tokenized)": p4s_survived_and_target_sum,
+                "Survived + Predicted": p4s_survived_and_pred_sum,
+            },
+            names={
+                "pt": "Jet $p_{T}$ [GeV]",
+                "mass": "Jet mass [GeV]",
+            },
+            bins_dict={
+                "pt": np.linspace(300, 800, 50),
+                "mass": np.linspace(0, 250, 50),
+            },
+            flatten=False,
+            decorate_ax_kwargs={"yscale": 1.5},
+        )
+        save_and_log(fig, "jet_distributions")
+
+        # jet-level residuals
+        fig_res, axarr_res = plot_features(
+            {
+                "Predicted - True Masked (Full Res)": ak_subtract(
+                    p4s_survived_and_pred_sum, p4s_survived_and_target_fullres_sum
+                ),
+                "Predicted - True Masked (Tokenized)": ak_subtract(
+                    p4s_survived_and_pred_sum, p4s_survived_and_target_sum
+                ),
+            },
+            names={
+                "pt": "Jet $p_{T}$ [GeV] residual",
+                "mass": "Jet mass [GeV] residual",
+            },
+            bins_dict={
+                "pt": np.linspace(-200, 200, 50),
+                "mass": np.linspace(-100, 100, 50),
+            },
+            flatten=False,
+            decorate_ax_kwargs={"yscale": 1.5},
+        )
+        save_and_log(fig_res, "jet_residuals")
 
         # calculate number of particles and number of unique selected token-IDs
         num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
@@ -173,6 +253,7 @@ class MaskedPredictionCallback(Callback):
                 "log_E": np.linspace(-3, 6.5, 50),
             },
             ratio=True,
+            legend_kwargs={"loc": "upper left"},
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
@@ -189,13 +270,14 @@ class MaskedPredictionCallback(Callback):
                     x_part_ak_pred, x_part_ak_true_tokenized
                 ),
             },
-            names=feature_names,
+            names={k: feature_names[k] + " residual" for k in feature_names.keys()},
             bins_dict={
                 "eta": np.linspace(-1, 1, 50),
                 "phi": np.linspace(-1, 1, 50),
                 "log_pt": np.linspace(-3, 3, 50),
                 "log_E": np.linspace(-3, 3, 50),
             },
+            legend_kwargs={"loc": "upper left"},
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
@@ -206,7 +288,7 @@ class MaskedPredictionCallback(Callback):
 
         # ------ scatter plots for a few example jets ------
 
-        fig, ax = plt.subplots(3, 8, figsize=(20, 7.8))
+        fig, ax = plt.subplots(3, 8, figsize=(20, 8))
 
         # ax = ax.flatten()
         for i_jet in range(8):

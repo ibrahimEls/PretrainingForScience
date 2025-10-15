@@ -12,6 +12,7 @@ def p4s_from_ptetaphimass(
     field_name_eta="part_etarel",
     field_name_phi="part_phirel",
     field_name_mass="part_mass",
+    pt_is_log=False,
 ):
     """Create a Momentum4D array from pt, eta, phi, mass fields in an awkward array.
 
@@ -27,10 +28,15 @@ def p4s_from_ptetaphimass(
         Name of the field containing the azimuthal angle, by default "part_phirel".
     field_name_mass : str, optional
         Name of the field containing the mass, by default
+    pt_is_log : bool, optional
+        Whether the pt field is in log scale, by default False. If True, the pt
+        values are exponentiated before creating the Momentum4D array.
     """
     return ak.zip(
         {
-            "pt": ak_arr[field_name_pt],
+            "pt": ak_arr[field_name_pt]
+            if not pt_is_log
+            else np.exp(ak_arr[field_name_pt]),
             "eta": ak_arr[field_name_eta],
             "phi": ak_arr[field_name_phi],
             "mass": ak_arr[field_name_mass]
