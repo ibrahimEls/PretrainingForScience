@@ -365,7 +365,7 @@ class MaskedPredictionCallback(Callback):
                 x_part_ak_survived[i_jet].phi,
                 x_part_ak_survived[i_jet].eta,
                 s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="C0",
+                c="gray",
                 alpha=0.5,
                 label="Survived",
             )
@@ -373,16 +373,16 @@ class MaskedPredictionCallback(Callback):
                 x_part_ak_true[i_jet].phi,
                 x_part_ak_true[i_jet].eta,
                 s=np.exp(x_part_ak_true[i_jet].log_pt) * 1,
-                c="C1",
+                c="C0",
                 alpha=0.5,
-                label="Masked",
+                label="Masked (full-res)",
             )
 
             ax_middle.scatter(
                 x_part_ak_survived[i_jet].phi,
                 x_part_ak_survived[i_jet].eta,
                 s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="C0",
+                c="gray",
                 alpha=0.5,
                 label="Survived",
             )
@@ -390,7 +390,7 @@ class MaskedPredictionCallback(Callback):
                 x_part_ak_true_tokenized[i_jet].phi,
                 x_part_ak_true_tokenized[i_jet].eta,
                 s=np.exp(x_part_ak_true_tokenized[i_jet].log_pt) * 1,
-                c="C3",
+                c="C1",
                 alpha=0.5,
                 label="Masked (tokenized)",
             )
@@ -399,7 +399,7 @@ class MaskedPredictionCallback(Callback):
                 x_part_ak_survived[i_jet].phi,
                 x_part_ak_survived[i_jet].eta,
                 s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="C0",
+                c="gray",
                 alpha=0.5,
                 label="Survived",
             )
