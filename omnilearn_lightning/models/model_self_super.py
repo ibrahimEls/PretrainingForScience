@@ -426,6 +426,9 @@ class PETLightning(LightningModule):
             )
             losses["loss_masked"] = lmp
             loss = loss + lmp
+        else:
+            losses["loss_masked"] = torch.tensor(0.0, device=self.device)
+            masked_pred = None
 
         # CLIP loss
         if self.use_clip and outputs.get("x_body") is not None:
