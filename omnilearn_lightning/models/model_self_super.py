@@ -42,6 +42,7 @@ class PET2(nn.Module):
         use_time=False,
         mode="classifier",
         num_classes=2,
+        pos_encoding_type="sort_descending_in_masked_subset",
     ):
         super().__init__()
         self.mode = mode
@@ -76,6 +77,8 @@ class PET2(nn.Module):
             add_dim=add_dim,
             use_time=use_time,
         )
+
+        self.pos_encoding_type = pos_encoding_type
 
         self.num_add = self.body.num_add
         self.classifier = None
@@ -214,7 +217,7 @@ class PET2(nn.Module):
                 mask_is_valid_corrupted=mask_after_masking.int(),
                 mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
                 pos_encoding_feature=x[:, :, 3],
-                pos_encoding_type="sort_descending_in_masked_subset",
+                pos_encoding_type=self.pos_encoding_type,
                 vectors_to_insert=self.mask_embeddings,
             )
 
@@ -312,6 +315,9 @@ class PETLightning(LightningModule):
             pid=kwargs.get("use_pid", False),
             num_classes=num_classes,
             mode=kwargs.get("mode", "classifier"),
+            pos_encoding_type=kwargs.get(
+                "positional_encoding_type", "sort_descending_in_masked_subset"
+            ),
         )
 
         # --- losses ---

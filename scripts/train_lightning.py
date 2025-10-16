@@ -102,6 +102,15 @@ def main():
 
     parser.add_argument("--pretraining_mode", type=str, default="super-gen")
     parser.add_argument("--tokenizer_ckpt", type=str, default=None)
+    parser.add_argument(
+        "--pos_encoding_type",
+        type=str,
+        default=None,
+        help=(
+            "Type of positional encoding to use. Options are "
+            "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
+        ),
+    )
 
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
@@ -232,6 +241,7 @@ def main():
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
         tokenizer_ckpt=args.tokenizer_ckpt,
+        pos_encoding_type=args.pos_encoding_type,
     )
 
     if args.resume:
