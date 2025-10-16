@@ -117,13 +117,15 @@ class MaskedPredictionCallback(Callback):
             ].bool()
             targets_transformed[~mask_valid_particle] = 0  # set invalid points to 0
 
-            predicted_tokens = output["masked_pred"].argmax(dim=-1)
-            # probs = torch.nn.functional.softmax(output["masked_pred"], dim=-1)
-            # # reshape to (batch_size * num_points, num_tokens)
-            # probs = probs.view(-1, probs.shape[-1])
-            # # sample once from the categorical distribution
-            # predicted_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
-            # predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
+            # predicted_tokens = output["masked_pred"].argmax(dim=-1)
+            probs = torch.nn.functional.softmax(output["masked_pred"], dim=-1)
+            # reshape to (batch_size * num_points, num_tokens) for sampling
+            probs = probs.view(-1, probs.shape[-1])
+            # sample from the categorical distribution
+            predicted_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
+            # reshape back to (batch_size, num_points)
+            predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
+            # extract the reconstructed features from the predicted token IDs
             predictions_reconstructed = pl_module.tokenizer.kmeans.centroids[
                 predicted_tokens
             ]
