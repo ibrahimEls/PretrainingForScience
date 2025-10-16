@@ -52,12 +52,31 @@ class MaskedPredictionCallback(Callback):
         if trainer.global_rank != 0:
             return  # only save from rank 0 to avoid duplication
         if len(self.test_batches) < self.n_batches:
-            self.test_batches.append(
-                {k: v.detach() if torch.is_tensor(v) else v for k, v in batch.items()}
-            )
-            self.test_outputs.append(
-                {k: v.detach() if torch.is_tensor(v) else v for k, v in outputs.items()}
-            )
+            # only keep minimal items and move tensors to CPU immediately
+            saved_batch = {}
+            # keep X and y only (others are not needed for visualization)
+            for key in ("X", "y"):
+                if key in batch:
+                    val = batch[key]
+                    saved_batch[key] = (
+                        val.detach().cpu() if torch.is_tensor(val) else val
+                    )
+            self.test_batches.append(saved_batch)
+
+            saved_outputs = {}
+            # masks: move to cpu
+            for key in (
+                "mask_valid_particle",
+                "mask_valid_particle_but_masked",
+                "masked_pred",
+            ):
+                if key in outputs:
+                    val = outputs[key]
+                    saved_outputs[key] = (
+                        val.detach().cpu() if torch.is_tensor(val) else val
+                    )
+
+            self.test_outputs.append(saved_outputs)
 
     def on_validation_batch_end(
         self,
@@ -71,13 +90,29 @@ class MaskedPredictionCallback(Callback):
         if trainer.global_rank != 0:
             return  # only save from rank 0 to avoid duplication
         if len(self.validation_batches) < self.n_batches:
-            # add batch to list
-            self.validation_batches.append(
-                {k: v.detach() if torch.is_tensor(v) else v for k, v in batch.items()}
-            )
-            self.validation_outputs.append(
-                {k: v.detach() if torch.is_tensor(v) else v for k, v in outputs.items()}
-            )
+            # only keep minimal items and move tensors to CPU immediately
+            saved_batch = {}
+            for key in ("X", "y"):
+                if key in batch:
+                    val = batch[key]
+                    saved_batch[key] = (
+                        val.detach().cpu() if torch.is_tensor(val) else val
+                    )
+            self.validation_batches.append(saved_batch)
+
+            saved_outputs = {}
+            for key in (
+                "mask_valid_particle",
+                "mask_valid_particle_but_masked",
+                "masked_pred",
+            ):
+                if key in outputs:
+                    val = outputs[key]
+                    saved_outputs[key] = (
+                        val.detach().cpu() if torch.is_tensor(val) else val
+                    )
+
+            self.validation_outputs.append(saved_outputs)
 
     def on_validation_epoch_end(self, trainer, pl_module: LightningModule) -> None:
         # process validation batches and produce plots
@@ -105,6 +140,12 @@ class MaskedPredictionCallback(Callback):
     ) -> None:
         set_mpl_style()
 
+        if pl_module.model.mode == "classifier":
+            print(
+                "MaskedPredictionCallback: model is in classifier mode, skipping visualization."
+            )
+            return
+
         feature_names = {
             "eta": "Particle $\\Delta\\eta$",
             "phi": "Particle $\\Delta\\phi$",
@@ -120,6 +161,9 @@ class MaskedPredictionCallback(Callback):
         batches_pred_token_ids = []
 
         for batch, output in zip(batches_list, outputs_list):
+            centroids = pl_module.tokenizer.kmeans.centroids.cpu()
+            pl_module.tokenizer.kmeans.centroids = centroids
+
             targets_transformed = pl_module.tokenizer.transform(batch["X"])
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
@@ -136,9 +180,7 @@ class MaskedPredictionCallback(Callback):
             # reshape back to (batch_size, num_points)
             predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
             # extract the reconstructed features from the predicted token IDs
-            predictions_reconstructed = pl_module.tokenizer.kmeans.centroids[
-                predicted_tokens
-            ]
+            predictions_reconstructed = centroids[predicted_tokens]
 
             batches_pred_token_ids.append(
                 np_to_ak(

@@ -38,6 +38,8 @@ class KMeansTokenizer:
         labels: torch.Tensor
             Index of the cluster each sample belongs to, of shape (batch_size, num_points).
         """
+        # move centroids to the same device as x
+        self.kmeans.centroids = self.kmeans.centroids.to(x.device)
         batch_size, num_points, num_features = x.shape
         x_reshaped = x.reshape(-1, num_features)
         labels = self.kmeans.predict(x_reshaped)
@@ -60,7 +62,7 @@ class KMeansTokenizer:
         batch_size, num_points, num_features = x.shape
         x_reshaped = x.reshape(-1, num_features)
         # get the centroid for each point
-        tokenized = self.kmeans.centroids[self.kmeans.predict(x_reshaped)]
+        tokenized = self.kmeans.centroids.to(x.device)[self.kmeans.predict(x_reshaped)]
         # reshape back to (batch_size, num_points, num_features)
         tokenized = tokenized.reshape(batch_size, num_points, num_features)
         return tokenized
