@@ -1,5 +1,6 @@
 """Callback for monitoring the masked prediction task during training."""
 
+import os
 from typing import Any, Dict
 
 import awkward as ak
@@ -17,9 +18,18 @@ from omnilearn_lightning.plotting.utils import set_mpl_style
 class MaskedPredictionCallback(Callback):
     # save the first 10 validation batches for visualization
 
-    def __init__(self, n_batches: int = 100):
+    def __init__(
+        self,
+        n_batches: int = 100,
+        n_example_jets: int = 8,
+        image_path: str = "/tmp",
+    ):
         super().__init__()
         self.n_batches = n_batches
+        self.n_example_jets = n_example_jets
+        self.image_path = image_path
+        # make sure the image path exists
+        os.makedirs(self.image_path, exist_ok=True)
 
     def on_validation_epoch_start(self, trainer, pl_module: LightningModule) -> None:
         self.validation_batches = []
@@ -225,9 +235,8 @@ class MaskedPredictionCallback(Callback):
         p4s_survived_and_pred_sum = sum_p4_and_get_feats(p4s_survived_and_pred)
 
         def save_and_log(fig, name):
-            filename = (
-                f"/tmp/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
-            )
+            filename = f"{self.image_path}/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
+            print(f"Saving image to {filename}")
             fig.savefig(filename, dpi=150, bbox_inches="tight")
             for logger in trainer.loggers:
                 if logger.__class__.__name__ == "WandbLogger":
@@ -239,31 +248,33 @@ class MaskedPredictionCallback(Callback):
         # jet-level distributions
         fig, axarr = plot_features(
             {
-                "Survived + Masked": p4s_survived_and_target_fullres_sum,
-                "Survived + Masked (tokenized)": p4s_survived_and_target_sum,
-                "Survived + Predicted": p4s_survived_and_pred_sum,
+                "$\\mathrm{Jet} \\coloneq \\sum \\mathrm{survived} + \\sum \\mathrm{masked}_\\mathrm{full-resolution}$": p4s_survived_and_target_fullres_sum,
+                "$\\mathrm{Jet} \\coloneq \\sum \\mathrm{survived} + \\sum \\mathrm{masked}_\\mathrm{tokenized}$": p4s_survived_and_target_sum,
+                "$\\mathrm{Jet} \\coloneq \\sum \\mathrm{survived} + \\sum \\mathrm{predicted}$": p4s_survived_and_pred_sum,
             },
             names={
                 "pt": "Jet $p_{T}$ [GeV]",
                 "mass": "Jet mass [GeV]",
             },
             bins_dict={
-                "pt": np.linspace(300, 800, 50),
+                "pt": np.linspace(450, 1050, 50),
                 "mass": np.linspace(0, 250, 50),
             },
             flatten=False,
-            decorate_ax_kwargs={"yscale": 1.5},
-            legend_kwargs={"loc": "upper left"},
+            decorate_ax_kwargs={"yscale": 2.0},
+            legend_kwargs={"loc": "upper left", "fontsize": 9},
+            ax_size=(3.3, 2.5),
+            ratio=True,
         )
         save_and_log(fig, "jet_distributions")
 
         # jet-level residuals
         fig_res, axarr_res = plot_features(
             {
-                "Predicted - Masked": ak_subtract(
+                "$\\mathrm{Residual}(\\mathrm{Jet}_\\mathrm{predicted}, \\mathrm{Jet}_\\mathrm{full-resolution})$": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_fullres_sum
                 ),
-                "Predicted - Masked (tokenized)": ak_subtract(
+                "$\\mathrm{Residual}(\\mathrm{Jet}_\\mathrm{predicted}, \\mathrm{Jet}_\\mathrm{tokenized})$": ak_subtract(
                     p4s_survived_and_pred_sum, p4s_survived_and_target_sum
                 ),
             },
@@ -291,8 +302,8 @@ class MaskedPredictionCallback(Callback):
         fig, axarr = plot_features(
             {
                 "Survived": x_part_ak_survived,
-                "Predicted": x_part_ak_pred,
                 "Masked": x_part_ak_true,
+                "Predicted": x_part_ak_pred,
             },
             names=feature_names,
             bins_dict={
@@ -314,8 +325,10 @@ class MaskedPredictionCallback(Callback):
         # plot residuals of predicted vs true masked particles
         fig, axarr = plot_features(
             {
-                "Predicted - Masked": ak_subtract(x_part_ak_pred, x_part_ak_true),
-                "Predicted - Masked (tokenized)": ak_subtract(
+                "$\\mathrm{Residual}(\\mathrm{Particle}_\\mathrm{predicted}, \\mathrm{Particle}_\\mathrm{full-resolution})$": ak_subtract(
+                    x_part_ak_pred, x_part_ak_true
+                ),
+                "$\\mathrm{Residual}(\\mathrm{Particle}_\\mathrm{predicted}, \\mathrm{Particle}_\\mathrm{tokenized})$": ak_subtract(
                     x_part_ak_pred, x_part_ak_true_tokenized
                 ),
             },
@@ -326,7 +339,9 @@ class MaskedPredictionCallback(Callback):
                 "log_pt": np.linspace(-3, 3, 50),
                 "log_E": np.linspace(-3, 3, 50),
             },
-            legend_kwargs={"loc": "upper left"},
+            legend_kwargs={"loc": "upper left", "fontsize": 9},
+            ax_size=(3.1, 2.0),
+            decorate_ax_kwargs={"yscale": 1.4},
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
@@ -337,10 +352,11 @@ class MaskedPredictionCallback(Callback):
 
         # ------ scatter plots for a few example jets ------
 
-        fig, ax = plt.subplots(3, 8, figsize=(20, 8))
+        total_width = 20 / 8 * self.n_example_jets
+        fig, ax = plt.subplots(3, self.n_example_jets, figsize=(total_width, 8))
 
         # ax = ax.flatten()
-        for i_jet in range(8):
+        for i_jet in range(self.n_example_jets):
             ax_top = ax[0, i_jet]
             ax_middle = ax[1, i_jet]
             ax_bottom = ax[2, i_jet]
