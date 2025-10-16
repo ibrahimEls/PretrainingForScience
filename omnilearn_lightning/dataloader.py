@@ -49,25 +49,17 @@ class PETDataModule(LightningDataModule):
             limit_num_samples=self.num_samples,
         )
         if stage == "fit" or stage is None or stage == "validate":
-            if self.dataset == "jetclass":
-                self.train_dataset = load_data(
-                    self.dataset,
-                    dataset_type="train",
-                    **loading_kwargs,
-                )
-                self.val_dataset = None
-            else:
-                self.train_dataset = load_data(
-                    self.dataset,
-                    dataset_type="train",
-                    **loading_kwargs,
-                )
+            self.train_dataset = load_data(
+                self.dataset,
+                dataset_type="train",
+                **loading_kwargs,
+            )
 
-                self.val_dataset = load_data(
-                    self.dataset,
-                    dataset_type="val",
-                    **loading_kwargs,
-                )
+            self.val_dataset = load_data(
+                self.dataset,
+                dataset_type="val",
+                **loading_kwargs,
+            )
         elif stage == "test":
             self.test_dataset = load_data(
                 self.dataset,
