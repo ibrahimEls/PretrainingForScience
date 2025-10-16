@@ -17,12 +17,37 @@ from omnilearn_lightning.plotting.utils import set_mpl_style
 class MaskedPredictionCallback(Callback):
     # save the first 10 validation batches for visualization
 
-    def __init__(self):
+    def __init__(self, n_batches: int = 100):
         super().__init__()
+        self.n_batches = n_batches
 
     def on_validation_epoch_start(self, trainer, pl_module: LightningModule) -> None:
         self.validation_batches = []
         self.validation_outputs = []
+
+    def on_test_epoch_start(self, trainer, pl_module: LightningModule) -> None:
+        self.test_batches = []
+        self.test_outputs = []
+
+    def on_test_batch_end(
+        self,
+        trainer,
+        pl_module: LightningModule,
+        outputs: Dict[str, Any],
+        batch: Any,
+        batch_idx: int,
+        dataloader_idx: int = 0,
+    ) -> None:
+        # mirror validation behaviour for test loop
+        if trainer.global_rank != 0:
+            return  # only save from rank 0 to avoid duplication
+        if len(self.test_batches) < self.n_batches:
+            self.test_batches.append(
+                {k: v.detach() if torch.is_tensor(v) else v for k, v in batch.items()}
+            )
+            self.test_outputs.append(
+                {k: v.detach() if torch.is_tensor(v) else v for k, v in outputs.items()}
+            )
 
     def on_validation_batch_end(
         self,
@@ -35,7 +60,7 @@ class MaskedPredictionCallback(Callback):
     ) -> None:
         if trainer.global_rank != 0:
             return  # only save from rank 0 to avoid duplication
-        if len(self.validation_batches) < 10:
+        if len(self.validation_batches) < self.n_batches:
             # add batch to list
             self.validation_batches.append(
                 {k: v.detach() if torch.is_tensor(v) else v for k, v in batch.items()}
@@ -45,8 +70,29 @@ class MaskedPredictionCallback(Callback):
             )
 
     def on_validation_epoch_end(self, trainer, pl_module: LightningModule) -> None:
+        # process validation batches and produce plots
         if trainer.global_rank != 0:
             return  # only save from rank 0 to avoid duplication
+        self._process_and_log(
+            trainer, pl_module, self.validation_batches, self.validation_outputs
+        )
+
+    def on_test_epoch_end(self, trainer, pl_module: LightningModule) -> None:
+        # process test batches and produce plots
+        if trainer.global_rank != 0:
+            return  # only save from rank 0 to avoid duplication
+        # if no test batches were collected, skip
+        if not getattr(self, "test_batches", None):
+            return
+        self._process_and_log(trainer, pl_module, self.test_batches, self.test_outputs)
+
+    def _process_and_log(
+        self,
+        trainer,
+        pl_module: LightningModule,
+        batches_list,
+        outputs_list,
+    ) -> None:
         set_mpl_style()
 
         feature_names = {
@@ -55,7 +101,6 @@ class MaskedPredictionCallback(Callback):
             "log_pt": "Particle $\\log(p_{T})$",
             "log_E": "Particle $\\log(E)$",
         }
-
         # Prepare awkward arrays for all batches
         batches_survived_ak = []
         batches_masked_pred_ak = []
@@ -64,7 +109,7 @@ class MaskedPredictionCallback(Callback):
         batches_jet_labels = []
         batches_pred_token_ids = []
 
-        for batch, output in zip(self.validation_batches, self.validation_outputs):
+        for batch, output in zip(batches_list, outputs_list):
             targets_transformed = pl_module.tokenizer.transform(batch["X"])
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
