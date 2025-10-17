@@ -231,7 +231,8 @@ class MaskedPredictionCallback(Callback):
         jet_labels = np.concatenate(batches_jet_labels)
 
         # shuffle the jets
-        shuffle_idx = np.random.permutation(len(x_part_ak_pred))
+        rng = np.random.default_rng(seed=42)
+        shuffle_idx = rng.permutation(len(x_part_ak_pred))
         x_part_ak_pred = x_part_ak_pred[shuffle_idx]
         x_part_ak_true = x_part_ak_true[shuffle_idx]
         x_part_ak_survived = x_part_ak_survived[shuffle_idx]

@@ -79,6 +79,7 @@ class PET2(nn.Module):
         )
 
         self.pos_encoding_type = pos_encoding_type
+        print(f"Using pos_encoding_type: {self.pos_encoding_type}")
 
         self.num_add = self.body.num_add
         self.classifier = None
