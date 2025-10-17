@@ -5,9 +5,10 @@ from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 
+from ..array_utils import replace_masked_positions, set_fraction_ones_to_zeros
 from ..diffusion import get_logsnr_alpha_sigma, perturb
 from ..layers import DynamicTanh
-from ..modules import PET_body, PET_classifier, PET_generator
+from ..modules import PET_body, PET_classifier, PET_generator, PET_masked_predictor
 from ..utils import (
     CLIPLoss,
     get_param_groups,
@@ -19,6 +20,7 @@ class PET2(nn.Module):
         self,
         input_dim,
         hidden_size,
+        codebook_size,
         num_transformers=2,
         num_transformers_head=2,
         num_heads=4,
@@ -40,10 +42,16 @@ class PET2(nn.Module):
         use_time=False,
         mode="classifier",
         num_classes=2,
+        pos_encoding_type="sort_descending_in_masked_subset",
     ):
         super().__init__()
         self.mode = mode
-        if self.mode not in ["classifier", "generator", "pretrain"]:
+        if self.mode not in [
+            "classifier",
+            "generator",
+            "masked_predictor",
+            "pretrain",
+        ]:
             raise ValueError(f"Mode '{self.mode}' not supported.")
 
         self.body = PET_body(
@@ -69,6 +77,8 @@ class PET2(nn.Module):
             add_dim=add_dim,
             use_time=use_time,
         )
+
+        self.pos_encoding_type = pos_encoding_type
 
         self.num_add = self.body.num_add
         self.classifier = None
@@ -102,6 +112,26 @@ class PET2(nn.Module):
                 num_add=self.num_add,
                 num_classes=num_classes,
             )
+
+        if self.mode == "masked_predictor" or self.mode == "pretrain":
+            self.masked_predictor = PET_masked_predictor(
+                hidden_size,
+                num_transformers=num_transformers_head,
+                num_heads=num_heads,
+                mlp_ratio=mlp_ratio,
+                norm_layer=norm_layer,
+                act_layer=act_layer,
+                mlp_drop=mlp_drop,
+                attn_drop=attn_drop,
+                # num_tokens=num_tokens,
+                # num_add=self.num_add,
+                # num_classes=num_classes,
+                codebook_size=codebook_size,
+            )
+            # initialize trainable mask token embeddings
+            # those are used to fill in the masked positions
+            self.mask_embeddings = torch.nn.Parameter(torch.randn(1000, hidden_size))
+
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -117,8 +147,23 @@ class PET2(nn.Module):
         # Specify parameters that should not be decayed
         return {"norm", "scale", "token"}
 
-    def forward(self, x, y, cond=None, pid=None, add_info=None):
-        y_pred, y_perturb, z_pred, v, x_body, z_body = (
+    def forward(self, x, y, cond=None, pid=None, add_info=None, masking_fraction=0.0):
+        (
+            y_pred,
+            y_perturb,
+            z_pred,
+            v,
+            x_body,
+            z_body,
+            masked_pred,
+            mask_body,
+            mask_valid_particle,
+            mask_valid_particle_but_masked,
+        ) = (
+            None,
+            None,
+            None,
+            None,
             None,
             None,
             None,
@@ -139,6 +184,61 @@ class PET2(nn.Module):
             if self.mode == "pretrain":
                 y_perturb = self.classifier(z_body)
 
+        if self.mode == "masked_predictor" or self.mode == "pretrain":
+            # this is where the masking happens
+            # --> we set the specified fraction of ones in the mask to zeros
+            #     and use that to mask the input point cloud
+            mask_before_masking = (x[:, :, 3] != 0).int()
+            mask_after_masking = set_fraction_ones_to_zeros(
+                mask_before_masking,
+                fraction=masking_fraction,
+            )
+            # multiply x by mask_after_masking to zero out some points
+            # as the padding mask is calculated from zero points
+            x = x * mask_after_masking.unsqueeze(-1)
+
+            mask_valid_particle_but_masked = (
+                (mask_before_masking - mask_after_masking).bool().unsqueeze(-1)
+            )
+
+            x_body, mask_body = self.body(
+                x,
+                cond,
+                pid,
+                add_info,
+                torch.zeros_like(time),
+                return_mask=True,
+            )
+
+            x_body_masked = x_body.clone()
+            replace_masked_positions(
+                x_body_masked[:, self.body.num_tokens + 1 :],
+                mask_is_valid=mask_before_masking.int(),
+                mask_is_valid_corrupted=mask_after_masking.int(),
+                mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
+                pos_encoding_feature=x[:, :, 3],
+                pos_encoding_type=self.pos_encoding_type,
+                vectors_to_insert=self.mask_embeddings,
+            )
+
+            mask_for_masked_pred_head = torch.cat(
+                [
+                    torch.ones((x.shape[0], self.body.num_tokens + 1), device=x.device),
+                    mask_before_masking,
+                ],
+                dim=1,
+            ).unsqueeze(-1)
+
+            masked_pred = self.masked_predictor(
+                x_body_masked, mask=mask_for_masked_pred_head
+            )
+
+            # remove tokens and time from masked_pred
+            masked_pred = masked_pred[:, self.body.num_tokens + 1 :, :]
+            mask_valid_particle = mask_for_masked_pred_head[
+                :, self.body.num_tokens + 1 :
+            ]
+
         return {
             "y_pred": y_pred,
             "y_perturb": y_perturb,
@@ -147,6 +247,9 @@ class PET2(nn.Module):
             "x_body": x_body,
             "z_body": z_body,
             "alpha": alpha**2,
+            "masked_pred": masked_pred,
+            "mask_valid_particle": mask_valid_particle,
+            "mask_valid_particle_but_masked": mask_valid_particle_but_masked,
         }
 
 
@@ -154,6 +257,8 @@ class PETLightning(LightningModule):
     def __init__(
         self,
         # model
+        tokenizer_ckpt: str,
+        masking_fraction: float = 0.4,
         input_dim: int = 4,
         num_classes: int = 2,
         hidden_size: int = 64,
@@ -187,10 +292,15 @@ class PETLightning(LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
+        with open(tokenizer_ckpt, "rb") as f:
+            print(f"Loading tokenizer from {tokenizer_ckpt}")
+            self.tokenizer = torch.load(f, weights_only=False, map_location=self.device)
+
         # --- model ---
         self.model = PET2(
             input_dim=input_dim - 3,
             hidden_size=hidden_size,
+            codebook_size=self.tokenizer.n_clusters,
             num_transformers=num_transformers,
             num_heads=num_heads,
             attn_drop=attn_drop,
@@ -205,11 +315,15 @@ class PETLightning(LightningModule):
             pid=kwargs.get("use_pid", False),
             num_classes=num_classes,
             mode=kwargs.get("mode", "classifier"),
+            pos_encoding_type=kwargs.get(
+                "positional_encoding_type", "sort_descending_in_masked_subset"
+            ),
         )
 
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss(reduction="none")
         self.loss_gen = nn.L1Loss(reduction="none")
+        self.loss_masked = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.clip_loss = CLIPLoss()
 
         # --- flags & params ---
@@ -229,7 +343,7 @@ class PETLightning(LightningModule):
     def forward(self, x, y=None, **kwargs):
         return self.model(x, y, **kwargs)
 
-    def _compute_losses(self, outputs, y):
+    def _compute_losses(self, outputs, y, y_masked=None):
         """
         outputs is a dict with keys: y_pred, z_pred, v, y_perturb, alpha, x_body, z_body
         """
@@ -300,6 +414,28 @@ class PETLightning(LightningModule):
                 losses["loss_perturb"] = lp
                 loss = loss + lp
 
+        # masked prediction loss
+        if outputs["masked_pred"] is not None and y_masked is not None:
+            # remove tokens and time from masked_pred
+            masked_pred = outputs["masked_pred"]
+            mask_for_targets = outputs["mask_valid_particle_but_masked"][:, :, 0]
+            # set the targets to -1 where the mask is 0
+            y_masked[mask_for_targets == 0] = -1
+
+            B, T, C = masked_pred.shape
+            assert y_masked.shape == (B, T), (
+                f"y_masked.shape: {y_masked.shape}, masked_pred.shape {masked_pred.shape}"
+            )
+            lmp = self.loss_masked(
+                masked_pred.reshape(B * T, C),
+                y_masked.reshape(B * T),
+            )
+            losses["loss_masked"] = lmp
+            loss = loss + lmp
+        else:
+            losses["loss_masked"] = torch.tensor(0.0, device=self.device)
+            masked_pred = None
+
         # CLIP loss
         if self.use_clip and outputs.get("x_body") is not None:
             clip = self.clip_loss(
@@ -311,6 +447,13 @@ class PETLightning(LightningModule):
             loss = loss + clip
 
         losses["loss"] = loss
+        losses["masked_pred"] = masked_pred
+        losses["mask_valid_particle"] = outputs["mask_valid_particle"]
+        losses["mask_valid_particle_but_masked"] = outputs[
+            "mask_valid_particle_but_masked"
+        ]
+        losses["y_masked"] = y_masked
+
         return losses
 
     def _shared_step(self, batch, batch_idx, stage):
@@ -318,28 +461,39 @@ class PETLightning(LightningModule):
         X, y = batch["X"].float(), batch["y"]
         X, y = X.to(self.device), y.to(self.device)
 
+        # tokenize the input point clouds
+        # make sure tokenizer is on the same device as the model
+        if self.tokenizer.kmeans.centroids.device != X.device:
+            self.tokenizer.kmeans.centroids = self.tokenizer.kmeans.centroids.to(
+                X.device
+            )
+        y_masked = self.tokenizer.predict(X)
+
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
             for k in ("pid", "add_info")
             if (k in batch)
         }
+        model_kwargs["masking_fraction"] = self.hparams.masking_fraction
 
         # Use torch.no_grad() for validation and test, allow gradients for training
         if stage == "train":
             with amp.autocast(enabled=self.use_amp, device_type="cuda"):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
+                losses = self._compute_losses(out, y, y_masked=y_masked)
         else:
             with (
                 torch.no_grad(),
                 amp.autocast(enabled=self.use_amp, device_type="cuda"),
             ):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y)
+                losses = self._compute_losses(out, y, y_masked=y_masked)
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
         for k, v in losses.items():
+            if "loss" not in k:
+                continue
             self.log(
                 f"{stage}_{k}",
                 v,
@@ -349,7 +503,7 @@ class PETLightning(LightningModule):
                 sync_dist=True,
             )
 
-        return losses["loss"]
+        return losses
 
     def training_step(self, batch, batch_idx):
         return self._shared_step(batch, batch_idx, "train")

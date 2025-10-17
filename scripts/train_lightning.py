@@ -64,6 +64,12 @@ def main():
     parser.add_argument(
         "--dataset_size", type=int, default=100_000, help="dataset_size"
     )
+    parser.add_argument(
+        "--limit_val_batches",
+        type=int,
+        default=0,
+        help="Number of validation batches to use. If <1.0, this is a fraction of the total val batches.",
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -95,6 +101,16 @@ def main():
     )
 
     parser.add_argument("--pretraining_mode", type=str, default="super-gen")
+    parser.add_argument("--tokenizer_ckpt", type=str, default=None)
+    parser.add_argument(
+        "--pos_encoding_type",
+        type=str,
+        default=None,
+        help=(
+            "Type of positional encoding to use. Options are "
+            "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
+        ),
+    )
 
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
@@ -164,7 +180,15 @@ def main():
         save_tag = "gen-only" + save_tag
 
     elif args.pretraining_mode == "self-super":
+        from omnilearn_lightning.callbacks.masked_prediction_callback import (
+            MaskedPredictionCallback,
+        )
         from omnilearn_lightning.models.model_self_super import PETLightning
+
+        if args.tokenizer_ckpt is None:
+            raise ValueError("tokenizer_ckpt must be provided for self-super mode")
+
+        masked_prediction_callback = MaskedPredictionCallback()
 
         save_tag = "self-super" + save_tag
 
@@ -216,6 +240,8 @@ def main():
         use_pid=args.use_pid,
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
+        tokenizer_ckpt=args.tokenizer_ckpt,
+        pos_encoding_type=args.pos_encoding_type,
     )
 
     if args.resume:
@@ -286,12 +312,18 @@ def main():
 
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
+    callbacks = [checkpoint_step, ckpt_val, lr_monitor]
+
+    if args.pretraining_mode == "self-super":
+        print("Using MaskedPredictionCallback for self-supervised learning")
+        callbacks.append(masked_prediction_callback)
+
     trainer = Trainer(
         max_epochs=args.epoch,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else None,
         precision=16 if args.use_amp else 32,
-        callbacks=[checkpoint_step, ckpt_val, lr_monitor],
+        callbacks=callbacks,
         default_root_dir=run_dir,
         logger=loggers,
         strategy=strategy,
@@ -300,7 +332,7 @@ def main():
         accumulate_grad_batches=2,
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
-        limit_val_batches=0,
+        limit_val_batches=args.limit_val_batches,
     )
 
     # Training

@@ -78,6 +78,63 @@ class PET_classifier(nn.Module):
         return self.out(x)
 
 
+class PET_masked_predictor(nn.Module):
+    def __init__(
+        self,
+        hidden_size,
+        num_transformers=2,
+        num_heads=4,
+        mlp_ratio=2,
+        norm_layer=DynamicTanh,
+        act_layer=nn.GELU,
+        mlp_drop=0.1,
+        attn_drop=0.1,
+        # num_tokens=0,
+        codebook_size=5000,
+    ):
+        super().__init__()
+        # self.num_tokens = num_tokens
+        self.codebook_size = codebook_size
+
+        self.blocks = nn.ModuleList(
+            [
+                AttBlock(
+                    dim=hidden_size,
+                    num_heads=num_heads,
+                    mlp_ratio=mlp_ratio,
+                    attn_drop=attn_drop,
+                    mlp_drop=mlp_drop,
+                    act_layer=act_layer,
+                    norm_layer=norm_layer,
+                    num_tokens=0,
+                    skip=False,
+                    use_int=False,
+                )
+                for _ in range(num_transformers)
+            ]
+        )
+
+        self.out = nn.Linear(hidden_size, codebook_size)
+
+        self.initialize_weights()
+
+    def initialize_weights(self):
+        def _init_weights(m):
+            if isinstance(m, nn.Linear):
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+
+        self.apply(_init_weights)
+
+    def forward(self, x, mask):
+        for ib, blk in enumerate(self.blocks):
+            x = blk(x, mask=mask)
+
+        logits = self.out(x) * mask
+
+        return logits
+
+
 class PET_generator(nn.Module):
     def __init__(
         self,
@@ -313,7 +370,9 @@ class PET_body(nn.Module):
 
         self.apply(_init_weights)
 
-    def forward(self, x, cond=None, pid=None, add_info=None, time=None):
+    def forward(
+        self, x, cond=None, pid=None, add_info=None, time=None, return_mask=False
+    ):
         B = x.shape[0]
         mask = x[:, :, 3:4] != 0
         token = self.token.expand(B, -1, -1)
@@ -348,6 +407,7 @@ class PET_body(nn.Module):
         x = torch.cat([token, x], 1)
 
         # Create a new mask based on the updated point cloud with additional tokens
+        # Note: this means that we pad the time as well if it's 0 (padded)
         mask = x[:, :, 3:4] != 0
 
         attn_mask = mask.float() @ mask.float().transpose(-1, -2)
@@ -371,4 +431,6 @@ class PET_body(nn.Module):
             x = blk(x, mask=mask, attn_mask=attn_mask)
 
         x = self.norm(x) * mask
+        if return_mask:
+            return x, mask
         return x
