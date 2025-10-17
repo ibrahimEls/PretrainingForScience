@@ -79,6 +79,7 @@ class PET2(nn.Module):
         )
 
         self.pos_encoding_type = pos_encoding_type
+        print(f"Using pos_encoding_type: {self.pos_encoding_type}")
 
         self.num_add = self.body.num_add
         self.classifier = None
@@ -259,6 +260,7 @@ class PETLightning(LightningModule):
         # model
         tokenizer_ckpt: str,
         masking_fraction: float = 0.4,
+        pos_encoding_type: str = "sort_descending_in_masked_subset",
         input_dim: int = 4,
         num_classes: int = 2,
         hidden_size: int = 64,
@@ -315,9 +317,7 @@ class PETLightning(LightningModule):
             pid=kwargs.get("use_pid", False),
             num_classes=num_classes,
             mode=kwargs.get("mode", "classifier"),
-            pos_encoding_type=kwargs.get(
-                "positional_encoding_type", "sort_descending_in_masked_subset"
-            ),
+            pos_encoding_type=pos_encoding_type,
         )
 
         # --- losses ---
