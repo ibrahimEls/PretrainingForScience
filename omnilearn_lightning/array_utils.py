@@ -6,6 +6,59 @@ import vector
 vector.register_awkward()
 
 
+def preprocess_tensor(
+    batch,
+    index_PID: int = 4,
+    inverse: bool = False,
+    pid_values: torch.Tensor = None,
+    scale_factors: torch.Tensor = None,
+):
+    """Function to preprocess a batch tensor by removing or inserting the PID feature.
+    Also scales the features according to predefined scale factors.
+
+    Parameters
+    ----------
+    batch : torch.Tensor
+        Input batch tensor of shape (batch_size, n_points, n_features).
+    index_PID : int, optional
+        Index of the PID feature in the last dimension, by default 4.
+    inverse : bool, optional
+        If True, insert the PID feature back into the tensor. If False, remove it.
+        Default is False.
+    pid_values : torch.Tensor, optional
+        Tensor containing the PID values to insert back into the tensor when inverse=True.
+        Shape should be (batch_size, n_points). Default is None.
+    scale_factors : torch.Tensor, optional
+        Tensor containing the scale factors for each feature (excluding PID). Shape should be
+        (n_features - 1,). Default is None.
+    """
+    if scale_factors is None:
+        raise ValueError("scale_factors must be provided")
+    if inverse:
+        if pid_values is None:
+            raise ValueError("pid_values must be provided when inverse=True")
+        batch_with_pid = batch.clone()
+        # scale features back
+        batch_with_pid = batch_with_pid * scale_factors
+        # insert pid values
+        batch_with_pid = torch.cat(
+            [
+                batch_with_pid[:, :, :index_PID],
+                pid_values.unsqueeze(-1),
+                batch_with_pid[:, :, index_PID:],
+            ],
+            dim=2,
+        )
+        return batch_with_pid
+
+    batch_no_pid = batch.clone()
+    indices = [i for i in range(batch_no_pid.shape[2]) if i != index_PID]
+    batch_no_pid = batch_no_pid[:, :, indices]
+    # scale features
+    batch_no_pid = batch_no_pid * 1 / scale_factors
+    return batch_no_pid
+
+
 def p4s_from_ptetaphimass(
     ak_arr,
     field_name_pt="part_pt",
