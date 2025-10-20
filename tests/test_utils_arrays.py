@@ -16,6 +16,7 @@ from omnilearn_lightning.array_utils import (
     ak_to_np_stack,
     combine_ak_arrays,
     np_to_ak,
+    preprocess_tensor,
     replace_masked_positions,
     set_fraction_ones_to_zeros,
 )
@@ -89,6 +90,118 @@ class TestCombineAkArrays(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             combine_ak_arrays(ak_arr1, ak_arr2)
+
+
+class TestPreprocessTensor(unittest.TestCase):
+    def setUp(self):
+        # Create a simple batch: shape (batch_size=1, n_points=2, n_features=6)
+        # PID is at index 4 by default
+        self.batch = torch.tensor(
+            [
+                [
+                    [1.0, 2.0, 3.0, 4.0, 99.0, 6.0],
+                    [10.0, 20.0, 30.0, 40.0, 199.0, 60.0],
+                ]
+            ],
+            dtype=torch.float32,
+        )
+        # scale_factors correspond to features excluding PID index (0,1,2,3,5)
+        self.scale_factors = torch.tensor(
+            [1.0, 2.0, 4.0, 8.0, 16.0], dtype=torch.float32
+        )
+
+    def test_forward_remove_pid_and_scale_default_index(self):
+        # Remove PID and scale features
+        out = preprocess_tensor(
+            batch=self.batch,
+            index_PID=4,
+            inverse=False,
+            scale_factors=self.scale_factors,
+        )
+
+        # Manually compute expected result
+        expected = torch.tensor(
+            [
+                [
+                    [1.0 / 1.0, 2.0 / 2.0, 3.0 / 4.0, 4.0 / 8.0, 6.0 / 16.0],
+                    [10.0 / 1.0, 20.0 / 2.0, 30.0 / 4.0, 40.0 / 8.0, 60.0 / 16.0],
+                ]
+            ]
+        )
+        self.assertTrue(torch.allclose(out, expected))
+
+    def test_inverse_reconstructs_original_tensor(self):
+        # Forward: remove PID and scale
+        out = preprocess_tensor(
+            batch=self.batch,
+            index_PID=4,
+            inverse=False,
+            scale_factors=self.scale_factors,
+        )
+
+        # Inverse: insert PID and unscale
+        pid_vals = self.batch[:, :, 4]
+        reconstructed = preprocess_tensor(
+            batch=out,
+            index_PID=4,
+            inverse=True,
+            pid_values=pid_vals,
+            scale_factors=self.scale_factors,
+        )
+        self.assertTrue(torch.allclose(reconstructed, self.batch))
+
+    def test_raises_if_scale_factors_missing(self):
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                batch=self.batch, index_PID=4, inverse=False, scale_factors=None
+            )
+
+    def test_raises_if_inverse_without_pid_values(self):
+        # Missing pid_values when inverse=True should raise
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                batch=self.batch[:, :, [0, 1, 2, 3, 5]],
+                index_PID=4,
+                inverse=True,
+                pid_values=None,
+                scale_factors=self.scale_factors,
+            )
+
+    def test_round_trip_with_non_default_pid_index(self):
+        # Use PID at index 1, n_features=4
+        batch = torch.tensor(
+            [
+                [
+                    [9.0, 11.0, 3.0, 5.0],
+                    [8.0, 12.0, 6.0, 10.0],
+                ]
+            ],
+            dtype=torch.float32,
+        )
+        # Excluding PID at 1 leaves indices [0,2,3]
+        scale_factors = torch.tensor([1.0, 2.0, 4.0], dtype=torch.float32)
+
+        forward = preprocess_tensor(
+            batch=batch,
+            index_PID=1,
+            inverse=False,
+            scale_factors=scale_factors,
+        )
+
+        # Expect: remove index 1 and scale
+        expected_forward = batch[:, :, [0, 2, 3]] * (1.0 / scale_factors)
+        self.assertTrue(torch.allclose(forward, expected_forward))
+
+        # Inverse with pid values from index 1
+        pid_vals = batch[:, :, 1]
+        reconstructed = preprocess_tensor(
+            batch=forward,
+            index_PID=1,
+            inverse=True,
+            pid_values=pid_vals,
+            scale_factors=scale_factors,
+        )
+        self.assertTrue(torch.allclose(reconstructed, batch))
 
 
 class TestNpToAk(unittest.TestCase):
