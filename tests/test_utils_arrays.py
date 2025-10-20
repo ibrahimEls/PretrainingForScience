@@ -1,8 +1,5 @@
 """Tests for functions in gabbro/utils."""
 
-import os
-import shutil
-import tempfile
 import unittest
 
 import awkward as ak
