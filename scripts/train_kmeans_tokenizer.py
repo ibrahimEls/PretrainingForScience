@@ -22,7 +22,7 @@ from omnilearn_lightning.plotting.feature_plotting import (
 from omnilearn_lightning.tokenizer import KMeansTokenizer
 from omnilearn_lightning.utils import get_bigram
 
-NUM_TRAINING_SAMPLES = 50_000
+NUM_TRAINING_SAMPLES = 10_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
