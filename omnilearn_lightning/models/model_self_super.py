@@ -315,6 +315,7 @@ class PETLightning(LightningModule):
             conditional=False,
             use_time=kwargs.get("use_time", True),
             pid=kwargs.get("use_pid", False),
+            add_info=kwargs.get("add_info", False),
             num_classes=num_classes,
             mode=kwargs.get("mode", "classifier"),
             pos_encoding_type=pos_encoding_type,
