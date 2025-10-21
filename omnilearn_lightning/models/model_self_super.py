@@ -468,14 +468,14 @@ class PETLightning(LightningModule):
             self.tokenizer.kmeans.centroids = self.tokenizer.kmeans.centroids.to(
                 X.device
             )
-        y_masked = self.tokenizer.predict(X)
-
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
             for k in ("pid", "add_info")
             if (k in batch)
         }
         model_kwargs["masking_fraction"] = self.hparams.masking_fraction
+
+        y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
 
         # Use torch.no_grad() for validation and test, allow gradients for training
         if stage == "train":
