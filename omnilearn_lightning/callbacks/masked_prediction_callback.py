@@ -161,9 +161,6 @@ class MaskedPredictionCallback(Callback):
         batches_pred_token_ids = []
 
         for batch, output in zip(batches_list, outputs_list):
-            centroids = pl_module.tokenizer.kmeans.centroids.cpu()
-            pl_module.tokenizer.kmeans.centroids = centroids
-
             targets_transformed = pl_module.tokenizer.transform(batch["X"])
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
@@ -180,7 +177,10 @@ class MaskedPredictionCallback(Callback):
             # reshape back to (batch_size, num_points)
             predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
             # extract the reconstructed features from the predicted token IDs
-            predictions_reconstructed = centroids[predicted_tokens]
+            predictions_reconstructed = pl_module.tokenizer.reconstruct(
+                predicted_tokens,
+                pid_values=batch["X"][:, :, 4],
+            )
 
             batches_pred_token_ids.append(
                 np_to_ak(
