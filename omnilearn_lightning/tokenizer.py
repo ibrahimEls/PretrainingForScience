@@ -12,13 +12,25 @@ class KMeansTokenizer:
         mode: str = "euclidean",
         **kwargs,
     ):
+        """KMeans-based tokenizer for particle features.
+        Parameters
+        ----------
+        n_clusters: int
+            Number of clusters (codebook size).
+        scale_factors: torch.Tensor
+            Scale factors for each feature dimension.
+        mode: str, optional
+            Distance metric to use. Default is "euclidean".
+        kwargs:
+            Additional keyword arguments for the KMeans model.
+        """
         self.n_clusters = n_clusters
         self.mode = mode
         self.kmeans_kwargs = kwargs
         self.kmeans = KMeans(n_clusters=n_clusters, mode=mode, **kwargs)
         self.scale_factors = scale_factors
 
-    def fit(self, x, mask=None):
+    def fit(self, x: torch.Tensor, mask: torch.Tensor = None):
         """Fit the KMeans model to the data.
 
         Parameters
@@ -40,7 +52,7 @@ class KMeansTokenizer:
             x = x[mask]
         self.kmeans.fit(x)
 
-    def predict(self, x):
+    def predict(self, x: torch.Tensor):
         """Predict the closest cluster each sample in x belongs to.
 
         Parameters
@@ -66,7 +78,7 @@ class KMeansTokenizer:
         labels = labels.reshape(batch_size, num_points)
         return labels
 
-    def transform(self, x):
+    def transform(self, x: torch.Tensor):
         """Transform the data to the nearest cluster centroids.
 
         Parameters
@@ -96,3 +108,30 @@ class KMeansTokenizer:
             inverse=True,
         )
         return x_tokenized
+
+    def reconstruct(self, labels: torch.Tensor, pid_values: torch.Tensor):
+        """Reconstruct the data from the cluster labels.
+
+        Parameters
+        -----------
+        labels: torch.Tensor
+            Cluster labels of shape (batch_size, num_points).
+        pid_values: torch.Tensor
+            PID values of shape (batch_size, num_points).
+
+        Returns
+        -------
+        reconstructed: torch.Tensor
+            Reconstructed data of shape (batch_size, num_points, num_features).
+        """
+        batch_size, num_points = labels.shape
+        x_reconstructed = self.kmeans.centroids.to(labels.device)[labels]
+        x_reconstructed = x_reconstructed.reshape(batch_size, num_points, -1)
+        x_reconstructed = preprocess_tensor(
+            x_reconstructed,
+            index_PID=4,
+            scale_factors=self.scale_factors.to(labels.device),
+            pid_values=pid_values,
+            inverse=True,
+        )
+        return x_reconstructed
