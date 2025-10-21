@@ -70,6 +70,12 @@ def main():
         default=0,
         help="Number of validation batches to use. If <1.0, this is a fraction of the total val batches.",
     )
+    parser.add_argument(
+        "--val_check_interval",
+        type=int,
+        default=None,
+        help="Number of training batches between each validation check. If <1.0, this is a fraction of the total training batches.",
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -333,6 +339,9 @@ def main():
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
+        val_check_interval=int(args.val_check_interval)
+        if args.val_check_interval is not None
+        else 1.0,
     )
 
     # Training
