@@ -15,6 +15,11 @@ from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
 
 
+def combine_features(x, pid, add_info):
+    """Combine main features, PID, and additional info into a single tensor."""
+    return torch.cat([x, pid.unsqueeze(-1), add_info], dim=-1)
+
+
 class MaskedPredictionCallback(Callback):
     # save the first 10 validation batches for visualization
 
@@ -55,7 +60,7 @@ class MaskedPredictionCallback(Callback):
             # only keep minimal items and move tensors to CPU immediately
             saved_batch = {}
             # keep X and y only (others are not needed for visualization)
-            for key in ("X", "y"):
+            for key in ("X", "y", "add_info", "pid"):
                 if key in batch:
                     val = batch[key]
                     saved_batch[key] = (
@@ -92,7 +97,7 @@ class MaskedPredictionCallback(Callback):
         if len(self.validation_batches) < self.n_batches:
             # only keep minimal items and move tensors to CPU immediately
             saved_batch = {}
-            for key in ("X", "y"):
+            for key in ("X", "y", "add_info", "pid"):
                 if key in batch:
                     val = batch[key]
                     saved_batch[key] = (
@@ -166,7 +171,16 @@ class MaskedPredictionCallback(Callback):
         batches_pred_token_ids = []
 
         for batch, output in zip(batches_list, outputs_list):
-            targets_transformed = pl_module.tokenizer.transform(batch["X"])
+            targets_fullres = combine_features(
+                batch["X"], batch["pid"], batch["add_info"]
+            )
+            targets_transformed_x, targets_transformed_add_info = (
+                pl_module.tokenizer.transform(batch["X"], add_info=batch["add_info"])
+            )
+            targets_transformed = combine_features(
+                targets_transformed_x, batch["pid"], targets_transformed_add_info
+            )
+
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
                 :, :, 0
@@ -182,10 +196,20 @@ class MaskedPredictionCallback(Callback):
             # reshape back to (batch_size, num_points)
             predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
             # extract the reconstructed features from the predicted token IDs
-            predictions_reconstructed = pl_module.tokenizer.reconstruct(
-                predicted_tokens,
-                pid_values=batch["X"][:, :, 4],
+            predictions_reconstructed_x, predictions_reconstructed_add_info = (
+                pl_module.tokenizer.reconstruct(
+                    predicted_tokens,
+                    num_features_x=batch["X"].shape[-1],
+                )
             )
+            predictions_reconstructed = combine_features(
+                predictions_reconstructed_x,
+                batch["pid"],
+                predictions_reconstructed_add_info,
+            )
+
+            print(f"Targets transformed shape: {targets_transformed.shape}")
+            print(f"Predictions reconstructed shape: {predictions_reconstructed.shape}")
 
             batches_pred_token_ids.append(
                 np_to_ak(
@@ -203,14 +227,14 @@ class MaskedPredictionCallback(Callback):
             )
             batches_masked_true_ak.append(
                 np_to_ak(
-                    batch["X"].cpu().numpy(),
+                    targets_fullres.cpu().numpy(),
                     names=feature_names.keys(),
                     mask=mask_valid_particle_but_masked.cpu().numpy(),
                 )
             )
             batches_survived_ak.append(
                 np_to_ak(
-                    batch["X"].cpu().numpy(),
+                    targets_fullres.cpu().numpy(),
                     names=feature_names.keys(),
                     mask=(mask_valid_particle & ~mask_valid_particle_but_masked)
                     .cpu()
