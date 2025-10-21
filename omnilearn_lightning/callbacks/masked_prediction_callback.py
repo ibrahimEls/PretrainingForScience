@@ -151,6 +151,11 @@ class MaskedPredictionCallback(Callback):
             "phi": "Particle $\\Delta\\phi$",
             "log_pt": "Particle $\\log(p_{T})$",
             "log_E": "Particle $\\log(E)$",
+            "PID": "Particle ID",
+            "d0val": "$d_{0}$",
+            "d0err": "$d_{0}^{err}$",
+            "dzval": "$d_{z}$",
+            "dzerr": "$d_{z}^{err}$",
         }
         # Prepare awkward arrays for all batches
         batches_survived_ak = []
@@ -357,6 +362,7 @@ class MaskedPredictionCallback(Callback):
             },
             ratio=True,
             legend_kwargs={"loc": "upper left"},
+            ax_rows=3,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
@@ -381,10 +387,16 @@ class MaskedPredictionCallback(Callback):
                 "phi": np.linspace(-1, 1, 50),
                 "log_pt": np.linspace(-3, 3, 50),
                 "log_E": np.linspace(-3, 3, 50),
+                "PID": np.linspace(-10, 10, 50),
+                "d0val": np.linspace(-0.1, 0.1, 50),
+                "d0err": np.linspace(-0.1, 0.1, 50),
+                "dzval": np.linspace(-0.1, 0.1, 50),
+                "dzerr": np.linspace(-0.1, 0.1, 50),
             },
             legend_kwargs={"loc": "upper left", "fontsize": 9},
             ax_size=(3.1, 2.0),
             decorate_ax_kwargs={"yscale": 1.4},
+            ax_rows=3,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
