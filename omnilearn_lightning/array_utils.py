@@ -51,12 +51,12 @@ def preprocess_tensor(
         )
         return batch_with_pid
 
-    batch_no_pid = batch.clone()
-    indices = [i for i in range(batch_no_pid.shape[2]) if i != index_PID]
-    batch_no_pid = batch_no_pid[:, :, indices]
+    batch_without_pid = batch.clone()
+    indices = [i for i in range(batch_without_pid.shape[2]) if i != index_PID]
+    batch_without_pid = batch_without_pid[:, :, indices]
     # scale features
-    batch_no_pid = batch_no_pid * 1 / scale_factors
-    return batch_no_pid
+    batch_without_pid = batch_without_pid * 1 / scale_factors
+    return batch_without_pid
 
 
 def p4s_from_ptetaphimass(
