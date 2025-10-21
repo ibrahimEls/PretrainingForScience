@@ -94,114 +94,114 @@ class TestCombineAkArrays(unittest.TestCase):
 
 class TestPreprocessTensor(unittest.TestCase):
     def setUp(self):
-        # Create a simple batch: shape (batch_size=1, n_points=2, n_features=6)
-        # PID is at index 4 by default
-        self.batch = torch.tensor(
+        # Create simple inputs: x has 3 features, add_info has 2 features
+        self.x = torch.tensor(
             [
                 [
-                    [1.0, 2.0, 3.0, 4.0, 99.0, 6.0],
-                    [10.0, 20.0, 30.0, 40.0, 199.0, 60.0],
+                    [1.0, 2.0, 4.0],
+                    [10.0, 20.0, 40.0],
                 ]
             ],
             dtype=torch.float32,
         )
-        # scale_factors correspond to features excluding PID index (0,1,2,3,5)
-        self.scale_factors = torch.tensor(
-            [1.0, 2.0, 4.0, 8.0, 16.0], dtype=torch.float32
+        self.add_info = torch.tensor(
+            [
+                [
+                    [5.0, 15.0],
+                    [50.0, 150.0],
+                ]
+            ],
+            dtype=torch.float32,
         )
+        self.sfx = torch.tensor([1.0, 2.0, 4.0], dtype=torch.float32)
+        self.sfa = torch.tensor([10.0, 30.0], dtype=torch.float32)
 
-    def test_forward_remove_pid_and_scale_default_index(self):
-        # Remove PID and scale features
+    def test_forward_concat_scaled(self):
         out = preprocess_tensor(
-            batch=self.batch,
-            index_PID=4,
+            x=self.x,
+            add_info=self.add_info,
             inverse=False,
-            scale_factors=self.scale_factors,
+            scale_factors_x=self.sfx,
+            scale_factors_add_info=self.sfa,
         )
-
-        # Manually compute expected result
         expected = torch.tensor(
             [
                 [
-                    [1.0 / 1.0, 2.0 / 2.0, 3.0 / 4.0, 4.0 / 8.0, 6.0 / 16.0],
-                    [10.0 / 1.0, 20.0 / 2.0, 30.0 / 4.0, 40.0 / 8.0, 60.0 / 16.0],
+                    [1.0 / 1.0, 2.0 / 2.0, 4.0 / 4.0, 5.0 / 10.0, 15.0 / 30.0],
+                    [10.0 / 1.0, 20.0 / 2.0, 40.0 / 4.0, 50.0 / 10.0, 150.0 / 30.0],
                 ]
             ]
         )
         self.assertTrue(torch.allclose(out, expected))
 
-    def test_inverse_reconstructs_original_tensor(self):
-        # Forward: remove PID and scale
+    def test_inverse_concat_unscaled(self):
         out = preprocess_tensor(
-            batch=self.batch,
-            index_PID=4,
-            inverse=False,
-            scale_factors=self.scale_factors,
-        )
-
-        # Inverse: insert PID and unscale
-        pid_vals = self.batch[:, :, 4]
-        reconstructed = preprocess_tensor(
-            batch=out,
-            index_PID=4,
+            x=self.x,
+            add_info=self.add_info,
             inverse=True,
-            pid_values=pid_vals,
-            scale_factors=self.scale_factors,
+            scale_factors_x=self.sfx,
+            scale_factors_add_info=self.sfa,
         )
-        self.assertTrue(torch.allclose(reconstructed, self.batch))
+        expected = torch.cat([self.x * self.sfx, self.add_info * self.sfa], dim=-1)
+        self.assertTrue(torch.allclose(out, expected))
 
     def test_raises_if_scale_factors_missing(self):
         with self.assertRaises(ValueError):
             preprocess_tensor(
-                batch=self.batch, index_PID=4, inverse=False, scale_factors=None
+                x=self.x,
+                add_info=self.add_info,
+                inverse=False,
+                scale_factors_x=None,
+                scale_factors_add_info=self.sfa,
             )
-
-    def test_raises_if_inverse_without_pid_values(self):
-        # Missing pid_values when inverse=True should raise
         with self.assertRaises(ValueError):
             preprocess_tensor(
-                batch=self.batch[:, :, [0, 1, 2, 3, 5]],
-                index_PID=4,
-                inverse=True,
-                pid_values=None,
-                scale_factors=self.scale_factors,
+                x=self.x,
+                add_info=self.add_info,
+                inverse=False,
+                scale_factors_x=self.sfx,
+                scale_factors_add_info=None,
             )
 
-    def test_round_trip_with_non_default_pid_index(self):
-        # Use PID at index 1, n_features=4
-        batch = torch.tensor(
-            [
-                [
-                    [9.0, 11.0, 3.0, 5.0],
-                    [8.0, 12.0, 6.0, 10.0],
-                ]
-            ],
-            dtype=torch.float32,
-        )
-        # Excluding PID at 1 leaves indices [0,2,3]
-        scale_factors = torch.tensor([1.0, 2.0, 4.0], dtype=torch.float32)
+    def test_raises_if_wrong_feature_sizes(self):
+        # Wrong size for x scale factors
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                x=self.x,
+                add_info=self.add_info,
+                inverse=False,
+                scale_factors_x=torch.tensor([1.0, 2.0], dtype=torch.float32),
+                scale_factors_add_info=self.sfa,
+            )
+        # Wrong size for add_info scale factors
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                x=self.x,
+                add_info=self.add_info,
+                inverse=False,
+                scale_factors_x=self.sfx,
+                scale_factors_add_info=torch.tensor([10.0], dtype=torch.float32),
+            )
 
-        forward = preprocess_tensor(
-            batch=batch,
-            index_PID=1,
-            inverse=False,
-            scale_factors=scale_factors,
-        )
-
-        # Expect: remove index 1 and scale
-        expected_forward = batch[:, :, [0, 2, 3]] * (1.0 / scale_factors)
-        self.assertTrue(torch.allclose(forward, expected_forward))
-
-        # Inverse with pid values from index 1
-        pid_vals = batch[:, :, 1]
-        reconstructed = preprocess_tensor(
-            batch=forward,
-            index_PID=1,
-            inverse=True,
-            pid_values=pid_vals,
-            scale_factors=scale_factors,
-        )
-        self.assertTrue(torch.allclose(reconstructed, batch))
+    def test_raises_if_wrong_dims(self):
+        # Provide 2D x
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                x=self.x.squeeze(0),
+                add_info=self.add_info,
+                inverse=False,
+                scale_factors_x=self.sfx,
+                scale_factors_add_info=self.sfa,
+            )
+        # Provide 2D add_info
+        with self.assertRaises(ValueError):
+            preprocess_tensor(
+                x=self.x,
+                add_info=self.add_info.squeeze(0),
+                inverse=False,
+                scale_factors_x=self.sfx,
+                scale_factors_add_info=self.sfa,
+            )
 
 
 class TestNpToAk(unittest.TestCase):
