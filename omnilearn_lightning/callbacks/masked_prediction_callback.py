@@ -208,9 +208,6 @@ class MaskedPredictionCallback(Callback):
                 predictions_reconstructed_add_info,
             )
 
-            print(f"Targets transformed shape: {targets_transformed.shape}")
-            print(f"Predictions reconstructed shape: {predictions_reconstructed.shape}")
-
             batches_pred_token_ids.append(
                 np_to_ak(
                     predicted_tokens.unsqueeze(-1).cpu().numpy(),
