@@ -23,6 +23,7 @@ class PETDataModule(LightningDataModule):
         use_add: bool = False,
         num_samples=-1,
         train_tag: str = "train",
+        initial_shuffling_of_indices=True,
         **kwargs,
     ):
         super().__init__()
@@ -34,6 +35,7 @@ class PETDataModule(LightningDataModule):
         self.use_add = use_add
         self.num_samples = num_samples
         self.train_tag = train_tag
+        self.initial_shuffling_of_indices = initial_shuffling_of_indices
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -49,6 +51,7 @@ class PETDataModule(LightningDataModule):
             rank=0,  # For single-GPU or single-node usage
             size=1,
             limit_num_samples=self.num_samples,
+            initial_shuffling_of_indices=self.initial_shuffling_of_indices,
         )
         if stage == "fit" or stage is None or stage == "validate":
             self.train_dataset = load_data(
@@ -280,6 +283,7 @@ def load_data(
     rank=0,
     size=1,
     limit_num_samples=-1,
+    initial_shuffling_of_indices=True,
 ):
     supported_datasets = [
         "top",
@@ -324,6 +328,10 @@ def load_data(
         index_file = dataset_path / "file_index.npy"
         if index_file.is_file():
             indices = np.load(index_file, mmap_mode="r")[rank::size]
+            if initial_shuffling_of_indices:
+                # shuffle indices once here to ensure that jet types are mixed
+                perm = np.random.permutation(len(indices))
+                indices = indices[perm]
             file_indices.extend(
                 (file_idx + index_shift, sample_idx) for file_idx, sample_idx in indices
             )
