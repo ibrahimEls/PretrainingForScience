@@ -15,8 +15,14 @@ from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
 
 
-def combine_features(x, pid, add_info):
+def combine_features(x, pid=None, add_info=None):
     """Combine main features, PID, and additional info into a single tensor."""
+    if pid is None and add_info is None:
+        return x
+    if pid is None:
+        return torch.cat([x, add_info], dim=-1)
+    if add_info is None:
+        return torch.cat([x, pid.unsqueeze(-1)], dim=-1)
     return torch.cat([x, pid.unsqueeze(-1), add_info], dim=-1)
 
 
@@ -170,15 +176,27 @@ class MaskedPredictionCallback(Callback):
         batches_jet_labels = []
         batches_pred_token_ids = []
 
-        for batch, output in zip(batches_list, outputs_list):
+        for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
+            # adjust feature names based on available features in the first batch
+            if i == 0:
+                if batch.get("pid") is None:
+                    feature_names.pop("PID")
+                if batch.get("add_info") is None:
+                    for add_info_name in ["d0val", "d0err", "dzval", "dzerr"]:
+                        feature_names.pop(add_info_name)
+
             targets_fullres = combine_features(
-                batch["X"], batch["pid"], batch["add_info"]
+                batch["X"],
+                batch.get("pid"),
+                batch.get("add_info"),
             )
             targets_transformed_x, targets_transformed_add_info = (
                 pl_module.tokenizer.transform(batch["X"], add_info=batch["add_info"])
             )
             targets_transformed = combine_features(
-                targets_transformed_x, batch["pid"], targets_transformed_add_info
+                targets_transformed_x,
+                batch.get("pid"),
+                targets_transformed_add_info,
             )
 
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
@@ -383,13 +401,14 @@ class MaskedPredictionCallback(Callback):
             },
             ratio=True,
             legend_kwargs={"loc": "upper left"},
-            ax_rows=3,
+            ax_rows=3 if len(feature_names) > 6 else 2,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
             fontsize=10,
             y=1.04,
         )
+        fig.tight_layout()
         save_and_log(fig, "particle_distributions")
 
         # plot residuals of predicted vs true masked particles
@@ -417,13 +436,14 @@ class MaskedPredictionCallback(Callback):
             legend_kwargs={"loc": "upper left", "fontsize": 9},
             ax_size=(3.1, 2.0),
             decorate_ax_kwargs={"yscale": 1.4},
-            ax_rows=3,
+            ax_rows=3 if len(feature_names) > 6 else 2,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
             fontsize=10,
             y=1.08,
         )
+        fig.tight_layout()
         save_and_log(fig, "particle_residuals")
 
         # ------ scatter plots for a few example jets ------
