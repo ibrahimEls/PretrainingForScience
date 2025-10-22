@@ -22,6 +22,7 @@ class PETDataModule(LightningDataModule):
         use_pid: bool = False,
         use_add: bool = False,
         num_samples=-1,
+        train_tag: str = "train",
         **kwargs,
     ):
         super().__init__()
@@ -32,6 +33,7 @@ class PETDataModule(LightningDataModule):
         self.use_pid = use_pid
         self.use_add = use_add
         self.num_samples = num_samples
+        self.train_tag = train_tag
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -51,15 +53,18 @@ class PETDataModule(LightningDataModule):
         if stage == "fit" or stage is None or stage == "validate":
             self.train_dataset = load_data(
                 self.dataset,
-                dataset_type="train",
+                dataset_type=self.train_tag,
                 **loading_kwargs,
             )
-
-            self.val_dataset = load_data(
-                self.dataset,
-                dataset_type="val",
-                **loading_kwargs,
-            )
+            if not self.train_tag == "equal_class":
+                # in that case we don't load the validation set cause it's a workaround
+                # to load a balanced training set (e.g. for cases where we don't train
+                # with the whole dataset)
+                self.val_dataset = load_data(
+                    self.dataset,
+                    dataset_type="val",
+                    **loading_kwargs,
+                )
         elif stage == "test":
             self.test_dataset = load_data(
                 self.dataset,

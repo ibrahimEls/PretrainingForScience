@@ -321,7 +321,7 @@ def ddp_setup():
     return local_rank, rank, dist.get_world_size()
 
 
-def get_bigram(add_timestamp: bool = False) -> str:
+def get_bigram(add_timestamp: bool = False, timestamp_first: bool = False) -> str:
     """Generates a random bigram consisting of an adjective and a noun.
     I.e. "Happy-Dog", "Blue-Car", etc.
     """
@@ -334,7 +334,10 @@ def get_bigram(add_timestamp: bool = False) -> str:
     bigram = f"{adjective.capitalize()}-{noun.capitalize()}"
     if add_timestamp:
         timestamp = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        bigram = f"{bigram}-{timestamp}"
+        if timestamp_first:
+            bigram = f"{timestamp}-{bigram}"
+        else:
+            bigram = f"{bigram}-{timestamp}"
     return bigram
 
 

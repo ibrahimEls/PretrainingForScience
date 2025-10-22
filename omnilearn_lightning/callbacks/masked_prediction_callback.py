@@ -15,6 +15,11 @@ from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
 
 
+def combine_features(x, pid, add_info):
+    """Combine main features, PID, and additional info into a single tensor."""
+    return torch.cat([x, pid.unsqueeze(-1), add_info], dim=-1)
+
+
 class MaskedPredictionCallback(Callback):
     # save the first 10 validation batches for visualization
 
@@ -55,7 +60,7 @@ class MaskedPredictionCallback(Callback):
             # only keep minimal items and move tensors to CPU immediately
             saved_batch = {}
             # keep X and y only (others are not needed for visualization)
-            for key in ("X", "y"):
+            for key in ("X", "y", "add_info", "pid"):
                 if key in batch:
                     val = batch[key]
                     saved_batch[key] = (
@@ -92,7 +97,7 @@ class MaskedPredictionCallback(Callback):
         if len(self.validation_batches) < self.n_batches:
             # only keep minimal items and move tensors to CPU immediately
             saved_batch = {}
-            for key in ("X", "y"):
+            for key in ("X", "y", "add_info", "pid"):
                 if key in batch:
                     val = batch[key]
                     saved_batch[key] = (
@@ -151,6 +156,11 @@ class MaskedPredictionCallback(Callback):
             "phi": "Particle $\\Delta\\phi$",
             "log_pt": "Particle $\\log(p_{T})$",
             "log_E": "Particle $\\log(E)$",
+            "PID": "Particle ID",
+            "d0val": "$d_{0}$",
+            "d0err": "$d_{0}^{err}$",
+            "dzval": "$d_{z}$",
+            "dzerr": "$d_{z}^{err}$",
         }
         # Prepare awkward arrays for all batches
         batches_survived_ak = []
@@ -161,10 +171,16 @@ class MaskedPredictionCallback(Callback):
         batches_pred_token_ids = []
 
         for batch, output in zip(batches_list, outputs_list):
-            centroids = pl_module.tokenizer.kmeans.centroids.cpu()
-            pl_module.tokenizer.kmeans.centroids = centroids
+            targets_fullres = combine_features(
+                batch["X"], batch["pid"], batch["add_info"]
+            )
+            targets_transformed_x, targets_transformed_add_info = (
+                pl_module.tokenizer.transform(batch["X"], add_info=batch["add_info"])
+            )
+            targets_transformed = combine_features(
+                targets_transformed_x, batch["pid"], targets_transformed_add_info
+            )
 
-            targets_transformed = pl_module.tokenizer.transform(batch["X"])
             mask_valid_particle = output["mask_valid_particle"][:, :, 0].bool()
             mask_valid_particle_but_masked = output["mask_valid_particle_but_masked"][
                 :, :, 0
@@ -180,7 +196,17 @@ class MaskedPredictionCallback(Callback):
             # reshape back to (batch_size, num_points)
             predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
             # extract the reconstructed features from the predicted token IDs
-            predictions_reconstructed = centroids[predicted_tokens]
+            predictions_reconstructed_x, predictions_reconstructed_add_info = (
+                pl_module.tokenizer.reconstruct(
+                    predicted_tokens,
+                    num_features_x=batch["X"].shape[-1],
+                )
+            )
+            predictions_reconstructed = combine_features(
+                predictions_reconstructed_x,
+                batch["pid"],
+                predictions_reconstructed_add_info,
+            )
 
             batches_pred_token_ids.append(
                 np_to_ak(
@@ -198,14 +224,14 @@ class MaskedPredictionCallback(Callback):
             )
             batches_masked_true_ak.append(
                 np_to_ak(
-                    batch["X"].cpu().numpy(),
+                    targets_fullres.cpu().numpy(),
                     names=feature_names.keys(),
                     mask=mask_valid_particle_but_masked.cpu().numpy(),
                 )
             )
             batches_survived_ak.append(
                 np_to_ak(
-                    batch["X"].cpu().numpy(),
+                    targets_fullres.cpu().numpy(),
                     names=feature_names.keys(),
                     mask=(mask_valid_particle & ~mask_valid_particle_but_masked)
                     .cpu()
@@ -357,6 +383,7 @@ class MaskedPredictionCallback(Callback):
             },
             ratio=True,
             legend_kwargs={"loc": "upper left"},
+            ax_rows=3,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
@@ -381,10 +408,16 @@ class MaskedPredictionCallback(Callback):
                 "phi": np.linspace(-1, 1, 50),
                 "log_pt": np.linspace(-3, 3, 50),
                 "log_E": np.linspace(-3, 3, 50),
+                "PID": np.linspace(-10, 10, 50),
+                "d0val": np.linspace(-0.1, 0.1, 50),
+                "d0err": np.linspace(-0.1, 0.1, 50),
+                "dzval": np.linspace(-0.1, 0.1, 50),
+                "dzerr": np.linspace(-0.1, 0.1, 50),
             },
             legend_kwargs={"loc": "upper left", "fontsize": 9},
             ax_size=(3.1, 2.0),
             decorate_ax_kwargs={"yscale": 1.4},
+            ax_rows=3,
         )
         fig.suptitle(
             f"Number of shown particles: {num_particles}, Number of unique tokens predicted: {num_unique_tokens}",
