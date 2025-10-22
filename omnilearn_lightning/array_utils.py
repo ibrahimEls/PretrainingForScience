@@ -8,31 +8,35 @@ vector.register_awkward()
 
 def preprocess_tensor(
     x: torch.Tensor,
-    add_info: torch.Tensor,
+    add_info: torch.Tensor | None = None,
     inverse: bool = False,
-    scale_factors_x: torch.Tensor = None,
-    scale_factors_add_info: torch.Tensor = None,
+    scale_factors_x: torch.Tensor | None = None,
+    scale_factors_add_info: torch.Tensor | None = None,
 ):
-    """Preprocess two tensors (x and add_info) by scaling or unscaling features.
+    """Preprocess tensors by scaling/unscaling and concatenating features.
 
     Parameters
     ----------
     x : torch.Tensor
         Tensor of shape (batch_size, num_points, num_features_x).
-    add_info : torch.Tensor
-        Tensor of shape (batch_size, num_points, num_features_add_info).
+    add_info : torch.Tensor or None
+        Optional tensor of shape (batch_size, num_points, num_features_add_info).
+        If ``None`` or if ``scale_factors_add_info`` is ``None``, only ``x`` is processed.
     inverse : bool, optional
         If True, multiply by scale factors (inverse transform). If False, divide by scale factors
         (forward normalization). Default is False.
     scale_factors_x : torch.Tensor, optional
         Scale factors for ``x`` with shape (num_features_x,). Required.
     scale_factors_add_info : torch.Tensor, optional
-        Scale factors for ``add_info`` with shape (num_features_add_info,). Required.
+        Scale factors for ``add_info`` with shape (num_features_add_info,). If ``None``,
+        ``add_info`` is ignored and only ``x`` is processed.
 
     Returns
     -------
     torch.Tensor
-        Combined tensor of shape (batch_size, num_points, num_features_x + num_features_add_info).
+        If both ``x`` and ``add_info`` are processed, returns a combined tensor of shape
+        (batch_size, num_points, num_features_x + num_features_add_info). Otherwise returns
+        only the processed ``x`` tensor with shape (batch_size, num_points, num_features_x).
 
     Raises
     ------
@@ -40,37 +44,40 @@ def preprocess_tensor(
         If required scale factors are missing or shapes are incompatible.
     """
 
-    if scale_factors_x is None or scale_factors_add_info is None:
+    # Validate and process x
+    if scale_factors_x is None:
+        raise ValueError("scale_factors_x must be provided")
+    if x.dim() != 3:
         raise ValueError(
-            "Both scale_factors_x and scale_factors_add_info must be provided"
+            "x must be a 3D tensor of shape (batch_size, num_points, num_features)"
         )
-
-    if x.dim() != 3 or add_info.dim() != 3:
-        raise ValueError(
-            "x and add_info must be 3D tensors of shape (batch_size, num_points, num_features)"
-        )
-
-    # Ensure scale factor last-dim matches
     if scale_factors_x.shape[-1] != x.shape[-1]:
         raise ValueError(
             f"scale_factors_x last dimension must match x features: {scale_factors_x.shape[-1]} != {x.shape[-1]}"
+        )
+    sfx = torch.as_tensor(scale_factors_x, device=x.device, dtype=x.dtype)
+    x_proc = x * sfx if inverse else x / sfx
+
+    # If add_info or its scale factors are missing, return only processed x
+    if add_info is None or scale_factors_add_info is None:
+        return x_proc
+
+    # Otherwise, validate and process add_info and concatenate
+    if add_info.dim() != 3:
+        raise ValueError(
+            "add_info must be a 3D tensor of shape (batch_size, num_points, num_features)"
         )
     if scale_factors_add_info.shape[-1] != add_info.shape[-1]:
         raise ValueError(
             "scale_factors_add_info last dimension must match add_info features: "
             f"{scale_factors_add_info.shape[-1]} != {add_info.shape[-1]}"
         )
-
-    # Prepare scale factors for device/dtype and broadcasting
-    sfx = torch.as_tensor(scale_factors_x, device=x.device, dtype=x.dtype)
     sfa = torch.as_tensor(
         scale_factors_add_info, device=add_info.device, dtype=add_info.dtype
     )
+    add_proc = add_info * sfa if inverse else add_info / sfa
 
-    if inverse:
-        return torch.cat([x * sfx, add_info * sfa], dim=-1)
-
-    return torch.cat([x / sfx, add_info / sfa], dim=-1)
+    return torch.cat([x_proc, add_proc], dim=-1)
 
 
 def p4s_from_ptetaphimass(
