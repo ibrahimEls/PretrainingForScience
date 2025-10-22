@@ -179,9 +179,9 @@ class MaskedPredictionCallback(Callback):
         for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
             # adjust feature names based on available features in the first batch
             if i == 0:
-                if batch.get("pid") is None:
+                if pl_module.use_pid is False or batch.get("pid") is None:
                     feature_names.pop("PID")
-                if batch.get("add_info") is None:
+                if pl_module.use_add is False or batch.get("add_info") is None:
                     for add_info_name in ["d0val", "d0err", "dzval", "dzerr"]:
                         feature_names.pop(add_info_name)
 
