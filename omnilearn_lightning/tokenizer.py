@@ -9,7 +9,7 @@ class KMeansTokenizer:
         self,
         n_clusters: int,
         scale_factors_x: torch.Tensor,
-        scale_factors_add_info: torch.Tensor,
+        scale_factors_add_info: torch.Tensor | None,
         mode: str = "euclidean",
         **kwargs,
     ):
@@ -21,8 +21,9 @@ class KMeansTokenizer:
             Number of clusters (codebook size).
         scale_factors_x: torch.Tensor
             Scale factors for x features.
-        scale_factors_add_info: torch.Tensor
-            Scale factors for add_info features.
+        scale_factors_add_info: torch.Tensor or None
+            Scale factors for add_info features. If None, add_info is treated as absent
+            throughout and only x features are used.
         mode: str, optional
             Distance metric to use. Default is "euclidean".
         kwargs:
@@ -35,27 +36,45 @@ class KMeansTokenizer:
         self.scale_factors_x = scale_factors_x
         self.scale_factors_add_info = scale_factors_add_info
 
-    def fit(self, x: torch.Tensor, add_info: torch.Tensor, mask: torch.Tensor = None):
+    def _use_add_info(self, add_info):
+        """Helper to determine if add_info features should be used."""
+        return self.scale_factors_add_info is not None and add_info is not None
+
+    def _get_scale_factors_add_info(self, device):
+        if self.scale_factors_add_info is None:
+            return None
+        return self.scale_factors_add_info.to(device)
+
+    def fit(
+        self,
+        x: torch.Tensor,
+        add_info: torch.Tensor | None = None,
+        mask: torch.Tensor | None = None,
+    ):
         """Fit the KMeans model to the data.
 
         Parameters
         ----------
         x: torch.Tensor
             Input x data of shape (batch_size, num_points, num_features_x).
-        add_info: torch.Tensor
-            Input add_info data of shape (batch_size, num_points, num_features_add_info).
+        add_info: torch.Tensor, optional
+            Optional add_info data of shape (batch_size, num_points, num_features_add_info).
+            If None (or if scale_factors_add_info is None), only x is used.
         mask: torch.Tensor, optional
             Boolean mask of shape (batch_size, num_points) indicating which points to
             include in the fitting process. If provided, only the points where mask is
             True will be used for fitting. Default is None.
         """
-        # Normalize and concatenate x and add_info
+        # Normalize and concatenate x and add_info (if used)
+        use_add_info = self._use_add_info(add_info)
         combined = preprocess_tensor(
             x,
-            add_info,
+            add_info if use_add_info else None,
             inverse=False,
             scale_factors_x=self.scale_factors_x.to(x.device),
-            scale_factors_add_info=self.scale_factors_add_info.to(add_info.device),
+            scale_factors_add_info=self._get_scale_factors_add_info(
+                add_info.device if use_add_info else x.device
+            ),
         )
 
         # Handle 3D input (batch_size, num_points, num_features)
@@ -70,28 +89,32 @@ class KMeansTokenizer:
 
         self.kmeans.fit(combined)
 
-    def predict(self, x: torch.Tensor, add_info: torch.Tensor):
+    def predict(self, x: torch.Tensor, add_info: torch.Tensor | None = None):
         """Predict the closest cluster each sample belongs to.
 
         Parameters
         -----------
         x: torch.Tensor
             Input x data of shape (batch_size, num_points, num_features_x).
-        add_info: torch.Tensor
-            Input add_info data of shape (batch_size, num_points, num_features_add_info).
+        add_info: torch.Tensor, optional
+            Optional add_info data of shape (batch_size, num_points, num_features_add_info).
+            If None (or if scale_factors_add_info is None), only x is used.
 
         Returns
         -------
         labels: torch.Tensor
             Index of the cluster each sample belongs to, of shape (batch_size, num_points).
         """
-        # Normalize and concatenate
+        # Normalize and concatenate x and add_info (if used)
+        use_add_info = self._use_add_info(add_info)
         combined = preprocess_tensor(
             x,
-            add_info,
+            add_info if use_add_info else None,
             inverse=False,
             scale_factors_x=self.scale_factors_x.to(x.device),
-            scale_factors_add_info=self.scale_factors_add_info.to(add_info.device),
+            scale_factors_add_info=self._get_scale_factors_add_info(
+                add_info.device if use_add_info else x.device
+            ),
         )
 
         # move centroids to the same device as x
@@ -102,15 +125,16 @@ class KMeansTokenizer:
         labels = labels.reshape(batch_size, num_points)
         return labels
 
-    def transform(self, x: torch.Tensor, add_info: torch.Tensor):
+    def transform(self, x: torch.Tensor, add_info: torch.Tensor | None = None):
         """Transform the data to the nearest cluster centroids.
 
         Parameters
         -----------
         x: torch.Tensor
             Input x data of shape (batch_size, num_points, num_features_x).
-        add_info: torch.Tensor
-            Input add_info data of shape (batch_size, num_points, num_features_add_info).
+        add_info: torch.Tensor, optional
+            Optional add_info data of shape (batch_size, num_points, num_features_add_info).
+            If None (or if scale_factors_add_info is None), only x is used.
 
         Returns
         -------
@@ -130,8 +154,11 @@ class KMeansTokenizer:
 
         # Split centroids back into x and add_info parts
         num_features_x = x.shape[-1]
+        use_add_info = self._use_add_info(add_info)
         centroids_x = centroids_normalized[..., :num_features_x]
-        centroids_add_info = centroids_normalized[..., num_features_x:]
+        centroids_add_info = (
+            centroids_normalized[..., num_features_x:] if use_add_info else None
+        )
 
         # Denormalize using inverse transform
         tokenized = preprocess_tensor(
@@ -139,12 +166,14 @@ class KMeansTokenizer:
             centroids_add_info,
             inverse=True,
             scale_factors_x=self.scale_factors_x.to(x.device),
-            scale_factors_add_info=self.scale_factors_add_info.to(add_info.device),
+            scale_factors_add_info=self._get_scale_factors_add_info(
+                add_info.device if use_add_info else x.device
+            ),
         )
 
         # Split and return x and add_info parts separately
         tokenized_x = tokenized[:, :, :num_features_x]
-        tokenized_add_info = tokenized[:, :, num_features_x:]
+        tokenized_add_info = tokenized[:, :, num_features_x:] if use_add_info else None
         return tokenized_x, tokenized_add_info
 
     def reconstruct(self, labels: torch.Tensor, num_features_x: int):
@@ -171,8 +200,11 @@ class KMeansTokenizer:
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts
+        use_add_info = self.scale_factors_add_info is not None
         centroids_x = centroids_normalized[..., :num_features_x]
-        centroids_add_info = centroids_normalized[..., num_features_x:]
+        centroids_add_info = (
+            centroids_normalized[..., num_features_x:] if use_add_info else None
+        )
 
         # Denormalize using inverse transform
         reconstructed = preprocess_tensor(
@@ -180,10 +212,12 @@ class KMeansTokenizer:
             centroids_add_info,
             inverse=True,
             scale_factors_x=self.scale_factors_x.to(labels.device),
-            scale_factors_add_info=self.scale_factors_add_info.to(labels.device),
+            scale_factors_add_info=self._get_scale_factors_add_info(labels.device),
         )
 
         # Split and return x and add_info parts separately
         reconstructed_x = reconstructed[..., :num_features_x]
-        reconstructed_add_info = reconstructed[..., num_features_x:]
+        reconstructed_add_info = (
+            reconstructed[..., num_features_x:] if use_add_info else None
+        )
         return reconstructed_x, reconstructed_add_info

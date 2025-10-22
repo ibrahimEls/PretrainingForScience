@@ -146,6 +146,7 @@ class TestPreprocessTensor(unittest.TestCase):
         self.assertTrue(torch.allclose(out, expected))
 
     def test_raises_if_scale_factors_missing(self):
+        # Missing x scale factors should raise
         with self.assertRaises(ValueError):
             preprocess_tensor(
                 x=self.x,
@@ -154,14 +155,15 @@ class TestPreprocessTensor(unittest.TestCase):
                 scale_factors_x=None,
                 scale_factors_add_info=self.sfa,
             )
-        with self.assertRaises(ValueError):
-            preprocess_tensor(
-                x=self.x,
-                add_info=self.add_info,
-                inverse=False,
-                scale_factors_x=self.sfx,
-                scale_factors_add_info=None,
-            )
+        # Missing add_info scale factors should be treated as "ignore add_info"
+        out = preprocess_tensor(
+            x=self.x,
+            add_info=self.add_info,
+            inverse=False,
+            scale_factors_x=self.sfx,
+            scale_factors_add_info=None,
+        )
+        self.assertTrue(torch.allclose(out, self.x / self.sfx))
 
     def test_raises_if_wrong_feature_sizes(self):
         # Wrong size for x scale factors
