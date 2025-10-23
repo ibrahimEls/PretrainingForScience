@@ -76,6 +76,18 @@ def main():
         default=None,
         help="Number of training batches between each validation check. If <1.0, this is a fraction of the total training batches.",
     )
+    parser.add_argument(
+        "--scheduler_warmup_steps",
+        type=int,
+        default=1_000,
+        help="Number of steps for learning rate warmup.",
+    )
+    parser.add_argument(
+        "--scheduler_total_steps",
+        type=int,
+        default=10_000,
+        help="Number of steps after which the learning rate scheduler reaches minimum LR. Will go back up afterwards.",
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -251,6 +263,8 @@ def main():
         ckpt_loaded=args.ckpt,
         tokenizer_ckpt=args.tokenizer_ckpt,
         pos_encoding_type=args.pos_encoding_type,
+        total_steps=args.scheduler_total_steps,
+        warmup_steps=args.scheduler_warmup_steps,
     )
 
     if rank_zero_only.rank == 0:
