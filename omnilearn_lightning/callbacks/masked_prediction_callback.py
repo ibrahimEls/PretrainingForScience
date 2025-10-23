@@ -1,4 +1,8 @@
-"""Callback for monitoring the masked prediction task during training."""
+"""Callback for monitoring the masked prediction task during training.
+
+This callback collects a limited number of batches during validation/test and
+creates a set of visualizations.
+"""
 
 import os
 from typing import Any, Dict
@@ -13,6 +17,15 @@ from pytorch_lightning import Callback, LightningModule
 from omnilearn_lightning.array_utils import ak_subtract, np_to_ak, p4s_from_ptetaphimass
 from omnilearn_lightning.plotting.feature_plotting import plot_features
 from omnilearn_lightning.plotting.utils import set_mpl_style
+
+# Keys we persist from batches/outputs for later visualization
+_BATCH_KEEP_KEYS = ("X", "y", "add_info", "pid")
+_OUTPUT_KEEP_KEYS = (
+    "mask_valid_particle",
+    "mask_valid_particle_but_masked",
+    "masked_pred",
+    "masked_pred_pid",
+)
 
 
 def combine_features(x, pid=None, add_info=None):
@@ -43,12 +56,128 @@ class MaskedPredictionCallback(Callback):
         os.makedirs(self.image_path, exist_ok=True)
 
     def on_validation_epoch_start(self, trainer, pl_module: LightningModule) -> None:
-        self.validation_batches = []
-        self.validation_outputs = []
+        self._init_phase_storage("validation")
 
     def on_test_epoch_start(self, trainer, pl_module: LightningModule) -> None:
-        self.test_batches = []
-        self.test_outputs = []
+        self._init_phase_storage("test")
+
+    # ------------------------- small helpers -------------------------
+    def _init_phase_storage(self, phase: str) -> None:
+        setattr(self, f"{phase}_batches", [])
+        setattr(self, f"{phase}_outputs", [])
+
+    def _is_global_rank_zero(self, trainer) -> bool:
+        # Only log/collect from rank 0 to avoid duplication
+        return getattr(trainer, "global_rank", 0) == 0
+
+    def _collect_batch_end_common(
+        self,
+        trainer,
+        phase: str,
+        outputs: Dict[str, Any],
+        batch: Any,
+    ) -> None:
+        """Collect minimal batch/output data for later visualization.
+
+        Stores CPU copies only and limits the number of stored batches.
+        """
+        if not self._is_global_rank_zero(trainer):
+            return
+
+        batches: list = getattr(self, f"{phase}_batches")
+        outs: list = getattr(self, f"{phase}_outputs")
+
+        if len(batches) >= self.n_batches:
+            return
+
+        # Keep a minimal, CPU-only snapshot of inputs
+        saved_batch: Dict[str, Any] = {}
+        for key in _BATCH_KEEP_KEYS:
+            if key in batch:
+                val = batch[key]
+                saved_batch[key] = val.detach().cpu() if torch.is_tensor(val) else val
+        batches.append(saved_batch)
+
+        # Keep a minimal, CPU-only snapshot of model outputs
+        saved_outputs: Dict[str, Any] = {}
+        for key in _OUTPUT_KEEP_KEYS:
+            if key in outputs:
+                val = outputs[key]
+                saved_outputs[key] = val.detach().cpu() if torch.is_tensor(val) else val
+        outs.append(saved_outputs)
+
+    @staticmethod
+    def _sample_token_ids(logits: torch.Tensor) -> torch.Tensor:
+        """Sample token IDs from logits via softmax + multinomial.
+
+        Returns a tensor of shape (batch, num_points).
+        """
+        probs = torch.softmax(logits, dim=-1)
+        num_tokens = probs.shape[-1]
+        flat = probs.view(-1, num_tokens)
+        sampled = torch.multinomial(flat, num_samples=1).squeeze(-1)
+        return sampled.view(probs.shape[0], -1)
+
+    def _save_and_log(self, trainer, fig, name: str) -> None:
+        """Save figure to disk and log to W&B if available."""
+        filename = f"{self.image_path}/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
+        print(f"Saving image to {filename}")
+        fig.savefig(filename, dpi=150, bbox_inches="tight")
+        for logger in getattr(trainer, "loggers", []) or []:
+            if logger.__class__.__name__ == "WandbLogger":
+                print(f"Logging image {filename} to wandb")
+                logger.experiment.log(
+                    {f"mpm_visualization_{name}": wandb.Image(filename)}
+                )
+
+    @staticmethod
+    def _draw_particle_scatter(
+        ax, base, overlay, overlay_color: str, overlay_label: str
+    ):
+        # Plot survived/base
+        ax.scatter(
+            base.phi,
+            base.eta,
+            s=np.exp(base.log_pt) * 1,
+            c="gray",
+            alpha=0.5,
+            label="Survived",
+        )
+        # Plot overlay
+        ax.scatter(
+            overlay.phi,
+            overlay.eta,
+            s=np.exp(overlay.log_pt) * 1,
+            c=overlay_color,
+            alpha=0.5,
+            label=overlay_label,
+        )
+
+    @staticmethod
+    def _style_jet_axes(ax, title: str, feature_names: Dict[str, str]):
+        ax.set_title(title, fontsize=10)
+        ax.set_xlim(-1, 1)
+        ax.set_ylim(-1, 1.4)
+        ax.set_xlabel(feature_names["phi"])
+        ax.set_ylabel(feature_names["eta"])
+        # draw a circle to indicate the jet radius of 0.8
+        circle = plt.Circle(
+            (0, 0),
+            0.8,
+            color="black",
+            fill=False,
+            linestyle="--",
+            linewidth=1,
+            alpha=0.5,
+        )
+        ax.add_artist(circle)
+        # make legend from scatter colors (smaller markers)
+        handles, labels = ax.get_legend_handles_labels()
+        handles = [
+            ax.scatter([], [], s=20, alpha=0.5, label=label, color=h.get_edgecolor()[0])
+            for h, label in zip(handles, labels)
+        ]
+        ax.legend(handles, labels, loc="upper left", ncol=1, fontsize=8)
 
     def on_test_batch_end(
         self,
@@ -60,35 +189,7 @@ class MaskedPredictionCallback(Callback):
         dataloader_idx: int = 0,
     ) -> None:
         # mirror validation behaviour for test loop
-        if trainer.global_rank != 0:
-            return  # only save from rank 0 to avoid duplication
-        if len(self.test_batches) < self.n_batches:
-            # only keep minimal items and move tensors to CPU immediately
-            saved_batch = {}
-            # keep X and y only (others are not needed for visualization)
-            for key in ("X", "y", "add_info", "pid"):
-                if key in batch:
-                    val = batch[key]
-                    saved_batch[key] = (
-                        val.detach().cpu() if torch.is_tensor(val) else val
-                    )
-            self.test_batches.append(saved_batch)
-
-            saved_outputs = {}
-            # masks: move to cpu
-            for key in (
-                "mask_valid_particle",
-                "mask_valid_particle_but_masked",
-                "masked_pred",
-                "masked_pred_pid",
-            ):
-                if key in outputs:
-                    val = outputs[key]
-                    saved_outputs[key] = (
-                        val.detach().cpu() if torch.is_tensor(val) else val
-                    )
-
-            self.test_outputs.append(saved_outputs)
+        self._collect_batch_end_common(trainer, "test", outputs, batch)
 
     def on_validation_batch_end(
         self,
@@ -99,37 +200,11 @@ class MaskedPredictionCallback(Callback):
         batch_idx: int,
         dataloader_idx: int = 0,
     ) -> None:
-        if trainer.global_rank != 0:
-            return  # only save from rank 0 to avoid duplication
-        if len(self.validation_batches) < self.n_batches:
-            # only keep minimal items and move tensors to CPU immediately
-            saved_batch = {}
-            for key in ("X", "y", "add_info", "pid"):
-                if key in batch:
-                    val = batch[key]
-                    saved_batch[key] = (
-                        val.detach().cpu() if torch.is_tensor(val) else val
-                    )
-            self.validation_batches.append(saved_batch)
-
-            saved_outputs = {}
-            for key in (
-                "mask_valid_particle",
-                "mask_valid_particle_but_masked",
-                "masked_pred",
-                "masked_pred_pid",
-            ):
-                if key in outputs:
-                    val = outputs[key]
-                    saved_outputs[key] = (
-                        val.detach().cpu() if torch.is_tensor(val) else val
-                    )
-
-            self.validation_outputs.append(saved_outputs)
+        self._collect_batch_end_common(trainer, "validation", outputs, batch)
 
     def on_validation_epoch_end(self, trainer, pl_module: LightningModule) -> None:
         # process validation batches and produce plots
-        if trainer.global_rank != 0:
+        if not self._is_global_rank_zero(trainer):
             return  # only save from rank 0 to avoid duplication
         self._process_and_log(
             trainer, pl_module, self.validation_batches, self.validation_outputs
@@ -137,7 +212,7 @@ class MaskedPredictionCallback(Callback):
 
     def on_test_epoch_end(self, trainer, pl_module: LightningModule) -> None:
         # process test batches and produce plots
-        if trainer.global_rank != 0:
+        if not self._is_global_rank_zero(trainer):
             return  # only save from rank 0 to avoid duplication
         # if no test batches were collected, skip
         if not getattr(self, "test_batches", None):
@@ -188,9 +263,7 @@ class MaskedPredictionCallback(Callback):
                         feature_names.pop(add_info_name)
 
             targets_fullres = combine_features(
-                batch["X"],
-                batch.get("pid"),
-                batch.get("add_info"),
+                batch["X"], batch.get("pid"), batch.get("add_info")
             )
             targets_transformed_x, targets_transformed_add_info = (
                 pl_module.tokenizer.transform(batch["X"], add_info=batch["add_info"])
@@ -207,28 +280,12 @@ class MaskedPredictionCallback(Callback):
             ].bool()
             targets_transformed[~mask_valid_particle] = 0  # set invalid points to 0
 
-            # predicted_tokens = output["masked_pred"].argmax(dim=-1)
-            probs = torch.nn.functional.softmax(output["masked_pred"], dim=-1)
-            # reshape to (batch_size * num_points, num_tokens) for sampling
-            probs = probs.view(-1, probs.shape[-1])
-            # sample from the categorical distribution
-            predicted_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
-            # reshape back to (batch_size, num_points)
-            predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
+            # Sample feature tokens
+            predicted_tokens = self._sample_token_ids(output["masked_pred"])
 
             # same for pid-tokens if pid is used
             if pl_module.use_pid:
-                # predicted_pid_tokens = output["masked_pred_pid"].argmax(dim=-1)
-                probs_pid = torch.nn.functional.softmax(
-                    output["masked_pred_pid"], dim=-1
-                )
-                probs_pid = probs_pid.view(-1, probs_pid.shape[-1])
-                predicted_pid_tokens = torch.multinomial(
-                    probs_pid, num_samples=1
-                ).squeeze(-1)
-                predicted_pid_tokens = predicted_pid_tokens.view(
-                    output["masked_pred_pid"].shape[0], -1
-                )
+                predicted_pid_tokens = self._sample_token_ids(output["masked_pred_pid"])
 
             # extract the reconstructed features from the predicted token IDs
             predictions_reconstructed_x, predictions_reconstructed_add_info = (
@@ -338,17 +395,6 @@ class MaskedPredictionCallback(Callback):
         )
         p4s_survived_and_pred_sum = sum_p4_and_get_feats(p4s_survived_and_pred)
 
-        def save_and_log(fig, name):
-            filename = f"{self.image_path}/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
-            print(f"Saving image to {filename}")
-            fig.savefig(filename, dpi=150, bbox_inches="tight")
-            for logger in trainer.loggers:
-                if logger.__class__.__name__ == "WandbLogger":
-                    print(f"Logging image {filename} to wandb")
-                    logger.experiment.log(
-                        {f"mpm_visualization_{name}": wandb.Image(filename)}
-                    )
-
         # jet-level distributions
         fig, axarr = plot_features(
             {
@@ -370,7 +416,7 @@ class MaskedPredictionCallback(Callback):
             ax_size=(3.3, 2.5),
             ratio=True,
         )
-        save_and_log(fig, "jet_distributions")
+        self._save_and_log(trainer, fig, "jet_distributions")
 
         # jet-level residuals
         fig_res, axarr_res = plot_features(
@@ -394,7 +440,7 @@ class MaskedPredictionCallback(Callback):
             decorate_ax_kwargs={"yscale": 1.5},
             legend_kwargs={"loc": "upper left"},
         )
-        save_and_log(fig_res, "jet_residuals")
+        self._save_and_log(trainer, fig_res, "jet_residuals")
 
         # calculate number of particles and number of unique selected token-IDs
         num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
@@ -426,7 +472,7 @@ class MaskedPredictionCallback(Callback):
             y=1.04,
         )
         fig.tight_layout()
-        save_and_log(fig, "particle_distributions")
+        self._save_and_log(trainer, fig, "particle_distributions")
 
         # plot residuals of predicted vs true masked particles
         fig, axarr = plot_features(
@@ -461,104 +507,48 @@ class MaskedPredictionCallback(Callback):
             y=1.08,
         )
         fig.tight_layout()
-        save_and_log(fig, "particle_residuals")
+        self._save_and_log(trainer, fig, "particle_residuals")
 
         # ------ scatter plots for a few example jets ------
 
         total_width = 20 / 8 * self.n_example_jets
         fig, ax = plt.subplots(3, self.n_example_jets, figsize=(total_width, 8))
 
-        # ax = ax.flatten()
         for i_jet in range(self.n_example_jets):
             ax_top = ax[0, i_jet]
             ax_middle = ax[1, i_jet]
             ax_bottom = ax[2, i_jet]
 
-            ax_top.scatter(
-                x_part_ak_survived[i_jet].phi,
-                x_part_ak_survived[i_jet].eta,
-                s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="gray",
-                alpha=0.5,
-                label="Survived",
+            # Draw three panels with shared base (survived)
+            self._draw_particle_scatter(
+                ax_top,
+                x_part_ak_survived[i_jet],
+                x_part_ak_true[i_jet],
+                "C0",
+                "Masked (full-res)",
             )
-            ax_top.scatter(
-                x_part_ak_true[i_jet].phi,
-                x_part_ak_true[i_jet].eta,
-                s=np.exp(x_part_ak_true[i_jet].log_pt) * 1,
-                c="C0",
-                alpha=0.5,
-                label="Masked (full-res)",
+            self._draw_particle_scatter(
+                ax_middle,
+                x_part_ak_survived[i_jet],
+                x_part_ak_true_tokenized[i_jet],
+                "C1",
+                "Masked (tokenized)",
             )
-
-            ax_middle.scatter(
-                x_part_ak_survived[i_jet].phi,
-                x_part_ak_survived[i_jet].eta,
-                s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="gray",
-                alpha=0.5,
-                label="Survived",
-            )
-            ax_middle.scatter(
-                x_part_ak_true_tokenized[i_jet].phi,
-                x_part_ak_true_tokenized[i_jet].eta,
-                s=np.exp(x_part_ak_true_tokenized[i_jet].log_pt) * 1,
-                c="C1",
-                alpha=0.5,
-                label="Masked (tokenized)",
+            self._draw_particle_scatter(
+                ax_bottom,
+                x_part_ak_survived[i_jet],
+                x_part_ak_pred[i_jet],
+                "C2",
+                "Predicted",
             )
 
-            ax_bottom.scatter(
-                x_part_ak_survived[i_jet].phi,
-                x_part_ak_survived[i_jet].eta,
-                s=np.exp(x_part_ak_survived[i_jet].log_pt) * 1,
-                c="gray",
-                alpha=0.5,
-                label="Survived",
-            )
-            ax_bottom.scatter(
-                x_part_ak_pred[i_jet].phi,
-                x_part_ak_pred[i_jet].eta,
-                s=np.exp(x_part_ak_pred[i_jet].log_pt) * 1,
-                c="C2",
-                alpha=0.5,
-                label="Predicted",
-            )
-
-            # jet type label
             jet_label = jet_labels[i_jet]
-
-            for _ax in [ax_top, ax_middle, ax_bottom]:
-                _ax.set_title(f"Jet {i_jet + 1}, $label={jet_label}$", fontsize=10)
-                _ax.set_xlim(-1, 1)
-                _ax.set_ylim(-1, 1.4)
-                _ax.set_xlabel(feature_names["phi"])
-                _ax.set_ylabel(feature_names["eta"])
-                _ax.legend(loc="upper left", fontsize=8)
-
-                # draw a circle to indicate the jet radius of 0.8
-                circle = plt.Circle(
-                    (0, 0),
-                    0.8,
-                    color="black",
-                    fill=False,
-                    linestyle="--",
-                    linewidth=1,
-                    alpha=0.5,
+            for _ax in (ax_top, ax_middle, ax_bottom):
+                self._style_jet_axes(
+                    _ax, f"Jet {i_jet + 1}, $label={jet_label}$", feature_names
                 )
-                _ax.add_artist(circle)
-                # make legend
-                handles, labels = _ax.get_legend_handles_labels()
-                handles = [
-                    _ax.scatter(
-                        [], [], s=20, alpha=0.5, label=label, color=h.get_edgecolor()[0]
-                    )
-                    for h, label in zip(handles, labels)
-                ]
-                _ax.legend(handles, labels, loc="upper left", ncol=1, fontsize=8)
 
         fig.tight_layout()
-
-        save_and_log(fig, "example_jets")
+        self._save_and_log(trainer, fig, "example_jets")
 
         plt.show()
