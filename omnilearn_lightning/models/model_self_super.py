@@ -127,7 +127,7 @@ class PET2(nn.Module):
                 # num_tokens=num_tokens,
                 # num_add=self.num_add,
                 # num_classes=num_classes,
-                codebook_size=codebook_size,
+                codebook_size_continuous=codebook_size,
             )
             # initialize trainable mask token embeddings
             # those are used to fill in the masked positions
@@ -156,7 +156,7 @@ class PET2(nn.Module):
             v,
             x_body,
             z_body,
-            masked_pred,
+            masked_pred_continuous,
             mask_body,
             mask_valid_particle,
             mask_valid_particle_but_masked,
@@ -230,12 +230,15 @@ class PET2(nn.Module):
                 dim=1,
             ).unsqueeze(-1)
 
-            masked_pred = self.masked_predictor(
+            masked_pred_continuous, masked_pred_pid = self.masked_predictor(
                 x_body_masked, mask=mask_for_masked_pred_head
             )
 
             # remove tokens and time from masked_pred
-            masked_pred = masked_pred[:, self.body.num_tokens + 1 :, :]
+            masked_pred_continuous = masked_pred_continuous[
+                :, self.body.num_tokens + 1 :, :
+            ]
+            masked_pred_pid = masked_pred_pid[:, self.body.num_tokens + 1 :, :]
             mask_valid_particle = mask_for_masked_pred_head[
                 :, self.body.num_tokens + 1 :
             ]
@@ -248,7 +251,9 @@ class PET2(nn.Module):
             "x_body": x_body,
             "z_body": z_body,
             "alpha": alpha**2,
-            "masked_pred": masked_pred,
+            "masked_pred": masked_pred_continuous,
+            "masked_pred_pid": masked_pred_pid,
+            "pid": pid,
             "mask_valid_particle": mask_valid_particle,
             "mask_valid_particle_but_masked": mask_valid_particle_but_masked,
         }
@@ -435,6 +440,18 @@ class PETLightning(LightningModule):
             )
             losses["loss_masked"] = lmp
             loss = loss + lmp
+
+            # if pid is used, add its loss too
+            if self.use_pid and outputs.get("masked_pred_pid") is not None:
+                masked_pred_pid = outputs["masked_pred_pid"]
+                y_masked_pid = outputs["pid"].clone()
+                y_masked_pid[mask_for_targets == 0] = -1
+                lmp_pid = self.loss_masked(
+                    masked_pred_pid.reshape(B * T, masked_pred_pid.shape[-1]),
+                    y_masked_pid.reshape(B * T).long(),
+                )
+                losses["loss_masked_pid"] = lmp_pid
+                loss = loss + lmp_pid
         else:
             losses["loss_masked"] = torch.tensor(0.0, device=self.device)
             masked_pred = None
@@ -451,6 +468,7 @@ class PETLightning(LightningModule):
 
         losses["loss"] = loss
         losses["masked_pred"] = masked_pred
+        losses["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
         losses["mask_valid_particle"] = outputs["mask_valid_particle"]
         losses["mask_valid_particle_but_masked"] = outputs[
             "mask_valid_particle_but_masked"

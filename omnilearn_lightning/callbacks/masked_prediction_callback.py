@@ -80,6 +80,7 @@ class MaskedPredictionCallback(Callback):
                 "mask_valid_particle",
                 "mask_valid_particle_but_masked",
                 "masked_pred",
+                "masked_pred_pid",
             ):
                 if key in outputs:
                     val = outputs[key]
@@ -116,6 +117,7 @@ class MaskedPredictionCallback(Callback):
                 "mask_valid_particle",
                 "mask_valid_particle_but_masked",
                 "masked_pred",
+                "masked_pred_pid",
             ):
                 if key in outputs:
                     val = outputs[key]
@@ -213,6 +215,21 @@ class MaskedPredictionCallback(Callback):
             predicted_tokens = torch.multinomial(probs, num_samples=1).squeeze(-1)
             # reshape back to (batch_size, num_points)
             predicted_tokens = predicted_tokens.view(output["masked_pred"].shape[0], -1)
+
+            # same for pid-tokens if pid is used
+            if pl_module.use_pid:
+                # predicted_pid_tokens = output["masked_pred_pid"].argmax(dim=-1)
+                probs_pid = torch.nn.functional.softmax(
+                    output["masked_pred_pid"], dim=-1
+                )
+                probs_pid = probs_pid.view(-1, probs_pid.shape[-1])
+                predicted_pid_tokens = torch.multinomial(
+                    probs_pid, num_samples=1
+                ).squeeze(-1)
+                predicted_pid_tokens = predicted_pid_tokens.view(
+                    output["masked_pred_pid"].shape[0], -1
+                )
+
             # extract the reconstructed features from the predicted token IDs
             predictions_reconstructed_x, predictions_reconstructed_add_info = (
                 pl_module.tokenizer.reconstruct(
@@ -222,8 +239,8 @@ class MaskedPredictionCallback(Callback):
             )
             predictions_reconstructed = combine_features(
                 predictions_reconstructed_x,
-                batch["pid"],
-                predictions_reconstructed_add_info,
+                pid=predicted_pid_tokens if pl_module.use_pid else None,
+                add_info=predictions_reconstructed_add_info,
             )
 
             batches_pred_token_ids.append(
