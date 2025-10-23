@@ -217,8 +217,11 @@ def main():
         path=args.path,
         batch_size=batch_size,
         num_workers=args.num_workers,
-        use_pid=args.use_pid,
-        use_add=args.use_add,
+        # Datamodule expects use_pid and use_add to be True for jetclass dataset
+        # as it otherwise doesn't split into pid/add info features (then `X`
+        # would have wrong input dim)
+        use_pid=True if args.dataset == "jetclass" else args.use_pid,
+        use_add=True if args.dataset == "jetclass" else args.use_add,
         num_samples=args.dataset_size,
     )
 

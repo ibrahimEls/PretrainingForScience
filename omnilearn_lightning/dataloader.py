@@ -362,7 +362,7 @@ def load_data(
         data,
         batch_size=batch,
         pin_memory=torch.cuda.is_available(),
-        shuffle=dataset_type == "train",
+        shuffle=True,
         sampler=None,
         persistent_workers=True,
         # sampler=(
