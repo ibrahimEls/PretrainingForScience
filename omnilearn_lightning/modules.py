@@ -90,11 +90,13 @@ class PET_masked_predictor(nn.Module):
         mlp_drop=0.1,
         attn_drop=0.1,
         # num_tokens=0,
-        codebook_size=5000,
+        codebook_size_continuous=5000,
+        codebook_size_pid=9,
     ):
         super().__init__()
         # self.num_tokens = num_tokens
-        self.codebook_size = codebook_size
+        self.codebook_size = codebook_size_continuous
+        self.codebook_size_pid = codebook_size_pid
 
         self.blocks = nn.ModuleList(
             [
@@ -114,7 +116,8 @@ class PET_masked_predictor(nn.Module):
             ]
         )
 
-        self.out = nn.Linear(hidden_size, codebook_size)
+        self.out_continuous = nn.Linear(hidden_size, codebook_size_continuous)
+        self.out_pid = nn.Linear(hidden_size, codebook_size_pid)
 
         self.initialize_weights()
 
@@ -130,9 +133,10 @@ class PET_masked_predictor(nn.Module):
         for ib, blk in enumerate(self.blocks):
             x = blk(x, mask=mask)
 
-        logits = self.out(x) * mask
+        logits_continuous = self.out_continuous(x) * mask
+        logits_pid = self.out_pid(x) * mask
 
-        return logits
+        return logits_continuous, logits_pid
 
 
 class PET_generator(nn.Module):
