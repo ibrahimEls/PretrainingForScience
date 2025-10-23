@@ -23,11 +23,11 @@ from omnilearn_lightning.plotting.feature_plotting import (
 from omnilearn_lightning.tokenizer import KMeansTokenizer
 from omnilearn_lightning.utils import get_bigram
 
-NUM_TRAINING_SAMPLES = 1_000
+NUM_TRAINING_SAMPLES = 25_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
-CODEBOOK_SIZE = 2_000
+CODEBOOK_SIZE = 8_192
 # Separate scale factors for x and add_info
 SCALE_FACTORS_X = torch.tensor(
     [
@@ -94,13 +94,18 @@ datamodule.setup("fit")
 dataloader = datamodule.train_dataloader()
 
 training_x = torch.zeros(
-    (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_X), device="cpu"
+    (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_X),
+    device="cpu",
+    requires_grad=False,
 )
-training_pid = torch.zeros((NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET), device="cpu")
 training_add_info = torch.zeros(
-    (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_ADD), device="cpu"
+    (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_ADD),
+    device="cpu",
+    requires_grad=False,
 )
-training_y = torch.zeros((NUM_TRAINING_SAMPLES,), dtype=torch.long, device="cpu")
+training_y = torch.zeros(
+    (NUM_TRAINING_SAMPLES,), dtype=torch.long, device="cpu", requires_grad=False
+)
 
 # loop over batches to collect training data for kmeans
 start_idx = 0
@@ -115,10 +120,6 @@ for batch in tqdm(dataloader):
     fill_until = min(max_n_points_in_batch, NUM_MAX_POINTS_PER_JET)
 
     training_x[start_idx:end_idx, :fill_until] = batch["X"][:batch_size, :fill_until]
-    if "pid" in batch:
-        training_pid[start_idx:end_idx, :fill_until] = batch["pid"][
-            :batch_size, :fill_until
-        ]
     if "add_info" in batch and args.use_add_info:
         training_add_info[start_idx:end_idx, :fill_until] = batch["add_info"][
             :batch_size, :fill_until
@@ -147,9 +148,9 @@ kmeans_tokenizer = KMeansTokenizer(
 )
 print("Fitting kmeans tokenizer...")
 kmeans_tokenizer.fit(
-    training_x.cpu(),
-    add_info=training_add_info.cpu() if args.use_add_info else None,
-    mask=mask.cpu(),
+    training_x,
+    add_info=training_add_info if args.use_add_info else None,
+    mask=mask,
 )
 
 # save and load the kmeans model
@@ -166,7 +167,6 @@ feature_names = {
     "phi": "Particle $\\Delta\\phi$",
     "log_pt": "$\\log(p_{T})$",
     "log_E": "$\\log(E)$",
-    "PID": "Particle ID",
 }
 
 if args.use_add_info:
@@ -180,38 +180,36 @@ if args.use_add_info:
     )
 
 
-def combine_features(x, pid, add_info):
+def combine_features(x, add_info):
     if add_info is None:
-        return torch.cat([x, pid.unsqueeze(-1)], dim=-1)
-    return torch.cat([x, pid.unsqueeze(-1), add_info], dim=-1)
+        return x
+    return torch.cat([x, add_info], dim=-1)
 
 
 # Original
-batch_ak = np_to_ak(
-    combine_features(training_x, training_pid, training_add_info).cpu().numpy(),
+fullres_ak = np_to_ak(
+    combine_features(training_x, training_add_info).cpu().numpy(),
     names=feature_names,
     mask=mask.cpu().numpy(),
 )
 
 # Tokenize data (returns x and optional add_info parts)
-batch_tokenized_x, batch_tokenized_add_info = kmeans_tokenizer.transform(
+tokenized_x, tokenized_add_info = kmeans_tokenizer.transform(
     training_x,
     add_info=training_add_info if args.use_add_info else None,
 )
-batch_tokenized_x[~mask] = 0
+tokenized_x[~mask] = 0
 if args.use_add_info:
-    batch_tokenized_add_info[~mask] = 0
-batch_tokenized = combine_features(
-    batch_tokenized_x, training_pid, batch_tokenized_add_info
-)
-batch_tokenized_ak = np_to_ak(
-    batch_tokenized.cpu().numpy(), names=feature_names, mask=mask.cpu().numpy()
+    tokenized_add_info[~mask] = 0
+tokenized = combine_features(tokenized_x, tokenized_add_info)
+tokenized_ak = np_to_ak(
+    tokenized.cpu().numpy(), names=feature_names, mask=mask.cpu().numpy()
 )
 
 fig, axarr = plot_features(
     {
-        "JetClass particles": batch_ak,
-        "Tokenized": batch_tokenized_ak,
+        "JetClass particles": fullres_ak,
+        "Tokenized": tokenized_ak,
     },
     names=feature_names,
     ax_rows=3 if args.use_add_info else 2,
@@ -228,9 +226,9 @@ helper_kwargs = dict(
     field_name_phi="phi",
     pt_is_log=True,
 )
-p4s_original = p4s_from_ptetaphimass(batch_ak, **helper_kwargs)
+p4s_original = p4s_from_ptetaphimass(fullres_ak, **helper_kwargs)
 p4s_original_sum = ak.sum(p4s_original, axis=1)
-p4s_tokenized = p4s_from_ptetaphimass(batch_tokenized_ak, **helper_kwargs)
+p4s_tokenized = p4s_from_ptetaphimass(tokenized_ak, **helper_kwargs)
 p4s_tokenized_sum = ak.sum(p4s_tokenized, axis=1)
 
 fig, axarr = plot_features(
@@ -256,8 +254,8 @@ fig.savefig(f"{PLOT_DIR}/original_vs_tokenized_jet_features.pdf", **SAVE_FIG_KWA
 # pairplot comparing original and tokenized features
 pairplot_fig = plot_features_pairplot(
     {
-        "Original": batch_ak[:100],
-        "Tokenized (KMeans centroids)": batch_tokenized_ak[:100],
+        "Original": fullres_ak[:100],
+        "Tokenized (KMeans centroids)": tokenized_ak[:100],
     },
     names=feature_names,
     figsize=(10, 10),
@@ -270,13 +268,13 @@ pairplot_fig.figure.savefig(
 
 # pairplots for each feature comparing original and tokenized
 os.makedirs(f"{PLOT_DIR}/per_feature", exist_ok=True)
-for field in batch_ak.fields:
+for field in fullres_ak.fields:
     pairplot_fig = plot_features_pairplot(
         {
             "Original_vs_Tokenized": ak.Array(
                 {
-                    f"{field}_original": batch_ak[field],
-                    f"{field}_tokenized": batch_tokenized_ak[field],
+                    f"{field}_original": fullres_ak[field],
+                    f"{field}_tokenized": tokenized_ak[field],
                 }
             )
         },
