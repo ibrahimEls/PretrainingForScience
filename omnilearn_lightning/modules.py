@@ -91,7 +91,7 @@ class PET_masked_predictor(nn.Module):
         attn_drop=0.1,
         # num_tokens=0,
         codebook_size_continuous=5000,
-        codebook_size_pid=9,
+        codebook_size_pid=None,
     ):
         super().__init__()
         # self.num_tokens = num_tokens
@@ -117,7 +117,11 @@ class PET_masked_predictor(nn.Module):
         )
 
         self.out_continuous = nn.Linear(hidden_size, codebook_size_continuous)
-        self.out_pid = nn.Linear(hidden_size, codebook_size_pid)
+
+        if codebook_size_pid is None:
+            self.out_pid = None
+        else:
+            self.out_pid = nn.Linear(hidden_size, codebook_size_pid)
 
         self.initialize_weights()
 
@@ -134,7 +138,11 @@ class PET_masked_predictor(nn.Module):
             x = blk(x, mask=mask)
 
         logits_continuous = self.out_continuous(x) * mask
-        logits_pid = self.out_pid(x) * mask
+
+        if self.codebook_size_pid is None:
+            logits_pid = None
+        else:
+            logits_pid = self.out_pid(x) * mask
 
         return logits_continuous, logits_pid
 
