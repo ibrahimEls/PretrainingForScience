@@ -128,6 +128,7 @@ class PET2(nn.Module):
                 # num_add=self.num_add,
                 # num_classes=num_classes,
                 codebook_size_continuous=codebook_size,
+                codebook_size_pid=pid_dim if pid else None,
             )
             # initialize trainable mask token embeddings
             # those are used to fill in the masked positions
@@ -238,7 +239,8 @@ class PET2(nn.Module):
             masked_pred_continuous = masked_pred_continuous[
                 :, self.body.num_tokens + 1 :, :
             ]
-            masked_pred_pid = masked_pred_pid[:, self.body.num_tokens + 1 :, :]
+            if masked_pred_pid is not None:
+                masked_pred_pid = masked_pred_pid[:, self.body.num_tokens + 1 :, :]
             mask_valid_particle = mask_for_masked_pred_head[
                 :, self.body.num_tokens + 1 :
             ]

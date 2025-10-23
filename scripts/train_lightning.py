@@ -253,6 +253,10 @@ def main():
         pos_encoding_type=args.pos_encoding_type,
     )
 
+    if rank_zero_only.rank == 0:
+        print("Model initialized.")
+        print(model)
+
     if args.resume:
         ckpt_path = get_latest_checkpoint_dir(
             base_dir=os.path.join(args.outdir, save_tag)
