@@ -152,6 +152,12 @@ def main():
         default=None,
         help="Weights & Biases tags for the run",
     )
+    parser.add_argument(
+        "--run_note",
+        type=str,
+        default=None,
+        help="Optional note/description for the run",
+    )
 
     args = parser.parse_args()
 
@@ -301,7 +307,9 @@ def main():
             k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
             for k, v in vars(args).items()
         }
-        hparams.update({"run_dir": run_dir})
+        hparams.update(
+            {"run_dir": run_dir, "run_name": run_name, "run_note": args.run_note}
+        )
         # add SLURM job id if it exists
         if "SLURM_JOB_ID" in os.environ:
             hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
