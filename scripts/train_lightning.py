@@ -350,8 +350,9 @@ def main():
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
     if args.pretraining_mode == "self-super":
-        print("Using MaskedPredictionCallback for self-supervised learning")
-        callbacks.append(masked_prediction_callback)
+        if "mpm" in args.mode or args.mode == "pretrain":
+            print("Using MaskedPredictionCallback for self-supervised learning")
+            callbacks.append(masked_prediction_callback)
 
     trainer = Trainer(
         max_epochs=args.epoch,
