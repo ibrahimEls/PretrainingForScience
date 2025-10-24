@@ -78,7 +78,7 @@ class PET_classifier(nn.Module):
         return self.out(x)
 
 
-class PET_masked_predictor(nn.Module):
+class MPM_head(nn.Module):
     def __init__(
         self,
         hidden_size,

@@ -99,7 +99,7 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
         wandb_logger = WandbLogger(
             project=args.wandb_project,
             name=run_name,
-            tags=args.wandb_tags,
+            tags=args.wandb_tag,
             save_dir=args.outdir,
         )
 

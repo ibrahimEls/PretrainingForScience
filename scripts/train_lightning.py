@@ -146,11 +146,11 @@ def main():
         help="Weights & Biases project name",
     )
     parser.add_argument(
-        "--wandb_tags",
+        "--wandb_tag",
         type=str,
-        nargs="+",
+        action="append",
         default=None,
-        help="Weights & Biases tags for the run",
+        help="Weights & Biases tags for the run (can be specified multiple times)",
     )
 
     args = parser.parse_args()
@@ -301,7 +301,7 @@ def main():
             k: (v if isinstance(v, (int, float, str, bool)) or v is None else str(v))
             for k, v in vars(args).items()
         }
-        hparams.update({"run_dir": run_dir})
+        hparams.update({"run_dir": run_dir, "run_name": run_name})
         # add SLURM job id if it exists
         if "SLURM_JOB_ID" in os.environ:
             hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
@@ -309,7 +309,7 @@ def main():
         wandb_logger = WandbLogger(
             project=args.wandb_project,
             name=run_name,
-            tags=args.wandb_tags,
+            tags=args.wandb_tag,
             save_dir=args.outdir,
         )
 
@@ -342,8 +342,9 @@ def main():
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
     if args.pretraining_mode == "self-super":
-        print("Using MaskedPredictionCallback for self-supervised learning")
-        callbacks.append(masked_prediction_callback)
+        if "mpm" in args.mode or args.mode == "pretrain":
+            print("Using MaskedPredictionCallback for self-supervised learning")
+            callbacks.append(masked_prediction_callback)
 
     trainer = Trainer(
         max_epochs=args.epoch,

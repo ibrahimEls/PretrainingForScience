@@ -8,7 +8,7 @@ from pytorch_optimizer import Lion
 from ..array_utils import replace_masked_positions, set_fraction_ones_to_zeros
 from ..diffusion import get_logsnr_alpha_sigma, perturb
 from ..layers import DynamicTanh
-from ..modules import PET_body, PET_classifier, PET_generator, PET_masked_predictor
+from ..modules import MPM_head, PET_body, PET_classifier, PET_generator
 from ..utils import (
     CLIPLoss,
     get_param_groups,
@@ -49,7 +49,10 @@ class PET2(nn.Module):
         if self.mode not in [
             "classifier",
             "generator",
-            "masked_predictor",
+            "mpm",
+            "classifier+generator",
+            "classifier+mpm",
+            "generator+mpm",
             "pretrain",
         ]:
             raise ValueError(f"Mode '{self.mode}' not supported.")
@@ -84,7 +87,8 @@ class PET2(nn.Module):
         self.num_add = self.body.num_add
         self.classifier = None
         self.generator = None
-        if self.mode == "classifier" or self.mode == "pretrain":
+        # Initialize classifier if needed
+        if "classifier" in self.mode or self.mode == "pretrain":
             self.classifier = PET_classifier(
                 hidden_size,
                 num_transformers=num_transformers_head,
@@ -98,7 +102,8 @@ class PET2(nn.Module):
                 num_classes=num_classes,
             )
 
-        if self.mode == "generator" or self.mode == "pretrain":
+        # Initialize generator if needed
+        if "generator" in self.mode or self.mode == "pretrain":
             self.generator = PET_generator(
                 input_dim,
                 hidden_size,
@@ -114,8 +119,9 @@ class PET2(nn.Module):
                 num_classes=num_classes,
             )
 
-        if self.mode == "masked_predictor" or self.mode == "pretrain":
-            self.masked_predictor = PET_masked_predictor(
+        # Initialize MPM head if needed
+        if "mpm" in self.mode or self.mode == "pretrain":
+            self.mpm_head = MPM_head(
                 hidden_size,
                 num_transformers=num_transformers_head,
                 num_heads=num_heads,
@@ -158,6 +164,7 @@ class PET2(nn.Module):
             x_body,
             z_body,
             masked_pred_continuous,
+            masked_pred_pid,
             mask_body,
             mask_valid_particle,
             mask_valid_particle_but_masked,
@@ -172,21 +179,26 @@ class PET2(nn.Module):
             None,
             None,
             None,
+            None,
         )
         time = torch.rand(size=(x.shape[0],)).to(x.device)
         _, alpha, sigma = get_logsnr_alpha_sigma(time)
-        if self.mode == "generator" or self.mode == "pretrain":
+
+        # Generator forward pass
+        if "generator" in self.mode or self.mode == "pretrain":
             z, v = perturb(x, time)
             z_body = self.body(z, cond, pid, add_info, time)
             z_pred = self.generator(z_body, y)
 
-        if self.mode == "classifier" or self.mode == "pretrain":
+        # Classifier forward pass
+        if "classifier" in self.mode or self.mode == "pretrain":
             x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
             y_pred = self.classifier(x_body)
             if self.mode == "pretrain":
                 y_perturb = self.classifier(z_body)
 
-        if self.mode == "masked_predictor" or self.mode == "pretrain":
+        # MPM forward pass
+        if "mpm" in self.mode or self.mode == "pretrain":
             # this is where the masking happens
             # --> we set the specified fraction of ones in the mask to zeros
             #     and use that to mask the input point cloud
@@ -231,7 +243,7 @@ class PET2(nn.Module):
                 dim=1,
             ).unsqueeze(-1)
 
-            masked_pred_continuous, masked_pred_pid = self.masked_predictor(
+            masked_pred_continuous, masked_pred_pid = self.mpm_head(
                 x_body_masked, mask=mask_for_masked_pred_head
             )
 
