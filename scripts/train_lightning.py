@@ -146,11 +146,11 @@ def main():
         help="Weights & Biases project name",
     )
     parser.add_argument(
-        "--wandb_tags",
+        "--wandb_tag",
         type=str,
-        nargs="+",
+        action="append",
         default=None,
-        help="Weights & Biases tags for the run",
+        help="Weights & Biases tags for the run (can be specified multiple times)",
     )
     parser.add_argument(
         "--run_note",
@@ -317,7 +317,7 @@ def main():
         wandb_logger = WandbLogger(
             project=args.wandb_project,
             name=run_name,
-            tags=args.wandb_tags,
+            tags=args.wandb_tag,
             save_dir=args.outdir,
         )
 

@@ -93,11 +93,11 @@ def main():
         help="Weights & Biases project name",
     )
     parser.add_argument(
-        "--wandb_tags",
+        "--wandb_tag",
         type=str,
-        nargs="+",
-        default="Finetune",
-        help="Weights & Biases tags for the run",
+        action="append",
+        default=None,
+        help="Weights & Biases tags for the run (can be specified multiple times)",
     )
     args = parser.parse_args()
 
