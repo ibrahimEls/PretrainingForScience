@@ -164,10 +164,12 @@ class PET2(nn.Module):
             x_body,
             z_body,
             masked_pred_continuous,
+            masked_pred_pid,
             mask_body,
             mask_valid_particle,
             mask_valid_particle_but_masked,
         ) = (
+            None,
             None,
             None,
             None,
