@@ -76,6 +76,8 @@ def main():
         default=None,
         help="Number of training batches between each validation check. If <1.0, this is a fraction of the total training batches.",
     )
+    parser.add_argument("--shuffle_val_test_indices", type=str2bool, default=False)
+    parser.add_argument("--seed_for_initial_shuffling", type=int, default=None)
     parser.add_argument(
         "--scheduler_warmup_steps",
         type=int,
@@ -235,6 +237,8 @@ def main():
         use_pid=True if args.dataset == "jetclass" else args.use_pid,
         use_add=True if args.dataset == "jetclass" else args.use_add,
         num_samples=args.dataset_size,
+        shuffle_val_test_indices=args.shuffle_val_test_indices,
+        seed_for_initial_shuffling=args.seed_for_initial_shuffling,
     )
 
     model = PETLightning(

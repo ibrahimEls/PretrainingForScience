@@ -23,6 +23,8 @@ class PETDataModule(LightningDataModule):
         use_add: bool = False,
         num_samples=-1,
         train_tag: str = "train",
+        shuffle_val_test_indices: bool = False,
+        seed_for_initial_shuffling: int = None,
         **kwargs,
     ):
         super().__init__()
@@ -34,6 +36,8 @@ class PETDataModule(LightningDataModule):
         self.use_add = use_add
         self.num_samples = num_samples
         self.train_tag = train_tag
+        self.shuffle_val_test_indices = shuffle_val_test_indices
+        self.seed_for_initial_shuffling = seed_for_initial_shuffling
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -63,12 +67,16 @@ class PETDataModule(LightningDataModule):
                 self.val_dataset = load_data(
                     self.dataset,
                     dataset_type="val",
+                    shuffle_indices=self.shuffle_val_test_indices,
+                    seed_for_shuffling=self.seed_for_initial_shuffling,
                     **loading_kwargs,
                 )
         elif stage == "test":
             self.test_dataset = load_data(
                 self.dataset,
                 dataset_type="test",
+                shuffle_indices=self.shuffle_val_test_indices,
+                seed_for_shuffling=self.seed_for_initial_shuffling,
                 **loading_kwargs,
             )
         else:
@@ -280,6 +288,8 @@ def load_data(
     rank=0,
     size=1,
     limit_num_samples=-1,
+    shuffle_indices: bool = False,
+    seed_for_shuffling: int = None,
 ):
     supported_datasets = [
         "top",
@@ -324,6 +334,11 @@ def load_data(
         index_file = dataset_path / "file_index.npy"
         if index_file.is_file():
             indices = np.load(index_file, mmap_mode="r")[rank::size]
+            if shuffle_indices:
+                # shuffle indices once here to ensure that jet types are mixed
+                rng = np.random.default_rng(seed=seed_for_shuffling)
+                perm = rng.permutation(len(indices))
+                indices = indices[perm]
             file_indices.extend(
                 (file_idx + index_shift, sample_idx) for file_idx, sample_idx in indices
             )
@@ -362,7 +377,7 @@ def load_data(
         data,
         batch_size=batch,
         pin_memory=torch.cuda.is_available(),
-        shuffle=True,
+        shuffle=dataset_type == "train",
         sampler=None,
         persistent_workers=True,
         # sampler=(
