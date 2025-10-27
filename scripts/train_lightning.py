@@ -227,6 +227,8 @@ def main():
         load_val=True,
     )
 
+    print(f"Model mode: {args.mode}")
+
     model = PETLightning(
         input_dim=args.input_dim,
         num_classes=args.num_classes,

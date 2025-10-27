@@ -344,7 +344,7 @@ class PETLightning(LightningModule):
             pid=kwargs.get("use_pid", False),
             add_info=kwargs.get("add_info", False),
             num_classes=num_classes,
-            mode=kwargs.get("mode", "classifier"),
+            mode=mode,
             pos_encoding_type=pos_encoding_type,
         )
 
