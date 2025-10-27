@@ -141,7 +141,7 @@ def build_model(args):
         from omnilearn_lightning.models.model_gen_only import PETLightning
 
     elif args.pretraining_mode == "self-super":
-        from omnilearn_lightning.models.model_self_super import PETLightning
+        from temp.OmniLearnLightining.omnilearn_lightning.model import PETLightning
 
     elif args.pretraining_mode == "naive-self-super":
         from omnilearn_lightning.models.model_naive_self_super import PETLightning

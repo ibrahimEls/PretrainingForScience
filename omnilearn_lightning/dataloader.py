@@ -25,6 +25,7 @@ class PETDataModule(LightningDataModule):
         train_tag: str = "train",
         shuffle_val_test_indices: bool = False,
         seed_for_initial_shuffling: int = None,
+        load_val = False,
         **kwargs,
     ):
         super().__init__()
@@ -38,6 +39,7 @@ class PETDataModule(LightningDataModule):
         self.train_tag = train_tag
         self.shuffle_val_test_indices = shuffle_val_test_indices
         self.seed_for_initial_shuffling = seed_for_initial_shuffling
+        self.load_val = load_val
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -60,10 +62,7 @@ class PETDataModule(LightningDataModule):
                 dataset_type=self.train_tag,
                 **loading_kwargs,
             )
-            if not self.train_tag == "equal_class":
-                # in that case we don't load the validation set cause it's a workaround
-                # to load a balanced training set (e.g. for cases where we don't train
-                # with the whole dataset)
+            if self.load_val:
                 self.val_dataset = load_data(
                     self.dataset,
                     dataset_type="val",

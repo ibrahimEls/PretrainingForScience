@@ -7,7 +7,7 @@ sys.path.append("../")
 
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, EarlyStopping
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
@@ -17,7 +17,9 @@ from omnilearn_lightning.utils import (
     get_bigram,
     get_latest_checkpoint_dir,
     get_version_number,
+    load_partial_checkpoint
 )
+from omnilearn_lightning.model import PETLightning
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -70,8 +72,8 @@ def main():
     )
     parser.add_argument(
         "--limit_val_batches",
-        type=int,
-        default=0,
+        type=float,
+        default=1.0,
         help="Number of validation batches to use. If <1.0, this is a fraction of the total val batches.",
     )
     parser.add_argument(
@@ -106,6 +108,7 @@ def main():
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--K", type=int, default=15)
     parser.add_argument("--radius", type=float, default=0.4)
+    parser.add_argument("--patience", type=int, default=50)
     parser.add_argument(
         "--mode",
         type=str,
@@ -116,6 +119,8 @@ def main():
 
     # Training hyperparams
     parser.add_argument("--lr_factor", type=float, default=0.1)
+    parser.add_argument("--lr", type=float, default=1e-3)
+
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay")
@@ -124,7 +129,6 @@ def main():
         "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
     )
 
-    parser.add_argument("--pretraining_mode", type=str, default="super-gen")
     parser.add_argument("--tokenizer_ckpt", type=str, default=None)
     parser.add_argument(
         "--pos_encoding_type",
@@ -140,6 +144,8 @@ def main():
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
     parser.add_argument("--test", type=str2bool, default=False)
+    parser.add_argument("--fine_tune", type=str2bool, default=False)
+    parser.add_argument("--use_one_cycle", type=str2bool, default=False)
 
     # Logging
     parser.add_argument(
@@ -166,63 +172,35 @@ def main():
         num_transformers = 3
         num_heads = 4
         batch_size = 256
-        lr = 1e-3
-        save_tag = f"_micro_{args.dataset_size}"
+        save_tag = f"_micro_{args.dataset}_dataset_{args.dataset_size}"
 
     elif args.model_size == "small":
         hidden_size = 128
         num_transformers = 8
         num_heads = 8
         batch_size = 128
-        lr = 1e-4
-        save_tag = f"_small_{args.dataset_size}"
+        save_tag = f"_small_{args.dataset}_dataset_{args.dataset_size}"
 
     elif args.model_size == "medium":
         hidden_size = 512
         num_transformers = 12
         num_heads = 16
         batch_size = 32
-        lr = 1e-5
-        save_tag = f"_medium_{args.dataset_size}"
+        save_tag = f"_medium_{args.dataset}_dataset_{args.dataset_size}"
 
     else:
         raise ValueError(f"Unknown model size: {args.model_size}")
+    
 
-    if args.pretraining_mode == "super-gen":
-        from omnilearn_lightning.models.model_super_gen import PETLightning
-
-        save_tag = "super-gen" + save_tag
-
-    elif args.pretraining_mode == "super-only":
-        from omnilearn_lightning.models.model_super_only import PETLightning
-
-        save_tag = "super-only" + save_tag
-
-    elif args.pretraining_mode == "gen-only":
-        from omnilearn_lightning.models.model_gen_only import PETLightning
-
-        save_tag = "gen-only" + save_tag
-
-    elif args.pretraining_mode == "self-super":
+    if "mpm" in args.mode or args.mode == "pretrain":
         from omnilearn_lightning.callbacks.masked_prediction_callback import (
             MaskedPredictionCallback,
         )
-        from omnilearn_lightning.models.model_self_super import PETLightning
-
         if args.tokenizer_ckpt is None:
-            raise ValueError("tokenizer_ckpt must be provided for self-super mode")
+            raise ValueError("tokenizer_ckpt must be provided for MPM")
 
         masked_prediction_callback = MaskedPredictionCallback()
 
-        save_tag = "self-super" + save_tag
-
-    elif args.pretraining_mode == "naive-self-super":
-        from omnilearn_lightning.models.model_naive_self_super import PETLightning
-
-        save_tag = "naive-self-super" + save_tag
-
-    else:
-        raise ValueError(f"Unknown pretraining mode: {args.pretraining_mode}")
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
@@ -243,6 +221,7 @@ def main():
         num_samples=args.dataset_size,
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
+        load_val = True,
     )
 
     model = PETLightning(
@@ -258,7 +237,7 @@ def main():
         num_tokens=args.num_tokens,
         K=args.K,
         radius=args.radius,
-        lr=lr,
+        lr=args.lr,
         lr_factor=args.lr_factor,
         b1=args.b1,
         b2=args.b2,
@@ -273,6 +252,7 @@ def main():
         pos_encoding_type=args.pos_encoding_type,
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
+        use_one_cycle = args.use_one_cycle
     )
 
     if rank_zero_only.rank == 0:
@@ -349,10 +329,32 @@ def main():
 
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
-    if args.pretraining_mode == "self-super":
+    if args.mode == "self-super":
         if "mpm" in args.mode or args.mode == "pretrain":
             print("Using MaskedPredictionCallback for self-supervised learning")
             callbacks.append(masked_prediction_callback)
+
+    if  args.dataset != "jetclass":
+        print("Downstream Task! Adding Early Stopping...")
+        early_stop_callback = EarlyStopping(
+            monitor="val_loss",
+            patience=args.patience,
+            mode="min",
+            verbose=False,
+        )
+        callbacks.append(early_stop_callback)
+
+        if not args.fine_tune and not args.resume:
+            print("Training Downstream From Scratch")
+        elif not args.fine_tune and args.resume:
+            print("Resuming Downstream From Scratch")
+        elif args.fine_tune and not args.resume:
+            print(f"Loading Model From {args.ckpt}")
+            model = load_partial_checkpoint(model, args.ckpt, task=args.dataset)
+            print(f"Finetuning Model on Downstream")
+        elif args.fine_tune and args.resume:
+            print("Resuming Downstream Finetuning")
+
 
     trainer = Trainer(
         max_epochs=args.epoch,
