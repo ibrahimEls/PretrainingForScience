@@ -55,11 +55,10 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
         use_add=args.use_add,
         fine_tune=True,
         ckpt_loaded=ckpt_path,
+        resume=(args.resume or args.from_scratch),
     )
 
-    patience_val = 20
-    if args.resume or num_shots > 100_000:
-        patience_val = 3
+    patience_val = 50
     early_stop_callback = EarlyStopping(
         monitor="val_loss",
         patience=patience_val,
@@ -72,6 +71,8 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
 
     if args.from_scratch:
         print("Training From Scratch")
+    elif args.resume:
+        print(f"Resuming Training from {ckpt_path}")
     else:
         print(f"Loading Model From {ckpt_path}")
         model = load_partial_checkpoint(model, ckpt_path, task="top")
@@ -116,7 +117,7 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     )
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    max_epochs = 100
+    max_epochs = args.epoch
     strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
 
     trainer = Trainer(
@@ -134,14 +135,16 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     )
 
     # Train the model
-    trainer.fit(model, data_module)
+    trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
 
     # After training, load the best model based on validation loss
     best_model_path = checkpoint_callback.best_model_path
     print(f"Best model saved at: {best_model_path}")
 
-    best_model = model.__class__.load_from_checkpoint(
-        best_model_path, fine_tune=False, ckpt_loaded=best_model_path
+
+def eval_top_tagging(args, ckpt_path, gpuID):
+    best_model = PETLightning.load_from_checkpoint(
+        ckpt_path, fine_tune=False, ckpt_loaded=ckpt_path
     )
     best_model.eval()
 
@@ -159,7 +162,7 @@ def top_tagging_task(ckpt_path, args, tag, num_shots=100, gpuID=0):
     data_module = PETDataModule(
         dataset="top",
         path=args.path,
-        batch_size=256,
+        batch_size=args.batch_size,
         num_workers=args.num_workers,
         use_pid=args.use_pid,
         use_add=args.use_add,

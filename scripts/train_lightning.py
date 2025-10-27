@@ -1,5 +1,9 @@
 import argparse
 import os
+import sys
+
+sys.path.append("../")
+
 
 import torch
 from pytorch_lightning import Trainer

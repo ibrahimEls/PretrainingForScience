@@ -242,7 +242,7 @@ def sum_reduce(num, device):
     return rt
 
 
-def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False):
+def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=False):
     no_decay, decay = [], []
     last_layer_no_decay, last_layer_decay = [], []
 
@@ -250,7 +250,10 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False):
         if not param.requires_grad:
             continue
 
-        is_last_layer = name.startswith("classifier.out")
+        if all_head:
+            is_last_layer = name.startswith("classifier")
+        else:
+            is_last_layer = name.startswith("classifier.out")
 
         if any(keyword in name for keyword in model.no_weight_decay()):
             if is_last_layer:

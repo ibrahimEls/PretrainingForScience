@@ -4,7 +4,6 @@ import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
-from torch.optim.lr_scheduler import OneCycleLR
 
 from ..layers import DynamicTanh
 from ..modules import PET_body, PET_classifier
@@ -144,6 +143,7 @@ class PETLightning(LightningModule):
         event_threshold: int = 200,
         use_amp: bool = False,
         fine_tune: bool = False,
+        resume: bool = False,
         ckpt_loaded: str = "",
         # misc
         **kwargs,
@@ -182,6 +182,8 @@ class PETLightning(LightningModule):
         self.use_amp = use_amp
         self.fine_tune = fine_tune
         self.ckpt_loaded = ckpt_loaded
+        self.resume = resume
+        self.num_transformers = num_transformers
 
         # optimizer params
         self.lr = lr
@@ -271,32 +273,67 @@ class PETLightning(LightningModule):
 
     def configure_optimizers(self):
         if self.fine_tune:
+            # pg = get_param_groups(
+            #     self.model,
+            #     wd=self.weight_decay,
+            #     lr=self.lr,
+            #     lr_factor=self.lr_factor,
+            #     fine_tune=self.fine_tune,
+            #     all_head=(self.num_transformers > 3 and not self.resume)
+            # )
+
+            # optimizer = torch.optim.AdamW(pg, betas=self.betas)
+            # total = self.trainer.estimated_stepping_batches
+
+            # if self.num_transformers > 3 and not self.resume:
+            #     group_max_lrs = [g["lr"] for g in optimizer.param_groups]
+            #     scheduler = OneCycleLR(
+            #         optimizer,
+            #         max_lr=group_max_lrs,          # list, not a single float
+            #         total_steps=total,
+            #         pct_start=0.1,
+            #         anneal_strategy="cos",
+            #     )
+            # else:
+            #     scheduler = OneCycleLR(
+            #         optimizer,
+            #         max_lr=self.lr,
+            #         total_steps=total,
+            #         pct_start=0.1,
+            #         anneal_strategy="cos",
+            #     )
+
+            # return {
+            #     "optimizer": optimizer,
+            #     "lr_scheduler": {
+            #         "scheduler": scheduler,
+            #         "interval": "step",
+            #         "frequency": 1,
+            #         "name": "one_cycle",
+            #     },
+            # }
+
+            print(f"wd: {self.weight_decay}")
             pg = get_param_groups(
                 self.model,
                 wd=self.weight_decay,
                 lr=self.lr,
                 lr_factor=self.lr_factor,
                 fine_tune=self.fine_tune,
+                all_head=False,
             )
+            optimizer = Lion(pg, betas=self.betas)
 
-            optimizer = torch.optim.AdamW(pg, betas=self.betas)
-
-            total = self.trainer.estimated_stepping_batches
-            scheduler = OneCycleLR(
+            scheduler = get_cosine_schedule_with_warmup(
                 optimizer,
-                max_lr=self.lr,
-                total_steps=total,
-                pct_start=0.1,
-                anneal_strategy="cos",
+                num_warmup_steps=self.hparams.warmup_steps,
+                num_training_steps=self.hparams.total_steps,
             )
-
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
                     "scheduler": scheduler,
                     "interval": "step",
-                    "frequency": 1,
-                    "name": "one_cycle",
                 },
             }
         else:
@@ -325,7 +362,7 @@ class PETLightning(LightningModule):
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         # if fine_tuning a pretrained body, filter shapes
-        if self.fine_tune and self.ckpt_loaded:
+        if self.fine_tune and self.ckpt_loaded and not self.resume:
             ck = torch.load(self.ckpt_loaded, map_location="cpu")
             body_sd = ck["body"]
             self.model.body.load_state_dict(body_sd, strict=False)

@@ -1,11 +1,10 @@
 import argparse
+import os
 import sys
 
 sys.path.append("../")
 
-from omnilearn_lightning.tasks.diffusion_task import diffusion_task
-from omnilearn_lightning.tasks.quarkgluon_task import quark_gloun_task
-from omnilearn_lightning.tasks.toptagging_task import top_tagging_task
+from omnilearn_lightning.tasks.toptagging_task import eval_top_tagging
 
 
 def main():
@@ -21,7 +20,7 @@ def main():
     parser.add_argument(
         "--ckpt",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/",
+        default="/pscratch/sd/i/ibrahime/checkpoints/FinishedCheckPoints/",
         help="ckpt path",
     )
     parser.add_argument(
@@ -44,7 +43,7 @@ def main():
         default="/pscratch/sd/i/ibrahime/datasets/",
         help="Path to dataset",
     )
-    parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=32, help="Number of DataLoader workers"
     )
@@ -61,7 +60,6 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--K", type=int, default=15)
-    parser.add_argument("--epoch", type=int, default=100)
     parser.add_argument("--radius", type=float, default=0.4)
     parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
     parser.add_argument("--model_size", type=str, default="micro")
@@ -81,63 +79,18 @@ def main():
     # Additional features
     parser.add_argument("--use_pid", action="store_true")
     parser.add_argument("--use_add", action="store_true")
-    parser.add_argument("--from_scratch", action="store_true")
 
-    # Logging
-    parser.add_argument(
-        "--use_wandb", action="store_true", help="Use Weights & Biases logging"
-    )
-    parser.add_argument(
-        "--wandb_project",
-        type=str,
-        default="omnilearned",
-        help="Weights & Biases project name",
-    )
-    parser.add_argument(
-        "--wandb_tag",
-        type=str,
-        action="append",
-        default=None,
-        help="Weights & Biases tags for the run (can be specified multiple times)",
-    )
     args = parser.parse_args()
 
-    if args.model_size == "micro":
-        args.hidden_size = 32
-        args.num_transformers = 3
-        args.num_heads = 4
-        args.lr = 1e-3
-        tag = f"super_gen_micro_{args.task}_{args.dataset_size}"
-
-    elif args.model_size == "small":
-        args.hidden_size = 128
-        args.num_transformers = 8
-        args.num_heads = 8
-        # args.lr = 5e-4
-        # args.weight_decay = .5
-        tag = f"super_gen_small_{args.task}_{args.dataset_size}"
-
-    elif args.model_size == "medium":
-        args.hidden_size = 512
-        args.num_transformers = 12
-        args.num_heads = 16
-        args.lr = 5e-6
-        tag = f"super_gen_medium_{args.task}_{args.dataset_size}"
-
     if args.task == "top_tagging":
-        metrics = top_tagging_task(
-            args.ckpt, args, tag, num_shots=args.dataset_size, gpuID=0
-        )
+        args.ckpt = args.ckpt + "/TopTagging/"
+        args.ckpt = args.ckpt + f"/{args.model_size}/"
 
-    if args.task == "quark_gluon":
-        metrics = quark_gloun_task(
-            args.ckpt, args, tag, num_shots=args.dataset_size, gpuID=0
-        )
-
-    if args.task == "diffusion_task":
-        metrics = diffusion_task(
-            args.ckpt, args, tag, num_shots=args.dataset_size, gpuID=0
-        )
+        for model in os.listdir(args.ckpt):
+            if model.endswith(".ckpt") and "2" in model:
+                model_path = os.path.join(args.ckpt, model)
+                print(f"Evaluating {model_path}!")
+                metrics = eval_top_tagging(args, model_path, gpuID=0)
 
     return metrics
 
