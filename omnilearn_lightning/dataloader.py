@@ -25,7 +25,7 @@ class PETDataModule(LightningDataModule):
         train_tag: str = "train",
         shuffle_val_test_indices: bool = False,
         seed_for_initial_shuffling: int = None,
-        load_val = False,
+        load_val=False,
         **kwargs,
     ):
         super().__init__()

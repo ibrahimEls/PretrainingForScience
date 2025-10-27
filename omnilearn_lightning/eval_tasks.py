@@ -1,9 +1,10 @@
-from sklearn.metrics import roc_auc_score, roc_curve
 import numpy as np
 import torch
 from dataloader import PETDataModule
-from tqdm import tqdm
 from model import PETLightning
+from sklearn.metrics import roc_auc_score, roc_curve
+from tqdm import tqdm
+
 
 def eval_top_tagging(args, ckpt_path, gpuID):
     best_model = PETLightning.load_from_checkpoint(
@@ -73,6 +74,7 @@ def eval_top_tagging(args, ckpt_path, gpuID):
     print(f"1/(background efficiency): {inv_bkg_eff:.4f}")
 
     return (avg_loss, auc, inv_bkg_eff)
+
 
 def eval_quark_gluon(args, ckpt_path, gpuID):
     best_model = PETLightning.load_from_checkpoint(

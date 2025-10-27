@@ -308,21 +308,22 @@ class PETLightning(LightningModule):
         use_amp: bool = False,
         fine_tune: bool = False,
         ckpt_loaded: str = "",
-        mode = "pretrain",
-        use_one_cycle = False,
+        mode="pretrain",
+        use_one_cycle=False,
         **kwargs,
     ):
         super().__init__()
         self.save_hyperparameters()
 
-
         self.tokenizer = None
-        self.use_mpm = ("mpm" in mode or mode =="pretrain")
+        self.use_mpm = "mpm" in mode or mode == "pretrain"
 
         if self.use_mpm:
             with open(tokenizer_ckpt, "rb") as f:
                 print(f"Loading tokenizer from {tokenizer_ckpt}")
-                self.tokenizer = torch.load(f, weights_only=False, map_location=self.device)
+                self.tokenizer = torch.load(
+                    f, weights_only=False, map_location=self.device
+                )
 
         # --- model ---
         self.model = PET2(
@@ -502,7 +503,7 @@ class PETLightning(LightningModule):
         X, y = batch["X"].float(), batch["y"]
         X, y = X.to(self.device), y.to(self.device)
 
-        y_masked = None 
+        y_masked = None
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
             for k in ("pid", "add_info")
@@ -519,7 +520,6 @@ class PETLightning(LightningModule):
                 model_kwargs["masking_fraction"] = self.hparams.masking_fraction
 
                 y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
-
 
         # Use torch.no_grad() for validation and test, allow gradients for training
         if stage == "train":
@@ -560,7 +560,6 @@ class PETLightning(LightningModule):
         return self._shared_step(batch, batch_idx, "test")
 
     def configure_optimizers(self):
-        
         # param groups
         pg = get_param_groups(
             self.model,
@@ -574,10 +573,10 @@ class PETLightning(LightningModule):
             optimizer = torch.optim.AdamW(pg, betas=self.betas)
             group_max_lrs = [g["lr"] for g in optimizer.param_groups]
             total = self.trainer.estimated_stepping_batches
-            
+
             scheduler = OneCycleLR(
                 optimizer,
-                max_lr=group_max_lrs,          # list, not a single float
+                max_lr=group_max_lrs,  # list, not a single float
                 total_steps=total,
                 pct_start=0.1,
                 anneal_strategy="cos",

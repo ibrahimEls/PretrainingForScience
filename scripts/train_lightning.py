@@ -7,19 +7,23 @@ sys.path.append("../")
 
 import torch
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, EarlyStopping
+from pytorch_lightning.callbacks import (
+    EarlyStopping,
+    LearningRateMonitor,
+    ModelCheckpoint,
+)
 from pytorch_lightning.loggers import CSVLogger, WandbLogger
 from pytorch_lightning.strategies import DDPStrategy
 from pytorch_lightning.utilities import rank_zero_only
 
 from omnilearn_lightning.dataloader import PETDataModule
+from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
     get_bigram,
     get_latest_checkpoint_dir,
     get_version_number,
-    load_partial_checkpoint
+    load_partial_checkpoint,
 )
-from omnilearn_lightning.model import PETLightning
 
 
 # https://stackoverflow.com/questions/15008758/parsing-boolean-values-with-argparse
@@ -190,17 +194,16 @@ def main():
 
     else:
         raise ValueError(f"Unknown model size: {args.model_size}")
-    
 
     if "mpm" in args.mode or args.mode == "pretrain":
         from omnilearn_lightning.callbacks.masked_prediction_callback import (
             MaskedPredictionCallback,
         )
+
         if args.tokenizer_ckpt is None:
             raise ValueError("tokenizer_ckpt must be provided for MPM")
 
         masked_prediction_callback = MaskedPredictionCallback()
-
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
@@ -221,7 +224,7 @@ def main():
         num_samples=args.dataset_size,
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
-        load_val = True,
+        load_val=True,
     )
 
     model = PETLightning(
@@ -252,7 +255,7 @@ def main():
         pos_encoding_type=args.pos_encoding_type,
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
-        use_one_cycle = args.use_one_cycle
+        use_one_cycle=args.use_one_cycle,
     )
 
     if rank_zero_only.rank == 0:
@@ -334,7 +337,7 @@ def main():
             print("Using MaskedPredictionCallback for self-supervised learning")
             callbacks.append(masked_prediction_callback)
 
-    if  args.dataset != "jetclass":
+    if args.dataset != "jetclass":
         print("Downstream Task! Adding Early Stopping...")
         early_stop_callback = EarlyStopping(
             monitor="val_loss",
@@ -354,7 +357,6 @@ def main():
             print(f"Finetuning Model on Downstream")
         elif args.fine_tune and args.resume:
             print("Resuming Downstream Finetuning")
-
 
     trainer = Trainer(
         max_epochs=args.epoch,
