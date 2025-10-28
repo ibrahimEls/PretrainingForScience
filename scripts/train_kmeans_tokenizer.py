@@ -8,7 +8,6 @@ import argparse
 import os
 
 import awkward as ak
-import fast_pytorch_kmeans
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -23,7 +22,7 @@ from omnilearn_lightning.plotting.feature_plotting import (
 from omnilearn_lightning.tokenizer import KMeansTokenizer
 from omnilearn_lightning.utils import get_bigram
 
-NUM_TRAINING_SAMPLES = 25_000
+NUM_TRAINING_SAMPLES = 100_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
@@ -85,26 +84,31 @@ datamodule = PETDataModule(
     path="/pscratch/sd/j/jobirk/omnilearn_datasets/",
     batch_size=1_000,
     num_samples=NUM_TRAINING_SAMPLES,
-    train_tag="equal_class",
     use_pid=True,
     use_add=True,  # to always split the features from X to individual tensors "pid" and "add_info"
+    shuffle_val_test_indices=True,
+    seed_for_initial_shuffling=42,
 )
 datamodule.setup("fit")
 
 dataloader = datamodule.train_dataloader()
 
+# Use CUDA device for training
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 training_x = torch.zeros(
     (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_X),
-    device="cpu",
+    device=device,
     requires_grad=False,
 )
 training_add_info = torch.zeros(
     (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_ADD),
-    device="cpu",
+    device=device,
     requires_grad=False,
 )
 training_y = torch.zeros(
-    (NUM_TRAINING_SAMPLES,), dtype=torch.long, device="cpu", requires_grad=False
+    (NUM_TRAINING_SAMPLES,), dtype=torch.long, device=device, requires_grad=False
 )
 
 # loop over batches to collect training data for kmeans
@@ -119,12 +123,14 @@ for batch in tqdm(dataloader):
     max_n_points_in_batch = batch["X"].shape[1]
     fill_until = min(max_n_points_in_batch, NUM_MAX_POINTS_PER_JET)
 
-    training_x[start_idx:end_idx, :fill_until] = batch["X"][:batch_size, :fill_until]
+    training_x[start_idx:end_idx, :fill_until] = batch["X"][
+        :batch_size, :fill_until
+    ].to(device)
     if "add_info" in batch and args.use_add_info:
         training_add_info[start_idx:end_idx, :fill_until] = batch["add_info"][
             :batch_size, :fill_until
-        ]
-    training_y[start_idx:end_idx] = batch["y"][:batch_size]
+        ].to(device)
+    training_y[start_idx:end_idx] = batch["y"][:batch_size].to(device)
     start_idx += batch_size
     if start_idx >= NUM_TRAINING_SAMPLES:
         break
@@ -158,9 +164,9 @@ filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"
 print(f"Saving kmeans model to {filepath}")
 torch.save(kmeans_tokenizer, filepath)
 
-with torch.serialization.safe_globals([fast_pytorch_kmeans.kmeans.KMeans, getattr]):
-    with open(filepath, "rb") as f:
-        kmeans_tokenizer = torch.load(f, weights_only=False)
+# Load the model back
+with open(filepath, "rb") as f:
+    kmeans_tokenizer = torch.load(f, weights_only=False)
 
 feature_names = {
     "eta": "Particle $\\Delta\\eta$",
@@ -185,6 +191,11 @@ def combine_features(x, add_info):
         return x
     return torch.cat([x, add_info], dim=-1)
 
+
+n_eval = 10_000
+training_x = training_x[:n_eval]
+training_add_info = training_add_info[:n_eval]
+mask = mask[:n_eval]
 
 # Original
 fullres_ak = np_to_ak(
