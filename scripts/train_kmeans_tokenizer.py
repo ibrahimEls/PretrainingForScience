@@ -1,11 +1,8 @@
-import sys
-
-# update pythonpath
-sys.path.append("/global/homes/j/jobirk/repositories/OmniLearnLightning_dev")
-sys.path.append("/global/homes/j/jobirk/repositories/gabbro")
-
 import argparse
 import os
+import sys
+
+sys.path.append("..")
 
 import awkward as ak
 import matplotlib.pyplot as plt
@@ -22,7 +19,8 @@ from omnilearn_lightning.plotting.feature_plotting import (
 from omnilearn_lightning.tokenizer import KMeansTokenizer
 from omnilearn_lightning.utils import get_bigram
 
-NUM_TRAINING_SAMPLES = 100_000
+NUM_TRAINING_SAMPLES = 1_000_000
+NUM_PLOTS_SAMPLES = 10_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
@@ -59,12 +57,21 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-parser = argparse.ArgumentParser(description="Train KMeans tokenizer for JetClass data")
+parser = argparse.ArgumentParser(
+    description="Train KMeans tokenizer for JetClass or top dataset."
+)
 parser.add_argument(
     "--use-add",
     dest="use_add_info",
     help="Include additional features (add_info) in KMeans training and tokenization.",
     type=str2bool,
+)
+parser.add_argument(
+    "--dataset",
+    type=str,
+    choices=["jetclass", "top"],
+    default="jetclass",
+    help="Dataset to use for training the tokenizer.",
 )
 parser.set_defaults(use_add_info=True)
 args = parser.parse_args()
@@ -80,12 +87,12 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 print(f"Output directory: {OUTPUT_DIR}")
 
 datamodule = PETDataModule(
-    dataset="jetclass",
+    dataset=args.dataset,
     path="/pscratch/sd/j/jobirk/omnilearn_datasets/",
     batch_size=1_000,
     num_samples=NUM_TRAINING_SAMPLES,
-    use_pid=True,
-    use_add=True,  # to always split the features from X to individual tensors "pid" and "add_info"
+    use_pid=args.dataset == "jetclass",  # only jetclass has pid
+    use_add=args.dataset == "jetclass",  # only jetclass has add_info
     shuffle_val_test_indices=True,
     seed_for_initial_shuffling=42,
 )
@@ -192,10 +199,9 @@ def combine_features(x, add_info):
     return torch.cat([x, add_info], dim=-1)
 
 
-n_eval = 10_000
-training_x = training_x[:n_eval]
-training_add_info = training_add_info[:n_eval]
-mask = mask[:n_eval]
+training_x = training_x[:NUM_PLOTS_SAMPLES]
+training_add_info = training_add_info[:NUM_PLOTS_SAMPLES]
+mask = mask[:NUM_PLOTS_SAMPLES]
 
 # Original
 fullres_ak = np_to_ak(
@@ -224,6 +230,9 @@ fig, axarr = plot_features(
     },
     names=feature_names,
     ax_rows=3 if args.use_add_info else 2,
+)
+fig.suptitle(
+    f"Particle features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
 )
 fig.tight_layout()
 fig.savefig(
@@ -258,7 +267,9 @@ fig, axarr = plot_features(
     },
     flatten=False,
 )
-fig.suptitle(f"Jet features ({NUM_TRAINING_SAMPLES} training jets)")
+fig.suptitle(
+    f"Jet features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
+)
 fig.tight_layout()
 fig.savefig(f"{PLOT_DIR}/original_vs_tokenized_jet_features.pdf", **SAVE_FIG_KWARGS)
 
@@ -293,6 +304,10 @@ for field in fullres_ak.fields:
             f"{field}_original": f"Original {feature_names[field]}",
             f"{field}_tokenized": f"Tokenized {feature_names[field]}",
         },
+    )
+    pairplot_fig.figure.suptitle(
+        f"Jet features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)",
+        y=1.02,
     )
     pairplot_fig.figure.tight_layout()
     pairplot_fig.figure.savefig(

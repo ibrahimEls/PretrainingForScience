@@ -160,7 +160,6 @@ class KMeansTokenizer:
         # Get cluster labels
         labels = self.predict(x, add_info)
 
-        print(self.centroids.shape)  # --- IGNORE ---
         # Get the centroid for each point (in normalized space)
         centroids_normalized = self.centroids.transpose(0, 1).to(x.device)[
             labels.reshape(-1)
