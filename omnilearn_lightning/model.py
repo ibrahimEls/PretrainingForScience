@@ -344,7 +344,7 @@ class PETLightning(LightningModule):
             pid=kwargs.get("use_pid", False),
             add_info=kwargs.get("add_info", False),
             num_classes=num_classes,
-            mode=kwargs.get("mode", "classifier"),
+            mode=mode,
             pos_encoding_type=pos_encoding_type,
         )
 
@@ -517,9 +517,9 @@ class PETLightning(LightningModule):
                 self.tokenizer.kmeans.centroids = self.tokenizer.kmeans.centroids.to(
                     X.device
                 )
-                model_kwargs["masking_fraction"] = self.hparams.masking_fraction
+            model_kwargs["masking_fraction"] = self.hparams.masking_fraction
 
-                y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
+            y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
 
         # Use torch.no_grad() for validation and test, allow gradients for training
         if stage == "train":
