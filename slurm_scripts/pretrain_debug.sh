@@ -8,30 +8,40 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
+#SBATCH --image=docker:jobirk/omnilearned:latest
 
-module load conda
-conda activate torchvenv
-cd /global/homes/i/ibrahime/temp/OmniLearnLightining/scripts/
+export REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
+
+### Micro Model
+#export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=generator --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=mpm --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+export cmd="python3 train_lightning.py --mode=classifier+generator --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=classifier+mpm --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=generator+mpm --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=pretrain --dataset_size=-1 --num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
 
 ### Small Model
-# Super-Gen
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=super-gen
+#export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4 --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=generator --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4  --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4  --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=classifier+generator --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4  --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=classifier+mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4  --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=generator+mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4  --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
+#export cmd="python3 train_lightning.py --mode=pretrain --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4 --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
 
-# Super-Only
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=super-only
-
-srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --use_pid y --use_add y --epoch=3 --use_wandb --batch_size=128 --pretraining_mode=super-only --resume --ckpt=/pscratch/sd/i/ibrahime/checkpoints/FinishedCheckPoints/small/super-only.ckpt
-
-# Gen-Only
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=128 --pretraining_mode=gen-only
 
 ### Medium Model
+#export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=generator --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=classifier+generator --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=classifier+mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=generator+mpm --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
+#export cmd="python3 train_lightning.py --mode=pretrain --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=32"
 
-# Super-Gen
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=super-gen
 
-# Super-Only
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=super-only
 
-# Gen-Only
-#srun --gpus-per-node 4 python3 train_lightning.py --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=medium --use_pid y --use_add y --epoch=1 --use_wandb --batch_size=32 --pretraining_mode=gen-only
+srun --gpus-per-node 4  shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
+
+#shifter --image=docker:jobirk/omnilearned:latest bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
