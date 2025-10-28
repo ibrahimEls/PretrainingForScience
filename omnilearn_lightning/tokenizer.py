@@ -10,7 +10,7 @@ class KMeansTokenizer:
         n_clusters: int,
         scale_factors_x: torch.Tensor,
         scale_factors_add_info: torch.Tensor | None,
-        max_iter: int = 30,
+        max_iter: int = 300,
         **kwargs,
     ):
         """KMeans-based tokenizer for particle features.
