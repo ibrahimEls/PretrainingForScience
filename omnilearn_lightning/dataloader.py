@@ -23,6 +23,7 @@ class PETDataModule(LightningDataModule):
         use_add: bool = False,
         num_samples=-1,
         train_tag: str = "train",
+        shuffle_train_indices: bool = False,
         shuffle_val_test_indices: bool = False,
         seed_for_initial_shuffling: int = None,
         load_val=False,
@@ -37,6 +38,7 @@ class PETDataModule(LightningDataModule):
         self.use_add = use_add
         self.num_samples = num_samples
         self.train_tag = train_tag
+        self.shuffle_train_indices = shuffle_train_indices
         self.shuffle_val_test_indices = shuffle_val_test_indices
         self.seed_for_initial_shuffling = seed_for_initial_shuffling
         self.load_val = load_val
@@ -60,6 +62,8 @@ class PETDataModule(LightningDataModule):
             self.train_dataset = load_data(
                 self.dataset,
                 dataset_type=self.train_tag,
+                shuffle_indices=self.shuffle_train_indices,
+                seed_for_shuffling=self.seed_for_initial_shuffling,
                 **loading_kwargs,
             )
             if self.load_val:

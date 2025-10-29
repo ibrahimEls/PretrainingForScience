@@ -1,5 +1,5 @@
 import torch
-from fast_pytorch_kmeans import KMeans
+import torchpq
 
 from .array_utils import preprocess_tensor
 
@@ -10,7 +10,7 @@ class KMeansTokenizer:
         n_clusters: int,
         scale_factors_x: torch.Tensor,
         scale_factors_add_info: torch.Tensor | None,
-        mode: str = "euclidean",
+        max_iter: int = 300,
         **kwargs,
     ):
         """KMeans-based tokenizer for particle features.
@@ -24,15 +24,16 @@ class KMeansTokenizer:
         scale_factors_add_info: torch.Tensor or None
             Scale factors for add_info features. If None, add_info is treated as absent
             throughout and only x features are used.
-        mode: str, optional
-            Distance metric to use. Default is "euclidean".
+        max_iter: int, optional
+            Maximum number of iterations for KMeans. Default is 100.
         kwargs:
             Additional keyword arguments for the KMeans model.
         """
         self.n_clusters = n_clusters
-        self.mode = mode
+        self.max_iter = max_iter
         self.kmeans_kwargs = kwargs
-        self.kmeans = KMeans(n_clusters=n_clusters, mode=mode, **kwargs)
+        self.kmeans = None  # Will be initialized in fit()
+        self.centroids = None
         self.scale_factors_x = scale_factors_x
         self.scale_factors_add_info = scale_factors_add_info
 
@@ -87,7 +88,16 @@ class KMeansTokenizer:
         elif mask is not None:
             combined = combined[mask]
 
-        self.kmeans.fit(combined)
+        self.kmeans = torchpq.clustering.KMeans(
+            n_clusters=self.n_clusters,
+            distance="euclidean",
+            max_iter=self.max_iter,
+            verbose=10,
+            **self.kmeans_kwargs,
+        )
+        training_data = combined.transpose(0, 1).contiguous()
+        self.kmeans.fit(training_data)
+        self.centroids = self.kmeans.centroids
 
     def predict(self, x: torch.Tensor, add_info: torch.Tensor | None = None):
         """Predict the closest cluster each sample belongs to.
@@ -118,9 +128,11 @@ class KMeansTokenizer:
         )
 
         # move centroids to the same device as x
-        self.kmeans.centroids = self.kmeans.centroids.to(x.device)
+        self.centroids = self.centroids.to(x.device)
         batch_size, num_points, num_features = combined.shape
-        combined_reshaped = combined.reshape(-1, num_features)
+        combined_reshaped = (
+            combined.reshape(-1, num_features).transpose(0, 1).contiguous()
+        )
         labels = self.kmeans.predict(combined_reshaped)
         labels = labels.reshape(batch_size, num_points)
         return labels
@@ -149,7 +161,9 @@ class KMeansTokenizer:
         labels = self.predict(x, add_info)
 
         # Get the centroid for each point (in normalized space)
-        centroids_normalized = self.kmeans.centroids.to(x.device)[labels]
+        centroids_normalized = self.centroids.transpose(0, 1).to(x.device)[
+            labels.reshape(-1)
+        ]
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts
@@ -196,7 +210,7 @@ class KMeansTokenizer:
         batch_size, num_points = labels.shape
 
         # Get centroids for the labels (in normalized space)
-        centroids_normalized = self.kmeans.centroids.to(labels.device)[labels]
+        centroids_normalized = self.centroids.to(labels.device)[labels]
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts

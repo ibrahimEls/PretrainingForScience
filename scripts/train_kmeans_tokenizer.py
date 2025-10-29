@@ -1,14 +1,11 @@
+import argparse
+import json
+import os
 import sys
 
-# update pythonpath
-sys.path.append("/global/homes/j/jobirk/repositories/OmniLearnLightning_dev")
-sys.path.append("/global/homes/j/jobirk/repositories/gabbro")
-
-import argparse
-import os
+sys.path.append("..")
 
 import awkward as ak
-import fast_pytorch_kmeans
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -23,18 +20,20 @@ from omnilearn_lightning.plotting.feature_plotting import (
 from omnilearn_lightning.tokenizer import KMeansTokenizer
 from omnilearn_lightning.utils import get_bigram
 
-NUM_TRAINING_SAMPLES = 25_000
+NUM_TRAINING_SAMPLES = 1_000_000
+NUM_PLOTS_SAMPLES = 10_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
-CODEBOOK_SIZE = 8_192
+# CODEBOOK_SIZE = 8_192
+CODEBOOK_SIZE = 16_384
 # Separate scale factors for x and add_info
 SCALE_FACTORS_X = torch.tensor(
     [
         0.13,  # eta
         0.13,  # phi
-        1.2,  # log pt
-        1.2,  # log energy
+        0.6,  # log pt
+        0.6,  # log energy
     ]
 )
 SCALE_FACTORS_ADD_INFO = torch.tensor(
@@ -60,12 +59,21 @@ def str2bool(v):
         raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
-parser = argparse.ArgumentParser(description="Train KMeans tokenizer for JetClass data")
+parser = argparse.ArgumentParser(
+    description="Train KMeans tokenizer for JetClass or top dataset."
+)
 parser.add_argument(
     "--use-add",
     dest="use_add_info",
     help="Include additional features (add_info) in KMeans training and tokenization.",
     type=str2bool,
+)
+parser.add_argument(
+    "--dataset",
+    type=str,
+    choices=["jetclass", "top"],
+    default="jetclass",
+    help="Dataset to use for training the tokenizer.",
 )
 parser.set_defaults(use_add_info=True)
 args = parser.parse_args()
@@ -80,31 +88,48 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 print(f"Output directory: {OUTPUT_DIR}")
 
+# dump the scale factors being used as json
+scale_factors_dict = {
+    "scale_factors_x": SCALE_FACTORS_X.tolist(),
+    "scale_factors_add_info": SCALE_FACTORS_ADD_INFO.tolist()
+    if args.use_add_info
+    else None,
+}
+with open(f"{OUTPUT_DIR}/scale_factors.json", "w") as f:
+    json.dump(scale_factors_dict, f, indent=4)
+
+
 datamodule = PETDataModule(
-    dataset="jetclass",
+    dataset=args.dataset,
     path="/pscratch/sd/j/jobirk/omnilearn_datasets/",
     batch_size=1_000,
     num_samples=NUM_TRAINING_SAMPLES,
-    train_tag="equal_class",
-    use_pid=True,
-    use_add=True,  # to always split the features from X to individual tensors "pid" and "add_info"
+    use_pid=args.dataset == "jetclass",  # only jetclass has pid
+    use_add=args.dataset == "jetclass",  # only jetclass has add_info
+    shuffle_train_indices=True,
+    shuffle_val_test_indices=True,
+    seed_for_initial_shuffling=42,
 )
 datamodule.setup("fit")
 
 dataloader = datamodule.train_dataloader()
 
+# Use CUDA device for training
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Using device: {device}")
+
 training_x = torch.zeros(
     (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_X),
-    device="cpu",
+    device=device,
     requires_grad=False,
 )
 training_add_info = torch.zeros(
     (NUM_TRAINING_SAMPLES, NUM_MAX_POINTS_PER_JET, NUM_FEATURES_ADD),
-    device="cpu",
+    device=device,
     requires_grad=False,
 )
 training_y = torch.zeros(
-    (NUM_TRAINING_SAMPLES,), dtype=torch.long, device="cpu", requires_grad=False
+    (NUM_TRAINING_SAMPLES,), dtype=torch.long, device=device, requires_grad=False
 )
 
 # loop over batches to collect training data for kmeans
@@ -119,12 +144,14 @@ for batch in tqdm(dataloader):
     max_n_points_in_batch = batch["X"].shape[1]
     fill_until = min(max_n_points_in_batch, NUM_MAX_POINTS_PER_JET)
 
-    training_x[start_idx:end_idx, :fill_until] = batch["X"][:batch_size, :fill_until]
+    training_x[start_idx:end_idx, :fill_until] = batch["X"][
+        :batch_size, :fill_until
+    ].to(device)
     if "add_info" in batch and args.use_add_info:
         training_add_info[start_idx:end_idx, :fill_until] = batch["add_info"][
             :batch_size, :fill_until
-        ]
-    training_y[start_idx:end_idx] = batch["y"][:batch_size]
+        ].to(device)
+    training_y[start_idx:end_idx] = batch["y"][:batch_size].to(device)
     start_idx += batch_size
     if start_idx >= NUM_TRAINING_SAMPLES:
         break
@@ -158,9 +185,9 @@ filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"
 print(f"Saving kmeans model to {filepath}")
 torch.save(kmeans_tokenizer, filepath)
 
-with torch.serialization.safe_globals([fast_pytorch_kmeans.kmeans.KMeans, getattr]):
-    with open(filepath, "rb") as f:
-        kmeans_tokenizer = torch.load(f, weights_only=False)
+# Load the model back
+with open(filepath, "rb") as f:
+    kmeans_tokenizer = torch.load(f, weights_only=False)
 
 feature_names = {
     "eta": "Particle $\\Delta\\eta$",
@@ -185,6 +212,10 @@ def combine_features(x, add_info):
         return x
     return torch.cat([x, add_info], dim=-1)
 
+
+training_x = training_x[:NUM_PLOTS_SAMPLES]
+training_add_info = training_add_info[:NUM_PLOTS_SAMPLES]
+mask = mask[:NUM_PLOTS_SAMPLES]
 
 # Original
 fullres_ak = np_to_ak(
@@ -213,6 +244,9 @@ fig, axarr = plot_features(
     },
     names=feature_names,
     ax_rows=3 if args.use_add_info else 2,
+)
+fig.suptitle(
+    f"Particle features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
 )
 fig.tight_layout()
 fig.savefig(
@@ -247,9 +281,42 @@ fig, axarr = plot_features(
     },
     flatten=False,
 )
-fig.suptitle(f"Jet features ({NUM_TRAINING_SAMPLES} training jets)")
+fig.suptitle(
+    f"Jet features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
+)
 fig.tight_layout()
 fig.savefig(f"{PLOT_DIR}/original_vs_tokenized_jet_features.pdf", **SAVE_FIG_KWARGS)
+
+# plot the resolution on jet features
+resolution = ak.Array(
+    {
+        "pt_resolution": p4s_tokenized_sum.pt - p4s_original_sum.pt,
+        "eta_resolution": p4s_tokenized_sum.eta - p4s_original_sum.eta,
+        "phi_resolution": p4s_tokenized_sum.phi - p4s_original_sum.phi,
+        "mass_resolution": p4s_tokenized_sum.mass - p4s_original_sum.mass,
+    }
+)
+fig, axarr = plot_features(
+    {"Tokenized - Original": resolution},
+    names={
+        "pt_resolution": "$\\Delta p_{T}$",
+        "eta_resolution": "$\\Delta \\eta$",
+        "phi_resolution": "$\\Delta \\phi$",
+        "mass_resolution": "$\\Delta m$",
+    },
+    bins_dict={
+        "pt_resolution": np.linspace(-50, 50, 100),
+        "eta_resolution": np.linspace(-0.5, 0.5, 100),
+        "phi_resolution": np.linspace(-0.5, 0.5, 100),
+        "mass_resolution": np.linspace(-100, 100, 100),
+    },
+    flatten=False,
+)
+fig.suptitle(
+    f"Jet feature resolutions ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
+)
+fig.tight_layout()
+fig.savefig(f"{PLOT_DIR}/jet_feature_resolutions.pdf", **SAVE_FIG_KWARGS)
 
 # pairplot comparing original and tokenized features
 pairplot_fig = plot_features_pairplot(
@@ -282,6 +349,10 @@ for field in fullres_ak.fields:
             f"{field}_original": f"Original {feature_names[field]}",
             f"{field}_tokenized": f"Tokenized {feature_names[field]}",
         },
+    )
+    pairplot_fig.figure.suptitle(
+        f"Jet features ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)",
+        y=1.02,
     )
     pairplot_fig.figure.tight_layout()
     pairplot_fig.figure.savefig(
