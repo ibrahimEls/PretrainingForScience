@@ -69,6 +69,11 @@ parser.add_argument(
     type=str2bool,
 )
 parser.add_argument(
+    "--output-dir",
+    type=str,
+    help="Output directory to save the trained model and plots. ",
+)
+parser.add_argument(
     "--scale-factors-x",
     type=str,
     default=None,
@@ -148,7 +153,7 @@ SCALE_FACTORS_ADD_INFO = (
 # filepath should be unique: time stamp and bigram; add visibility for add_info usage
 ADD_TAG = "withAddInfo" if args.use_add_info else "noAddInfo"
 UNIQUE_ID = f"kmeans_model_{get_bigram(add_timestamp=True, timestamp_first=True)}_{ADD_TAG}_{CODEBOOK_SIZE}_codes"
-OUTPUT_DIR = f"/pscratch/sd/j/jobirk/testing/{UNIQUE_ID}"
+OUTPUT_DIR = f"{args.output_dir}/{UNIQUE_ID}"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 PLOT_DIR = f"{OUTPUT_DIR}/plots"
 os.makedirs(PLOT_DIR, exist_ok=True)
