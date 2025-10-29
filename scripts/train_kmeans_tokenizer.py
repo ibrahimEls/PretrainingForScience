@@ -256,7 +256,7 @@ kmeans_tokenizer.fit(
 filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"
 print(f"Saving kmeans model to {filepath}")
 # save the model on CPU to ensure compatibility
-kmeans_tokenizer = kmeans_tokenizer.kmeans.to("cpu")
+kmeans_tokenizer.kmeans = kmeans_tokenizer.kmeans.to("cpu")
 torch.save(kmeans_tokenizer, filepath)
 
 # Load the model back
