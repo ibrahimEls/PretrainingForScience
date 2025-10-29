@@ -210,7 +210,7 @@ class KMeansTokenizer:
         batch_size, num_points = labels.shape
 
         # Get centroids for the labels (in normalized space)
-        centroids_normalized = self.centroids.to(labels.device)[labels]
+        centroids_normalized = self.centroids.transpose(0, 1).to(labels.device)[labels]
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts
