@@ -255,11 +255,15 @@ kmeans_tokenizer.fit(
 # save and load the kmeans model
 filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"
 print(f"Saving kmeans model to {filepath}")
+# save the model on CPU to ensure compatibility
+kmeans_tokenizer = kmeans_tokenizer.kmeans.to("cpu")
 torch.save(kmeans_tokenizer, filepath)
 
 # Load the model back
 with open(filepath, "rb") as f:
     kmeans_tokenizer = torch.load(f, weights_only=False)
+    # move back to device
+    kmeans_tokenizer = kmeans_tokenizer.to(device)
 
 feature_names = {
     "eta": "Particle $\\Delta\\eta$",
