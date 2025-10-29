@@ -27,8 +27,8 @@ NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
 # CODEBOOK_SIZE = 8_192
 CODEBOOK_SIZE = 16_384
-# Separate scale factors for x and add_info
-SCALE_FACTORS_X = torch.tensor(
+# Default scale factors for x and add_info
+DEFAULT_SCALE_FACTORS_X = torch.tensor(
     [
         0.13,  # eta
         0.13,  # phi
@@ -36,7 +36,7 @@ SCALE_FACTORS_X = torch.tensor(
         0.6,  # log energy
     ]
 )
-SCALE_FACTORS_ADD_INFO = torch.tensor(
+DEFAULT_SCALE_FACTORS_ADD_INFO = torch.tensor(
     [
         0.1,  # d0val
         1.0,  # d0err
@@ -69,6 +69,26 @@ parser.add_argument(
     type=str2bool,
 )
 parser.add_argument(
+    "--scale-factors-x",
+    type=str,
+    default=None,
+    help=(
+        "Scale factors for particle features (x). "
+        "Provide as a comma-separated list of 4 floats (eta,phi,log_pt,log_E), "
+        "a single float to apply to all, or 'default' to use built-ins."
+    ),
+)
+parser.add_argument(
+    "--scale-factors-add",
+    type=str,
+    default=None,
+    help=(
+        "Scale factors for add_info features. "
+        "Provide as a comma-separated list of 4 floats (d0val,d0err,dzval,dzerr), "
+        "a single float to apply to all, or 'default'. Ignored if --use-add is false."
+    ),
+)
+parser.add_argument(
     "--dataset",
     type=str,
     choices=["jetclass", "top"],
@@ -77,6 +97,53 @@ parser.add_argument(
 )
 parser.set_defaults(use_add_info=True)
 args = parser.parse_args()
+
+
+def _parse_scale_factors(
+    arg_value: str | None, default_tensor: torch.Tensor, expected_len: int
+) -> torch.Tensor:
+    """Parse a scale-factor CLI value into a torch tensor.
+
+    Accepted formats:
+    - None or 'default' (case-insensitive): return the provided default tensor.
+    - Single float like '0.5': replicated to expected_len.
+    - Comma-separated list like '0.1,1.0,0.1,1.0' with length == expected_len.
+    """
+    if arg_value is None or str(arg_value).lower() in {"default", "auto", ""}:
+        return default_tensor.clone()
+    text = str(arg_value).strip()
+    # Try single float
+    try:
+        single = float(text)
+        return torch.tensor([single] * expected_len, dtype=default_tensor.dtype)
+    except ValueError:
+        pass
+    # Try CSV
+    try:
+        parts = [p.strip() for p in text.split(",") if p.strip() != ""]
+        values = [float(p) for p in parts]
+    except Exception as e:
+        raise argparse.ArgumentTypeError(
+            f"Invalid scale factor specification '{arg_value}': {e}"
+        ) from e
+    if len(values) != expected_len:
+        raise argparse.ArgumentTypeError(
+            f"Expected {expected_len} values, got {len(values)} in '{arg_value}'."
+        )
+    return torch.tensor(values, dtype=default_tensor.dtype)
+
+
+# Resolve scale factors from CLI
+SCALE_FACTORS_X = _parse_scale_factors(
+    args.scale_factors_x, DEFAULT_SCALE_FACTORS_X, NUM_FEATURES_X
+)
+SCALE_FACTORS_ADD_INFO = (
+    _parse_scale_factors(
+        args.scale_factors_add, DEFAULT_SCALE_FACTORS_ADD_INFO, NUM_FEATURES_ADD
+    )
+    if args.use_add_info
+    else None
+)
 
 # filepath should be unique: time stamp and bigram; add visibility for add_info usage
 ADD_TAG = "withAddInfo" if args.use_add_info else "noAddInfo"
@@ -91,9 +158,9 @@ print(f"Output directory: {OUTPUT_DIR}")
 # dump the scale factors being used as json
 scale_factors_dict = {
     "scale_factors_x": SCALE_FACTORS_X.tolist(),
-    "scale_factors_add_info": SCALE_FACTORS_ADD_INFO.tolist()
-    if args.use_add_info
-    else None,
+    "scale_factors_add_info": (
+        SCALE_FACTORS_ADD_INFO.tolist() if SCALE_FACTORS_ADD_INFO is not None else None
+    ),
 }
 with open(f"{OUTPUT_DIR}/scale_factors.json", "w") as f:
     json.dump(scale_factors_dict, f, indent=4)
