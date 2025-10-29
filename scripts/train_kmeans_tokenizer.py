@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import sys
 
@@ -31,8 +32,8 @@ SCALE_FACTORS_X = torch.tensor(
     [
         0.13,  # eta
         0.13,  # phi
-        1.2,  # log pt
-        1.2,  # log energy
+        0.6,  # log pt
+        0.6,  # log energy
     ]
 )
 SCALE_FACTORS_ADD_INFO = torch.tensor(
@@ -87,6 +88,17 @@ os.makedirs(PLOT_DIR, exist_ok=True)
 
 print(f"Output directory: {OUTPUT_DIR}")
 
+# dump the scale factors being used as json
+scale_factors_dict = {
+    "scale_factors_x": SCALE_FACTORS_X.tolist(),
+    "scale_factors_add_info": SCALE_FACTORS_ADD_INFO.tolist()
+    if args.use_add_info
+    else None,
+}
+with open(f"{OUTPUT_DIR}/scale_factors.json", "w") as f:
+    json.dump(scale_factors_dict, f, indent=4)
+
+
 datamodule = PETDataModule(
     dataset=args.dataset,
     path="/pscratch/sd/j/jobirk/omnilearn_datasets/",
@@ -94,6 +106,7 @@ datamodule = PETDataModule(
     num_samples=NUM_TRAINING_SAMPLES,
     use_pid=args.dataset == "jetclass",  # only jetclass has pid
     use_add=args.dataset == "jetclass",  # only jetclass has add_info
+    shuffle_train_indices=True,
     shuffle_val_test_indices=True,
     seed_for_initial_shuffling=42,
 )
@@ -273,6 +286,37 @@ fig.suptitle(
 )
 fig.tight_layout()
 fig.savefig(f"{PLOT_DIR}/original_vs_tokenized_jet_features.pdf", **SAVE_FIG_KWARGS)
+
+# plot the resolution on jet features
+resolution = ak.Array(
+    {
+        "pt_resolution": p4s_tokenized_sum.pt - p4s_original_sum.pt,
+        "eta_resolution": p4s_tokenized_sum.eta - p4s_original_sum.eta,
+        "phi_resolution": p4s_tokenized_sum.phi - p4s_original_sum.phi,
+        "mass_resolution": p4s_tokenized_sum.mass - p4s_original_sum.mass,
+    }
+)
+fig, axarr = plot_features(
+    {"Tokenized - Original": resolution},
+    names={
+        "pt_resolution": "$\\Delta p_{T}$",
+        "eta_resolution": "$\\Delta \\eta$",
+        "phi_resolution": "$\\Delta \\phi$",
+        "mass_resolution": "$\\Delta m$",
+    },
+    bins_dict={
+        "pt_resolution": np.linspace(-50, 50, 100),
+        "eta_resolution": np.linspace(-0.5, 0.5, 100),
+        "phi_resolution": np.linspace(-0.5, 0.5, 100),
+        "mass_resolution": np.linspace(-100, 100, 100),
+    },
+    flatten=False,
+)
+fig.suptitle(
+    f"Jet feature resolutions ({NUM_TRAINING_SAMPLES} training jets - {NUM_PLOTS_SAMPLES} plotted jets)"
+)
+fig.tight_layout()
+fig.savefig(f"{PLOT_DIR}/jet_feature_resolutions.pdf", **SAVE_FIG_KWARGS)
 
 # pairplot comparing original and tokenized features
 pairplot_fig = plot_features_pairplot(
