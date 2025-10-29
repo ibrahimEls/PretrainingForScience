@@ -263,7 +263,7 @@ torch.save(kmeans_tokenizer, filepath)
 with open(filepath, "rb") as f:
     kmeans_tokenizer = torch.load(f, weights_only=False)
     # move back to device
-    kmeans_tokenizer = kmeans_tokenizer.to(device)
+    kmeans_tokenizer.kmeans = kmeans_tokenizer.kmeans.to(device)
 
 feature_names = {
     "eta": "Particle $\\Delta\\eta$",
