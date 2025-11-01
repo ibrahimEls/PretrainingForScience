@@ -254,7 +254,7 @@ class MaskedPredictionCallback(Callback):
         batches_pred_token_ids = []
 
         # move tokenizer to CPU for reconstruction if needed
-        pl_module.tokenizer.kmeans.to("cpu")
+        pl_module.tokenizer.kmeans.centroids.to("cpu")
 
         for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
             # adjust feature names based on available features in the first batch
@@ -344,7 +344,7 @@ class MaskedPredictionCallback(Callback):
             batches_jet_labels.append(batch["y"].cpu().numpy())
 
         # move tokenizer back to original device
-        pl_module.tokenizer.kmeans.to(pl_module.device)
+        pl_module.tokenizer.kmeans.centroids.to(pl_module.device)
 
         # Concatenate awkward arrays
         x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
