@@ -183,8 +183,9 @@ datamodule = PETDataModule(
     seed_for_initial_shuffling=42,
 )
 datamodule.setup("fit")
-
 dataloader = datamodule.train_dataloader()
+# datamodule.setup("test")
+# dataloader = datamodule.test_dataloader()
 
 # Use CUDA device for training
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -250,20 +251,21 @@ kmeans_tokenizer.fit(
     training_x,
     add_info=training_add_info if args.use_add_info else None,
     mask=mask,
+    fit_with_torchpq=torch.cuda.is_available(),
 )
 
 # save and load the kmeans model
 filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"
 print(f"Saving kmeans model to {filepath}")
 # save the model on CPU to ensure compatibility
-kmeans_tokenizer.kmeans = kmeans_tokenizer.kmeans.to("cpu")
+kmeans_tokenizer.kmeans.centroids = kmeans_tokenizer.kmeans.centroids.to("cpu")
 torch.save(kmeans_tokenizer, filepath)
 
 # Load the model back
 with open(filepath, "rb") as f:
     kmeans_tokenizer = torch.load(f, weights_only=False)
     # move back to device
-    kmeans_tokenizer.kmeans = kmeans_tokenizer.kmeans.to(device)
+    kmeans_tokenizer.kmeans.centroids = kmeans_tokenizer.kmeans.centroids.to(device)
 
 feature_names = {
     "eta": "Particle $\\Delta\\eta$",
