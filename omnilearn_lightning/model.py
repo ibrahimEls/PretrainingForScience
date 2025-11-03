@@ -342,7 +342,7 @@ class PETLightning(LightningModule):
             conditional=False,
             use_time=kwargs.get("use_time", True),
             pid=kwargs.get("use_pid", False),
-            add_info=kwargs.get("add_info", False),
+            add_info=kwargs.get("use_add", False),
             num_classes=num_classes,
             mode=mode,
             pos_encoding_type=pos_encoding_type,
@@ -363,7 +363,7 @@ class PETLightning(LightningModule):
         self.fine_tune = fine_tune
         self.ckpt_loaded = ckpt_loaded
         self.use_pid = kwargs.get("use_pid", False)
-        self.use_add = kwargs.get("add_info", False)
+        self.use_add = kwargs.get("use_add", False)
 
         # optimizer params
         self.lr = lr
