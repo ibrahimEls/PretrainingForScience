@@ -1,5 +1,5 @@
 import torch
-import torchpq
+from fast_pytorch_kmeans import KMeans
 
 from .array_utils import preprocess_tensor
 
@@ -32,8 +32,12 @@ class KMeansTokenizer:
         self.n_clusters = n_clusters
         self.max_iter = max_iter
         self.kmeans_kwargs = kwargs
-        self.kmeans = None  # Will be initialized in fit()
-        self.centroids = None
+        self.kmeans = KMeans(
+            n_clusters=self.n_clusters,
+            max_iter=self.max_iter,
+            verbose=10,
+            **self.kmeans_kwargs,
+        )
         self.scale_factors_x = scale_factors_x
         self.scale_factors_add_info = scale_factors_add_info
 
@@ -51,6 +55,7 @@ class KMeansTokenizer:
         x: torch.Tensor,
         add_info: torch.Tensor | None = None,
         mask: torch.Tensor | None = None,
+        fit_with_torchpq: bool = False,
     ):
         """Fit the KMeans model to the data.
 
@@ -65,6 +70,8 @@ class KMeansTokenizer:
             Boolean mask of shape (batch_size, num_points) indicating which points to
             include in the fitting process. If provided, only the points where mask is
             True will be used for fitting. Default is None.
+        fit_with_torchpq: bool, optional
+            Whether to use torchpq for KMeans fitting. Default is False.
         """
         # Normalize and concatenate x and add_info (if used)
         use_add_info = self._use_add_info(add_info)
@@ -88,16 +95,30 @@ class KMeansTokenizer:
         elif mask is not None:
             combined = combined[mask]
 
-        self.kmeans = torchpq.clustering.KMeans(
-            n_clusters=self.n_clusters,
-            distance="euclidean",
-            max_iter=self.max_iter,
-            verbose=10,
-            **self.kmeans_kwargs,
-        )
-        training_data = combined.transpose(0, 1).contiguous()
-        self.kmeans.fit(training_data)
-        self.centroids = self.kmeans.centroids
+        if fit_with_torchpq:
+            # Use torchpq for KMeans fitting for better performance
+            import torchpq
+
+            # raise error if cuda is not available
+            if not torch.cuda.is_available():
+                raise RuntimeError(
+                    "fit_with_torchpq=True requires CUDA. Please enable CUDA or "
+                    "set fit_with_torchpq=False."
+                )
+            # ensure combined is on cuda
+            combined = combined.to("cuda")
+
+            _tmp_kmeans = torchpq.clustering.KMeans(
+                n_clusters=self.n_clusters,
+                distance="euclidean",
+                max_iter=self.max_iter,
+                verbose=10,
+            )
+
+            _tmp_kmeans.fit(combined.transpose(0, 1).contiguous())
+            self.kmeans.centroids = _tmp_kmeans.centroids.transpose(0, 1).contiguous()
+        else:
+            self.kmeans.fit(combined)
 
     def predict(self, x: torch.Tensor, add_info: torch.Tensor | None = None):
         """Predict the closest cluster each sample belongs to.
@@ -128,11 +149,9 @@ class KMeansTokenizer:
         )
 
         # move centroids to the same device as x
-        self.centroids = self.centroids.to(x.device)
+        self.kmeans.centroids = self.kmeans.centroids.to(x.device)
         batch_size, num_points, num_features = combined.shape
-        combined_reshaped = (
-            combined.reshape(-1, num_features).transpose(0, 1).contiguous()
-        )
+        combined_reshaped = combined.reshape(-1, num_features)
         labels = self.kmeans.predict(combined_reshaped)
         labels = labels.reshape(batch_size, num_points)
         return labels
@@ -161,9 +180,7 @@ class KMeansTokenizer:
         labels = self.predict(x, add_info)
 
         # Get the centroid for each point (in normalized space)
-        centroids_normalized = self.centroids.transpose(0, 1).to(x.device)[
-            labels.reshape(-1)
-        ]
+        centroids_normalized = self.kmeans.centroids.to(x.device)[labels.reshape(-1)]
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts
@@ -210,7 +227,7 @@ class KMeansTokenizer:
         batch_size, num_points = labels.shape
 
         # Get centroids for the labels (in normalized space)
-        centroids_normalized = self.centroids.to(labels.device)[labels]
+        centroids_normalized = self.kmeans.centroids.to(labels.device)[labels]
         centroids_normalized = centroids_normalized.reshape(batch_size, num_points, -1)
 
         # Split centroids back into x and add_info parts
