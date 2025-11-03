@@ -2,25 +2,37 @@ import torch
 import torch.amp as amp
 import torch.nn as nn
 from diffusers.optimization import get_cosine_schedule_with_warmup
+from omnilearned.diffusion import get_logsnr_alpha_sigma, perturb
+from omnilearned.layers import DynamicTanh
+from omnilearned.network import PET_body, PET_classifier, PET_generator
+from omnilearned.utils import CLIPLoss, get_loss
 from pytorch_lightning import LightningModule
 from pytorch_optimizer import Lion
 from torch.optim.lr_scheduler import OneCycleLR
 
 from .array_utils import replace_masked_positions, set_fraction_ones_to_zeros
-from .diffusion import get_logsnr_alpha_sigma, perturb
-from .layers import DynamicTanh
-from .modules import MPM_head, PET_body, PET_classifier, PET_generator
-from .utils import (
-    CLIPLoss,
-    get_param_groups,
-)
+from .modules import MPM_head
+from .utils import get_param_groups
+
+
+def get_logs(device):
+    logs_buff = torch.zeros((6), dtype=torch.float32, device=device)
+    logs = {}
+    logs["loss"] = logs_buff[0].view(-1)
+    logs["loss_class"] = logs_buff[1].view(-1)
+    logs["loss_gen"] = logs_buff[2].view(-1)
+    logs["loss_clip"] = logs_buff[3].view(-1)
+    logs["loss_class_event"] = logs_buff[4].view(-1)
+    logs["loss_masked_pid"] = logs_buff[5].view(-1)
+
+    return logs
 
 
 class PET2(nn.Module):
     def __init__(
         self,
         input_dim,
-        hidden_size,
+        base_dim,
         codebook_size,
         num_transformers=2,
         num_transformers_head=2,
@@ -44,6 +56,8 @@ class PET2(nn.Module):
         mode="classifier",
         num_classes=2,
         pos_encoding_type="sort_descending_in_masked_subset",
+        skip=False,
+        num_gen_classes=1,
     ):
         super().__init__()
         self.mode = mode
@@ -60,7 +74,7 @@ class PET2(nn.Module):
 
         self.body = PET_body(
             input_dim,
-            hidden_size,
+            base_dim,
             num_transformers=num_transformers,
             num_transf_local=num_transformers_head,
             num_heads=num_heads,
@@ -79,7 +93,8 @@ class PET2(nn.Module):
             pid_dim=pid_dim,
             add_info=add_info,
             add_dim=add_dim,
-            use_time=use_time,
+            use_time=self.mode in ["generator", "pretrain"],
+            skip=skip,
         )
 
         self.pos_encoding_type = pos_encoding_type
@@ -91,7 +106,7 @@ class PET2(nn.Module):
         # Initialize classifier if needed
         if "classifier" in self.mode or self.mode == "pretrain":
             self.classifier = PET_classifier(
-                hidden_size,
+                base_dim,
                 num_transformers=num_transformers_head,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
@@ -106,8 +121,10 @@ class PET2(nn.Module):
         # Initialize generator if needed
         if "generator" in self.mode or self.mode == "pretrain":
             self.generator = PET_generator(
-                input_dim,
-                hidden_size,
+                input_dim
+                if num_gen_classes == 1
+                else num_gen_classes,  # diffusion or segmentation
+                base_dim,
                 num_transformers=num_transformers_head,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
@@ -118,12 +135,13 @@ class PET2(nn.Module):
                 num_tokens=num_tokens,
                 num_add=self.num_add,
                 num_classes=num_classes,
+                skip_pid=num_classes == 1,
             )
 
         # Initialize MPM head if needed
         if "mpm" in self.mode or self.mode == "pretrain":
             self.mpm_head = MPM_head(
-                hidden_size,
+                base_dim,
                 num_transformers=num_transformers_head,
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
@@ -139,7 +157,7 @@ class PET2(nn.Module):
             )
             # initialize trainable mask token embeddings
             # those are used to fill in the masked positions
-            self.mask_embeddings = torch.nn.Parameter(torch.randn(1000, hidden_size))
+            self.mask_embeddings = torch.nn.Parameter(torch.randn(1000, base_dim))
 
         self.initialize_weights()
 
@@ -187,7 +205,7 @@ class PET2(nn.Module):
 
         # Generator forward pass
         if "generator" in self.mode or self.mode == "pretrain":
-            z, v = perturb(x, time)
+            z, v, v_weight = perturb(x, time)
             z_body = self.body(z, cond, pid, add_info, time)
             z_pred = self.generator(z_body, y)
 
@@ -263,6 +281,7 @@ class PET2(nn.Module):
             "y_perturb": y_perturb,
             "z_pred": z_pred,
             "v": v,
+            "v_weight": v_weight,
             "x_body": x_body,
             "z_body": z_body,
             "alpha": alpha**2,
@@ -281,14 +300,10 @@ class PETLightning(LightningModule):
         tokenizer_ckpt: str,
         masking_fraction: float = 0.4,
         pos_encoding_type: str = "sort_descending_in_masked_subset",
-        input_dim: int = 4,
+        num_feat: int = 4,
         num_classes: int = 2,
-        hidden_size: int = 64,
-        num_transformers: int = 6,
-        num_heads: int = 8,
         attn_drop: float = 0.1,
         mlp_drop: float = 0.1,
-        mlp_ratio: int = 2,
         feature_drop: float = 0.0,
         num_tokens: int = 4,
         K: int = 15,
@@ -310,6 +325,10 @@ class PETLightning(LightningModule):
         ckpt_loaded: str = "",
         mode="pretrain",
         use_one_cycle=False,
+        model_params={},
+        use_add=False,
+        add_dim=4,
+        num_gen_classes=1,
         **kwargs,
     ):
         super().__init__()
@@ -327,30 +346,26 @@ class PETLightning(LightningModule):
 
         # --- model ---
         self.model = PET2(
-            input_dim=input_dim - 3,
-            hidden_size=hidden_size,
-            codebook_size=self.tokenizer.n_clusters if self.use_mpm else None,
-            num_transformers=num_transformers,
-            num_heads=num_heads,
-            attn_drop=attn_drop,
-            mlp_drop=mlp_drop,
-            mlp_ratio=mlp_ratio,
-            feature_drop=feature_drop,
-            num_tokens=num_tokens,
-            K=K,
-            add_dim=4,
-            conditional=False,
-            use_time=kwargs.get("use_time", True),
-            pid=kwargs.get("use_pid", False),
-            add_info=kwargs.get("use_add", False),
-            num_classes=num_classes,
+            input_dim=num_feat,
+            cond_dim=3,
+            pid=True,
+            pid_dim=9,
+            add_info=use_add,
+            add_dim=add_dim,
             mode=mode,
+            num_classes=num_classes,
+            num_gen_classes=num_gen_classes,
+            mlp_drop=mlp_drop,
+            attn_drop=attn_drop,
+            feature_drop=feature_drop,
+            codebook_size=self.tokenizer.n_clusters if self.use_mpm else None,
             pos_encoding_type=pos_encoding_type,
+            **model_params,
         )
 
         # --- losses ---
-        self.loss_class = nn.CrossEntropyLoss(reduction="none")
-        self.loss_gen = nn.L1Loss(reduction="none")
+        self.loss_class = nn.CrossEntropyLoss()
+        self.loss_gen = nn.MSELoss()
         self.loss_masked = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
@@ -374,76 +389,12 @@ class PETLightning(LightningModule):
     def forward(self, x, y=None, **kwargs):
         return self.model(x, y, **kwargs)
 
-    def _compute_losses(self, outputs, y, y_masked=None):
+    def _compute_MPM_loss(self, outputs, y, y_masked=None):
         """
         outputs is a dict with keys: y_pred, z_pred, v, y_perturb, alpha, x_body, z_body
         """
-        losses = {}
+        mpm_logs = {}
         loss = torch.tensor(0.0, device=self.device)
-
-        # classification loss
-        if outputs["y_pred"] is not None:
-            if self.use_event_loss:
-                mask = y >= self.event_threshold
-                if mask.any():
-                    ev = self.loss_class(
-                        outputs["y_pred"][mask][:, self.event_threshold :],
-                        y[mask] - self.event_threshold,
-                    ).mean()
-                    losses["loss_class_event"] = ev
-                    loss = loss + ev
-                inv = ~mask
-                if inv.any():
-                    cl = self.loss_class(
-                        outputs["y_pred"][inv][:, : self.event_threshold], y[inv]
-                    ).mean()
-                    losses["loss_class"] = cl
-                    loss = loss + cl
-            else:
-                cl = self.loss_class(outputs["y_pred"], y).mean()
-                losses["loss_class"] = cl
-                loss = loss + cl
-
-        # generation loss
-        if outputs["z_pred"] is not None:
-            nonzero = (outputs["v"][:, :, 0] != 0).sum(1)
-            gen = (
-                self.loss_gen(outputs["v"], outputs["z_pred"]).sum((1, 2)) / nonzero
-            ).mean()
-            losses["loss_gen"] = gen
-            loss = loss + gen
-
-        # perturbation loss
-        if outputs["y_perturb"] is not None:
-            if self.use_event_loss:
-                mask = y >= self.event_threshold
-                if mask.any():
-                    lep = (
-                        outputs["alpha"][mask].squeeze(1)
-                        * self.loss_class(
-                            outputs["y_perturb"][mask][:, self.event_threshold :],
-                            y[mask] - self.event_threshold,
-                        )
-                    ).mean()
-                    losses["loss_event_perturb"] = lep
-                    loss = loss + lep
-                inv = ~mask
-                if inv.any():
-                    lp = (
-                        outputs["alpha"][inv].squeeze(1)
-                        * self.loss_class(
-                            outputs["y_perturb"][inv][:, : self.event_threshold], y[inv]
-                        )
-                    ).mean()
-                    losses["loss_perturb"] = lp
-                    loss = loss + lp
-            else:
-                lp = (
-                    outputs["alpha"].squeeze(1)
-                    * self.loss_class(outputs["y_perturb"], y)
-                ).mean()
-                losses["loss_perturb"] = lp
-                loss = loss + lp
 
         # masked prediction loss
         if outputs["masked_pred"] is not None and y_masked is not None:
@@ -461,7 +412,7 @@ class PETLightning(LightningModule):
                 masked_pred.reshape(B * T, C),
                 y_masked.reshape(B * T),
             )
-            losses["loss_masked"] = lmp
+            mpm_logs["loss_masked"] = lmp
             loss = loss + lmp
 
             # if pid is used, add its loss too
@@ -473,30 +424,18 @@ class PETLightning(LightningModule):
                     masked_pred_pid.reshape(B * T, masked_pred_pid.shape[-1]),
                     y_masked_pid.reshape(B * T).long(),
                 )
-                losses["loss_masked_pid"] = lmp_pid
+                mpm_logs["loss_masked_pid"] = lmp_pid
                 loss = loss + lmp_pid
 
-            losses["masked_pred"] = masked_pred
-            losses["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
-            losses["mask_valid_particle"] = outputs["mask_valid_particle"]
-            losses["mask_valid_particle_but_masked"] = outputs[
+            mpm_logs["masked_pred"] = masked_pred
+            mpm_logs["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
+            mpm_logs["mask_valid_particle"] = outputs["mask_valid_particle"]
+            mpm_logs["mask_valid_particle_but_masked"] = outputs[
                 "mask_valid_particle_but_masked"
             ]
-            losses["y_masked"] = y_masked
+            mpm_logs["y_masked"] = y_masked
 
-        # CLIP loss
-        if self.use_clip and outputs.get("x_body") is not None:
-            clip = self.clip_loss(
-                outputs["x_body"].view(outputs["x_body"].shape[0], -1),
-                outputs["z_body"].view(outputs["x_body"].shape[0], -1),
-                weight=outputs["alpha"].squeeze(1),
-            )
-            losses["loss_clip"] = clip
-            loss = loss + clip
-
-        losses["loss"] = loss
-
-        return losses
+        return mpm_logs, loss
 
     def _shared_step(self, batch, batch_idx, stage):
         """Shared logic for train/val/test steps."""
@@ -510,6 +449,11 @@ class PETLightning(LightningModule):
             if (k in batch)
         }
 
+        if batch.get("data_pid") is not None:
+            data_pid = batch["data_pid"].to(X.device)
+        else:
+            data_pid = None
+
         if self.use_mpm:
             # tokenize the input point clouds
             # make sure tokenizer is on the same device as the model
@@ -521,22 +465,51 @@ class PETLightning(LightningModule):
 
             y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
 
-        # Use torch.no_grad() for validation and test, allow gradients for training
+        logs = get_logs(device=X.device)
         if stage == "train":
             with amp.autocast(enabled=self.use_amp, device_type="cuda"):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y, y_masked=y_masked)
+                loss = get_loss(
+                    out,
+                    y,
+                    self.loss_class,
+                    self.loss_gen,
+                    self.use_event_loss,
+                    self.use_clip,
+                    CLIPLoss(),
+                    logs,
+                    data_pid=data_pid,
+                )
+
+                mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
+                logs.update(mpm_logs)
+                logs["loss"] = loss + mpm_loss
+
         else:
             with (
                 torch.no_grad(),
                 amp.autocast(enabled=self.use_amp, device_type="cuda"),
             ):
                 out = self(X, y, **model_kwargs)
-                losses = self._compute_losses(out, y, y_masked=y_masked)
+                loss = get_loss(
+                    out,
+                    y,
+                    self.loss_class,
+                    self.loss_gen,
+                    self.use_event_loss,
+                    self.use_clip,
+                    CLIPLoss(),
+                    logs,
+                    data_pid=data_pid,
+                )
+
+                mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
+                logs.update(mpm_logs)
+                logs["loss"] = loss + mpm_loss
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
-        for k, v in losses.items():
+        for k, v in logs.items():
             if "loss" not in k:
                 continue
             self.log(
@@ -548,7 +521,7 @@ class PETLightning(LightningModule):
                 sync_dist=True,
             )
 
-        return losses
+        return logs
 
     def training_step(self, batch, batch_idx):
         return self._shared_step(batch, batch_idx, "train")

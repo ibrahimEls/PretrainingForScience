@@ -6,6 +6,7 @@ sys.path.append("../")
 
 
 import torch
+from omnilearned.utils import get_model_parameters
 from pytorch_lightning import Trainer
 from pytorch_lightning.callbacks import (
     EarlyStopping,
@@ -107,10 +108,8 @@ def main():
     parser.add_argument("--model_size", type=str, default="micro")
     parser.add_argument("--attn_drop", type=float, default=0.0)
     parser.add_argument("--mlp_drop", type=float, default=0.0)
-    parser.add_argument("--mlp_ratio", type=int, default=2)
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
-    parser.add_argument("--K", type=int, default=15)
     parser.add_argument("--radius", type=float, default=0.4)
     parser.add_argument("--patience", type=int, default=50)
     parser.add_argument(
@@ -172,28 +171,25 @@ def main():
     args = parser.parse_args()
 
     if args.model_size == "micro":
-        hidden_size = 32
-        num_transformers = 3
-        num_heads = 4
-        batch_size = 256
         save_tag = f"_micro_{args.dataset}_dataset_{args.dataset_size}"
+        model_params = {}
+        model_params["num_transformers"] = 3
+        model_params["num_transformers_head"] = 2
+        model_params["num_tokens"] = 4
+        model_params["num_heads"] = 4
+        model_params["K"] = 10
+        model_params["base_dim"] = 32
+        model_params["mlp_ratio"] = 2
 
     elif args.model_size == "small":
-        hidden_size = 128
-        num_transformers = 8
-        num_heads = 8
-        batch_size = 128
         save_tag = f"_small_{args.dataset}_dataset_{args.dataset_size}"
-
+        model_params = get_model_parameters(args.model_size)
     elif args.model_size == "medium":
-        hidden_size = 512
-        num_transformers = 12
-        num_heads = 16
-        batch_size = 32
         save_tag = f"_medium_{args.dataset}_dataset_{args.dataset_size}"
-
-    else:
-        raise ValueError(f"Unknown model size: {args.model_size}")
+        model_params = get_model_parameters(args.model_size)
+    elif args.model_size == "large":
+        save_tag = f"_large_{args.dataset}_dataset_{args.dataset_size}"
+        model_params = get_model_parameters(args.model_size)
 
     if "mpm" in args.mode or args.mode == "pretrain":
         from omnilearn_lightning.callbacks.masked_prediction_callback import (
@@ -209,12 +205,10 @@ def main():
     if rank_zero_only.rank == 0:
         os.makedirs(args.outdir, exist_ok=True)
 
-    batch_size = args.batch_size
-
     data_module = PETDataModule(
         dataset=args.dataset,
         path=args.path,
-        batch_size=batch_size,
+        batch_size=args.batch_size,
         num_workers=args.num_workers,
         # Datamodule expects use_pid and use_add to be True for jetclass dataset
         # as it otherwise doesn't split into pid/add info features (then `X`
@@ -225,22 +219,18 @@ def main():
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,
+        use_cond=False,
     )
 
     print(f"Model mode: {args.mode}")
 
     model = PETLightning(
-        input_dim=args.input_dim,
+        num_feat=args.input_dim,
         num_classes=args.num_classes,
-        hidden_size=hidden_size,
-        num_transformers=num_transformers,
-        num_heads=num_heads,
         attn_drop=args.attn_drop,
         mlp_drop=args.mlp_drop,
-        mlp_ratio=args.mlp_ratio,
         feature_drop=args.feature_drop,
         num_tokens=args.num_tokens,
-        K=args.K,
         radius=args.radius,
         lr=args.lr,
         lr_factor=args.lr_factor,
@@ -258,6 +248,7 @@ def main():
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
+        model_params=model_params,
     )
 
     if rank_zero_only.rank == 0:
@@ -269,7 +260,7 @@ def main():
             base_dir=os.path.join(args.outdir, save_tag)
         )
 
-    pseudo_epoch_len = int(1_000_000 / (batch_size * 4 * 10)) // 10
+    pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
 
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 

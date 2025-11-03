@@ -12,13 +12,13 @@
 export REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
 
 ### Micro Model
-#export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-#export cmd="python3 train_lightning.py --mode=generator --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-#export cmd="python3 train_lightning.py --mode=mpm --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-export cmd="python3 train_lightning.py --mode=classifier+generator --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-#export cmd="python3 train_lightning.py --mode=classifier+mpm --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-#export cmd="python3 train_lightning.py --mode=generator+mpm --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
-#export cmd="python3 train_lightning.py --mode=pretrain --dataset_size=-1 --num_workers=2 --num_nodes=4--model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=generator --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=mpm --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+export cmd="python train_lightning.py --mode=classifier+generator --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=classifier+mpm --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=generator+mpm --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
+#export cmd="python3 train_lightning.py --mode=pretrain --dataset_size=-1 --num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=256"
 
 ### Small Model
 #export cmd="python3 train_lightning.py --mode=classifier --dataset_size=-1 --num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4 --weight_decay 0.3 --use_pid y --use_add y --epoch=500 --use_wandb --batch_size=128"
