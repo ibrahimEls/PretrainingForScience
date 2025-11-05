@@ -93,6 +93,7 @@ class PET2(nn.Module):
             pid_dim=pid_dim,
             add_info=add_info,
             add_dim=add_dim,
+            # TODO: time should also be used for classifier+generator and MPM+generator (i.e. whenever generator is used)
             use_time=self.mode in ["generator", "pretrain"],
             skip=skip,
         )
@@ -184,7 +185,7 @@ class PET2(nn.Module):
             z_body,
             masked_pred_continuous,
             masked_pred_pid,
-            mask_body,
+            v_weight,
             mask_valid_particle,
             mask_valid_particle_but_masked,
         ) = (
@@ -234,18 +235,17 @@ class PET2(nn.Module):
                 (mask_before_masking - mask_after_masking).bool().unsqueeze(-1)
             )
 
-            x_body, mask_body = self.body(
+            x_body = self.body(
                 x,
                 cond,
                 pid,
                 add_info,
                 torch.zeros_like(time),
-                return_mask=True,
             )
 
             x_body_masked = x_body.clone()
             replace_masked_positions(
-                x_body_masked[:, self.body.num_tokens + 1 :],
+                x_body_masked[:, self.body.num_tokens + self.body.num_add :],
                 mask_is_valid=mask_before_masking.int(),
                 mask_is_valid_corrupted=mask_after_masking.int(),
                 mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
@@ -256,7 +256,10 @@ class PET2(nn.Module):
 
             mask_for_masked_pred_head = torch.cat(
                 [
-                    torch.ones((x.shape[0], self.body.num_tokens + 1), device=x.device),
+                    torch.ones(
+                        (x.shape[0], self.body.num_tokens + self.body.num_add),
+                        device=x.device,
+                    ),
                     mask_before_masking,
                 ],
                 dim=1,
@@ -268,12 +271,14 @@ class PET2(nn.Module):
 
             # remove tokens and time from masked_pred
             masked_pred_continuous = masked_pred_continuous[
-                :, self.body.num_tokens + 1 :, :
+                :, self.body.num_tokens + self.body.num_add :, :
             ]
             if masked_pred_pid is not None:
-                masked_pred_pid = masked_pred_pid[:, self.body.num_tokens + 1 :, :]
+                masked_pred_pid = masked_pred_pid[
+                    :, self.body.num_tokens + self.body.num_add :, :
+                ]
             mask_valid_particle = mask_for_masked_pred_head[
-                :, self.body.num_tokens + 1 :
+                :, self.body.num_tokens + self.body.num_add :
             ]
 
         return {
