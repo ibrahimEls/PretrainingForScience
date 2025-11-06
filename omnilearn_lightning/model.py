@@ -332,6 +332,7 @@ class PETLightning(LightningModule):
         use_one_cycle=False,
         model_params={},
         use_add=False,
+        use_pid=False,
         add_dim=4,
         num_gen_classes=1,
         **kwargs,
@@ -382,8 +383,8 @@ class PETLightning(LightningModule):
         self.use_amp = use_amp
         self.fine_tune = fine_tune
         self.ckpt_loaded = ckpt_loaded
-        self.use_pid = kwargs.get("use_pid", False)
-        self.use_add = kwargs.get("use_add", False)
+        self.use_pid = use_pid
+        self.use_add = use_add
 
         # optimizer params
         self.lr = lr
