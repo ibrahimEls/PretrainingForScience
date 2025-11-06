@@ -152,7 +152,7 @@ def main():
 
     # Logging
     parser.add_argument(
-        "--use_wandb", action="store_true", help="Use Weights & Biases logging"
+        "--use_wandb", type=str2bool, default=True, help="Use Weights & Biases logging"
     )
     parser.add_argument(
         "--wandb_project",
