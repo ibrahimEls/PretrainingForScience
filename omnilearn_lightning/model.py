@@ -475,17 +475,27 @@ class PETLightning(LightningModule):
         if stage == "train":
             with amp.autocast(enabled=self.use_amp, device_type="cuda"):
                 out = self(X, y, **model_kwargs)
-                loss = get_loss(
-                    out,
-                    y,
-                    self.loss_class,
-                    self.loss_gen,
-                    self.use_event_loss,
-                    self.use_clip,
-                    CLIPLoss(),
-                    logs,
-                    data_pid=data_pid,
-                )
+
+                # if we are in MPM only mode, skip the standard loss computation
+                # all other modes are compatible with the `get_loss` function
+                # as they have at least one of the default loss components
+                # but when using only MPM, the code crashes when running
+                # loss.detach() here: https://github.com/ViniciusMikuni/OmniLearned/blob/922355db6269061af9e8a36a7c6a118e7c6609c4/src/omnilearned/utils.py#L272
+                # while being initialized as a standard python float here: https://github.com/ViniciusMikuni/OmniLearned/blob/922355db6269061af9e8a36a7c6a118e7c6609c4/src/omnilearned/utils.py#L221
+                if self.model.mode == "mpm":
+                    loss = torch.tensor(0.0, device=self.device)
+                else:
+                    loss = get_loss(
+                        out,
+                        y,
+                        self.loss_class,
+                        self.loss_gen,
+                        self.use_event_loss,
+                        self.use_clip,
+                        CLIPLoss(),
+                        logs,
+                        data_pid=data_pid,
+                    )
 
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
@@ -497,17 +507,21 @@ class PETLightning(LightningModule):
                 amp.autocast(enabled=self.use_amp, device_type="cuda"),
             ):
                 out = self(X, y, **model_kwargs)
-                loss = get_loss(
-                    out,
-                    y,
-                    self.loss_class,
-                    self.loss_gen,
-                    self.use_event_loss,
-                    self.use_clip,
-                    CLIPLoss(),
-                    logs,
-                    data_pid=data_pid,
-                )
+                # same reason as above
+                if self.model.mode == "mpm":
+                    loss = torch.tensor(0.0, device=self.device)
+                else:
+                    loss = get_loss(
+                        out,
+                        y,
+                        self.loss_class,
+                        self.loss_gen,
+                        self.use_event_loss,
+                        self.use_clip,
+                        CLIPLoss(),
+                        logs,
+                        data_pid=data_pid,
+                    )
 
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
