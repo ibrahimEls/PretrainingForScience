@@ -3,7 +3,7 @@
 #SBATCH -C gpu
 #SBATCH -q debug
 #SBATCH -t 0:30:00
-#SBATCH -N 32
+#SBATCH -N 8
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
@@ -23,7 +23,7 @@ DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
-TRAINING_CFG_ALL_SIZES="--use_wandb n --wandb_project omnilearn --limit_val_batches=50 --val_check_interval=2000 --dataset_size=-1 --use_pid y --use_add y --epoch=3  --outdir=$OUTPUT_DIR --path=$DATASET_PATH"
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearn --limit_val_batches=50 --val_check_interval=2000 --dataset_size=-1 --use_pid y --use_add y --epoch=3  --outdir=$OUTPUT_DIR --path=$DATASET_PATH"
 
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
