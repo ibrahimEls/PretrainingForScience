@@ -161,6 +161,12 @@ def main():
         help="Weights & Biases project name",
     )
     parser.add_argument(
+        "--wandb_entity",
+        type=str,
+        default="omnilearn-studies",
+        help="Weights & Biases entity name",
+    )
+    parser.add_argument(
         "--wandb_tag",
         type=str,
         action="append",
@@ -295,6 +301,7 @@ def main():
             name=run_name,
             tags=args.wandb_tag,
             save_dir=args.outdir,
+            entity=args.wandb_entity,
         )
 
         wandb_logger.log_hyperparams(hparams)
