@@ -94,7 +94,8 @@ class PET2(nn.Module):
             add_info=add_info,
             add_dim=add_dim,
             # TODO: time should also be used for classifier+generator and MPM+generator (i.e. whenever generator is used)
-            use_time=self.mode in ["generator", "pretrain"],
+            use_time=self.mode
+            in ["classifier+generator", "generator+mpm", "generator", "pretrain"],
             skip=skip,
         )
 
