@@ -152,13 +152,19 @@ def main():
 
     # Logging
     parser.add_argument(
-        "--use_wandb", action="store_true", help="Use Weights & Biases logging"
+        "--use_wandb", type=str2bool, default=True, help="Use Weights & Biases logging"
     )
     parser.add_argument(
         "--wandb_project",
         type=str,
         default="omnilearned",
         help="Weights & Biases project name",
+    )
+    parser.add_argument(
+        "--wandb_entity",
+        type=str,
+        default="omnilearn-studies",
+        help="Weights & Biases entity name",
     )
     parser.add_argument(
         "--wandb_tag",
@@ -295,6 +301,7 @@ def main():
             name=run_name,
             tags=args.wandb_tag,
             save_dir=args.outdir,
+            entity=args.wandb_entity,
         )
 
         wandb_logger.log_hyperparams(hparams)
