@@ -234,6 +234,8 @@ class MaskedPredictionCallback(Callback):
             )
             return
 
+        print(f"rank: {trainer.global_rank} processing MPM visualizations")
+
         feature_names = {
             "eta": "Particle $\\Delta\\eta$",
             "phi": "Particle $\\Delta\\phi$",
