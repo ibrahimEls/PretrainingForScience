@@ -44,7 +44,7 @@ class MaskedPredictionCallback(Callback):
 
     def __init__(
         self,
-        n_batches: int = 100,
+        n_batches: int = 5,
         n_example_jets: int = 8,
         image_path: str = "/tmp",
     ):
