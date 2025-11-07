@@ -562,4 +562,8 @@ class MaskedPredictionCallback(Callback):
         fig.tight_layout()
         self._save_and_log(trainer, fig, "example_jets")
 
-        plt.show()
+        # Close all figures instead of showing them. In headless training
+        # environments plt.show() blocks waiting for a GUI window to be
+        # closed which will hang training. We save figures above and log
+        # them to W&B, so displaying them interactively is unnecessary.
+        plt.close("all")

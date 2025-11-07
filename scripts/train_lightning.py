@@ -353,7 +353,7 @@ def main():
         elif args.fine_tune and not args.resume:
             print(f"Loading Model From {args.ckpt}")
             model = load_partial_checkpoint(model, args.ckpt, task=args.dataset)
-            print(f"Finetuning Model on Downstream")
+            print("Finetuning Model on Downstream")
         elif args.fine_tune and args.resume:
             print("Resuming Downstream Finetuning")
 
