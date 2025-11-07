@@ -158,7 +158,10 @@ class PET2(nn.Module):
             )
             # initialize trainable mask token embeddings
             # those are used to fill in the masked positions
-            self.mask_embeddings = torch.nn.Parameter(torch.randn(1000, base_dim))
+            max_particles = 150  # maximum number of particles
+            self.mask_embeddings = torch.nn.Parameter(
+                torch.randn(max_particles, base_dim)
+            )
 
         self.initialize_weights()
 
