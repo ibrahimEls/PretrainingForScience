@@ -241,11 +241,11 @@ class MaskedPredictionCallback(Callback):
         # Without this guard ak.concatenate on empty lists will raise and
         # propagate out of the callback, which can crash the trainer even
         # during the training loop in some Lightning configurations.
-        # if not batches_list:
-        #     print(
-        #         "MaskedPredictionCallback: no batches collected, skipping visualization."
-        #     )
-        #     return
+        if not batches_list:
+            print(
+                "MaskedPredictionCallback: no batches collected, skipping visualization."
+            )
+            return
 
         feature_names = {
             "eta": "Particle $\\Delta\\eta$",
