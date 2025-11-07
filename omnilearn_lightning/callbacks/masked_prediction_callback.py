@@ -207,9 +207,14 @@ class MaskedPredictionCallback(Callback):
         # process validation batches and produce plots
         if not self._is_global_rank_zero(trainer):
             return  # only save from rank 0 to avoid duplication
+        # if no validation batches were collected, skip
+        if not getattr(self, "validation_batches", None):
+            return
         self._process_and_log(
             trainer, pl_module, self.validation_batches, self.validation_outputs
         )
+        # cleanup
+        self._init_phase_storage("validation")
 
     def on_test_epoch_end(self, trainer, pl_module: LightningModule) -> None:
         # process test batches and produce plots
@@ -219,6 +224,8 @@ class MaskedPredictionCallback(Callback):
         if not getattr(self, "test_batches", None):
             return
         self._process_and_log(trainer, pl_module, self.test_batches, self.test_outputs)
+        # cleanup
+        self._init_phase_storage("test")
 
     def _process_and_log(
         self,
