@@ -4,6 +4,7 @@ This callback collects a limited number of batches during validation/test and
 creates a set of visualizations.
 """
 
+import copy
 import os
 from typing import Any, Dict
 
@@ -236,6 +237,16 @@ class MaskedPredictionCallback(Callback):
 
         print(f"rank: {trainer.global_rank} processing MPM visualizations")
 
+        # If no batches were collected for this phase, skip processing.
+        # Without this guard ak.concatenate on empty lists will raise and
+        # propagate out of the callback, which can crash the trainer even
+        # during the training loop in some Lightning configurations.
+        # if not batches_list:
+        #     print(
+        #         "MaskedPredictionCallback: no batches collected, skipping visualization."
+        #     )
+        #     return
+
         feature_names = {
             "eta": "Particle $\\Delta\\eta$",
             "phi": "Particle $\\Delta\\phi$",
@@ -255,8 +266,17 @@ class MaskedPredictionCallback(Callback):
         batches_jet_labels = []
         batches_pred_token_ids = []
 
-        # move tokenizer to CPU for reconstruction if needed
-        pl_module.tokenizer.kmeans.centroids.to("cpu")
+        # NOTE: avoid moving tokenizer centroids in-place here. Calling
+        # `.to("cpu")` without assignment doesn't change the stored tensor
+        # and attempting to reassign the parameter/buffer can interfere with
+        # the model state. If reconstruction requires CPU tensors, the
+        # tokenizer internals should handle that explicitly. We therefore do
+        # not mutate `pl_module.tokenizer.kmeans.centroids` here.
+
+        # copy tokenizer
+        tokenizer = copy.deepcopy(pl_module.tokenizer)
+        # move tokenizer centroids to CPU for reconstruction
+        tokenizer.kmeans.centroids = tokenizer.kmeans.centroids.to("cpu")
 
         for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
             # adjust feature names based on available features in the first batch
@@ -270,8 +290,8 @@ class MaskedPredictionCallback(Callback):
             targets_fullres = combine_features(
                 batch["X"], batch.get("pid"), batch.get("add_info")
             )
-            targets_transformed_x, targets_transformed_add_info = (
-                pl_module.tokenizer.transform(batch["X"], add_info=batch["add_info"])
+            targets_transformed_x, targets_transformed_add_info = tokenizer.transform(
+                batch["X"], add_info=batch["add_info"]
             )
             targets_transformed = combine_features(
                 targets_transformed_x,
@@ -294,7 +314,7 @@ class MaskedPredictionCallback(Callback):
 
             # extract the reconstructed features from the predicted token IDs
             predictions_reconstructed_x, predictions_reconstructed_add_info = (
-                pl_module.tokenizer.reconstruct(
+                tokenizer.reconstruct(
                     predicted_tokens,
                     num_features_x=batch["X"].shape[-1],
                 )
@@ -345,16 +365,19 @@ class MaskedPredictionCallback(Callback):
 
             batches_jet_labels.append(batch["y"].cpu().numpy())
 
-        # move tokenizer back to original device
-        pl_module.tokenizer.kmeans.centroids.to(pl_module.device)
-
-        # Concatenate awkward arrays
-        x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
-        x_part_ak_true = ak.concatenate(batches_masked_true_ak)
-        x_part_ak_survived = ak.concatenate(batches_survived_ak)
-        x_part_ak_true_tokenized = ak.concatenate(batches_masked_true_tokenized_ak)
-        x_part_ak_pred_token_ids = ak.concatenate(batches_pred_token_ids)
-        jet_labels = np.concatenate(batches_jet_labels)
+        # Concatenate awkward arrays. Wrap in try/except to avoid throwing
+        # if any of the lists are empty or malformed. If concatenation fails
+        # skip visualization for safety.
+        try:
+            x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
+            x_part_ak_true = ak.concatenate(batches_masked_true_ak)
+            x_part_ak_survived = ak.concatenate(batches_survived_ak)
+            x_part_ak_true_tokenized = ak.concatenate(batches_masked_true_tokenized_ak)
+            x_part_ak_pred_token_ids = ak.concatenate(batches_pred_token_ids)
+            jet_labels = np.concatenate(batches_jet_labels)
+        except Exception as e:
+            print(f"MaskedPredictionCallback: failed to concatenate batch arrays: {e}")
+            return
 
         # shuffle the jets
         rng = np.random.default_rng(seed=42)
