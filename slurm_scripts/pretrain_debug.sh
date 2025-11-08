@@ -3,7 +3,7 @@
 #SBATCH -C gpu
 #SBATCH -q debug
 #SBATCH -t 0:30:00
-#SBATCH -N 8
+#SBATCH -N 4
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
@@ -26,11 +26,11 @@ TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name
 TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=50 --val_check_interval=2000 --dataset_size=-1 --use_pid y --use_add y --epoch=3  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603"
 
 ### Micro Model
-TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=8 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
+TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
 ### Small model
-# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=8 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
+# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
 ### Medium model
-# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=8 --model_size=medium --lr 5e-6 --weight_decay 0.1 --batch_size=32"
+# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=medium --lr 5e-6 --weight_decay 0.1 --batch_size=32"
 
 TRAINING_CFG="$TRAINING_CFG_ALL_SIZES $TRAINING_CFG_SIZE_SPECIFIC"
 
