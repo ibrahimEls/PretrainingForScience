@@ -198,14 +198,13 @@ def main():
         model_params = get_model_parameters(args.model_size)
 
     if "mpm" in args.mode or args.mode == "pretrain":
-        from omnilearn_lightning.callbacks.masked_prediction_callback import (
-            MaskedPredictionCallback,
-        )
-
         if args.tokenizer_ckpt is None:
             raise ValueError("tokenizer_ckpt must be provided for MPM")
 
-        masked_prediction_callback = MaskedPredictionCallback()
+        # from omnilearn_lightning.callbacks.masked_prediction_callback import (
+        #     MaskedPredictionCallback,
+        # )
+        # masked_prediction_callback = MaskedPredictionCallback()
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
@@ -332,9 +331,9 @@ def main():
 
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
-    if "mpm" in args.mode or args.mode == "pretrain":
-        print("Using MaskedPredictionCallback for self-supervised learning")
-        callbacks.append(masked_prediction_callback)
+    # if "mpm" in args.mode or args.mode == "pretrain":
+    #     print("Using MaskedPredictionCallback for self-supervised learning")
+    #     callbacks.append(masked_prediction_callback)
 
     if args.dataset != "jetclass":
         print("Downstream Task! Adding Early Stopping...")
@@ -353,7 +352,7 @@ def main():
         elif args.fine_tune and not args.resume:
             print(f"Loading Model From {args.ckpt}")
             model = load_partial_checkpoint(model, args.ckpt, task=args.dataset)
-            print(f"Finetuning Model on Downstream")
+            print("Finetuning Model on Downstream")
         elif args.fine_tune and args.resume:
             print("Resuming Downstream Finetuning")
 
