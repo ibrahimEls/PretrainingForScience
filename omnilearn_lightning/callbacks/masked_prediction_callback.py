@@ -273,13 +273,6 @@ class MaskedPredictionCallback(Callback):
         batches_jet_labels = []
         batches_pred_token_ids = []
 
-        # NOTE: avoid moving tokenizer centroids in-place here. Calling
-        # `.to("cpu")` without assignment doesn't change the stored tensor
-        # and attempting to reassign the parameter/buffer can interfere with
-        # the model state. If reconstruction requires CPU tensors, the
-        # tokenizer internals should handle that explicitly. We therefore do
-        # not mutate `pl_module.tokenizer.kmeans.centroids` here.
-
         # copy tokenizer
         tokenizer = copy.deepcopy(pl_module.tokenizer)
         # move tokenizer centroids to CPU for reconstruction
@@ -594,8 +587,4 @@ class MaskedPredictionCallback(Callback):
         fig.tight_layout()
         self._save_and_log(trainer, fig, "example_jets")
 
-        # Close all figures instead of showing them. In headless training
-        # environments plt.show() blocks waiting for a GUI window to be
-        # closed which will hang training. We save figures above and log
-        # them to W&B, so displaying them interactively is unnecessary.
         plt.close("all")
