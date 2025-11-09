@@ -1,13 +1,11 @@
 import os
-import re
 from argparse import ArgumentParser
 from pathlib import Path
-from urllib.parse import urljoin
 
 import h5py
 import numpy as np
-import requests
 import torch
+from omnilearned.dataloader import collate_point_cloud, download_h5_files
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 
@@ -27,6 +25,7 @@ class PETDataModule(LightningDataModule):
         shuffle_val_test_indices: bool = False,
         seed_for_initial_shuffling: int = None,
         load_val=False,
+        use_cond=False,
         **kwargs,
     ):
         super().__init__()
@@ -42,6 +41,7 @@ class PETDataModule(LightningDataModule):
         self.shuffle_val_test_indices = shuffle_val_test_indices
         self.seed_for_initial_shuffling = seed_for_initial_shuffling
         self.load_val = load_val
+        self.use_cond = use_cond
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -64,6 +64,7 @@ class PETDataModule(LightningDataModule):
                 dataset_type=self.train_tag,
                 shuffle_indices=self.shuffle_train_indices,
                 seed_for_shuffling=self.seed_for_initial_shuffling,
+                use_cond=self.use_cond,
                 **loading_kwargs,
             )
             if self.load_val:
@@ -72,6 +73,7 @@ class PETDataModule(LightningDataModule):
                     dataset_type="val",
                     shuffle_indices=self.shuffle_val_test_indices,
                     seed_for_shuffling=self.seed_for_initial_shuffling,
+                    use_cond=self.use_cond,
                     **loading_kwargs,
                 )
         elif stage == "test":
@@ -80,6 +82,7 @@ class PETDataModule(LightningDataModule):
                 dataset_type="test",
                 shuffle_indices=self.shuffle_val_test_indices,
                 seed_for_shuffling=self.seed_for_initial_shuffling,
+                use_cond=self.use_cond,
                 **loading_kwargs,
             )
         else:
@@ -95,97 +98,6 @@ class PETDataModule(LightningDataModule):
         return self.test_dataset
 
 
-def collate_point_cloud(batch):
-    """
-    Collate function for point clouds and labels with truncation performed per batch.
-
-    Args:
-        batch (list of dicts): Each element is a dictionary with keys:
-            - "X" (Tensor): Point cloud of shape (N, F)
-            - "y" (Tensor): Label tensor
-            - "cond" (optional, Tensor): Conditional info
-            - "pid" (optional, Tensor): Particle IDs
-            - "add_info" (optional, Tensor): Extra features
-
-    Returns:
-        Dict[str, torch.Tensor]: Dictionary containing collated tensors:
-            - "X": (B, M, F) Truncated point clouds
-            - "y": (B, num_classes)
-            - "cond", "pid", "add_info" (optional, shape (B, M, ...))
-    """
-    batch_X = [item["X"] for item in batch]
-    batch_y = [item["y"] for item in batch]
-
-    # Stack once to avoid repeated slicing
-    point_clouds = torch.stack(batch_X)  # (B, N, F)
-    labels = torch.stack(batch_y)  # (B, num_classes)
-
-    # Use validity mask based on feature index 2
-    valid_mask = point_clouds[:, :, 2] != 0
-    max_particles = valid_mask.sum(dim=1).max().item()
-
-    # Truncate point clouds
-    truncated_X = point_clouds[:, :max_particles, :].contiguous()  # (B, M, F)
-    result = {"X": truncated_X, "y": labels}
-
-    # Handle optional fields in a loop to reduce code duplication
-    optional_fields = ["cond", "pid", "add_info"]
-    for field in optional_fields:
-        if all(field in item for item in batch):
-            stacked = torch.stack([item[field] for item in batch])
-            # Truncate if it's sequence-like (i.e., has 2 or more dims)
-            if stacked.dim() >= 2 and stacked.shape[1] >= max_particles:
-                stacked = stacked[:, :max_particles].contiguous()
-            result[field] = stacked
-        else:
-            result[field] = None
-
-    return result
-
-
-def get_url(dataset_name, dataset_type, base_url="https://portal.nersc.gov/cfs/m4567/"):
-    url = f"{base_url}/{dataset_name}/{dataset_type}/"
-    try:
-        requests.head(url, allow_redirects=True, timeout=5)
-        return url
-    except requests.RequestException:
-        return None
-
-
-def download_h5_files(base_url, destination_folder):
-    """
-    Downloads all .h5 files from the specified directory URL.
-
-    Args:
-        base_url (str): The base URL of the directory containing the .h5 files.
-        destination_folder (str): The local folder to save the downloaded files.
-    """
-
-    response = requests.get(base_url)
-    if response.status_code != 200:
-        print(f"Failed to access {base_url}")
-        return
-
-    file_links = re.findall(r'href="([^"]+\.h5)"', response.text)
-
-    for file_name in file_links:
-        file_url = urljoin(base_url, file_name)
-        file_path = os.path.join(destination_folder, file_name)
-
-        print(f"Downloading {file_url} to {file_path}")
-        with requests.get(file_url, stream=True) as r:
-            r.raise_for_status()
-            with open(file_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
-        print(f"Downloaded {file_name}")
-
-
-import h5py
-import torch
-from torch.utils.data import Dataset
-
-
 class HEPDataset(Dataset):
     def __init__(
         self,
@@ -197,6 +109,8 @@ class HEPDataset(Dataset):
         num_add=4,
         label_shift=0,
         num_samples=-1,  # New argument to limit the number of samples
+        clip_inputs=False,
+        use_cond=False,
     ):
         """
         Args:
@@ -220,6 +134,8 @@ class HEPDataset(Dataset):
         self.file_paths = file_paths
         self._file_cache = {}  # Lazy cache for open h5py.File handles
         self.file_indices = file_indices
+        self.clip_inputs = clip_inputs
+        self.use_cond = use_cond
 
         # Limit the number of samples if num_samples is not -1.
         if self.num_samples != -1:
@@ -249,11 +165,21 @@ class HEPDataset(Dataset):
         f = self._get_file(file_idx)
 
         sample = {}
+
         sample["X"] = torch.tensor(f["data"][sample_idx], dtype=torch.float32)
+        if self.clip_inputs:
+            # Enforce particles to be inside R=0.8 and pT > 0.5 MeV
+            mask_part = (torch.hypot(sample["X"][:, 0], sample["X"][:, 1]) < 0.8) & (
+                sample["X"][:, 2] > 0.0
+            )
+            sample["X"][:, 3] = np.clip(
+                sample["X"][:, 3], a_min=sample["X"][:, 2], a_max=None
+            )
+            sample["X"] = sample["X"] * mask_part.unsqueeze(-1).float()
+
         label = f["pid"][sample_idx]
         sample["y"] = torch.tensor(label - self.label_shift, dtype=torch.int64)
-
-        if "global" in f:
+        if "global" in f and self.use_cond:
             sample["cond"] = torch.tensor(f["global"][sample_idx], dtype=torch.float32)
 
         if self.use_pid:
@@ -263,9 +189,10 @@ class HEPDataset(Dataset):
                 dim=1,
             )
         if self.use_add:
-            # Assume any additional info appears last.
+            # Assume any additional info appears last
             sample["add_info"] = sample["X"][:, -self.num_add :]
             sample["X"] = sample["X"][:, : -self.num_add]
+
         return sample
 
     def __del__(self):
@@ -284,6 +211,7 @@ def load_data(
     dataset_type="train",
     distributed=True,
     use_pid=False,
+    use_cond=False,
     pid_idx=4,
     use_add=False,
     num_add=4,
