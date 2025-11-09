@@ -93,7 +93,6 @@ class PET2(nn.Module):
             pid_dim=pid_dim,
             add_info=add_info,
             add_dim=add_dim,
-            # TODO: time should also be used for classifier+generator and MPM+generator (i.e. whenever generator is used)
             use_time=self.mode
             in ["classifier+generator", "generator+mpm", "generator", "pretrain"],
             skip=skip,
@@ -270,7 +269,7 @@ class PET2(nn.Module):
             ).unsqueeze(-1)
 
             masked_pred_continuous, masked_pred_pid = self.mpm_head(
-                x_body_masked, mask=mask_for_masked_pred_head
+                x_body_masked, mask=mask_for_masked_pred_head.bool()
             )
 
             # remove tokens and time from masked_pred

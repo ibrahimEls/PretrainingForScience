@@ -1,0 +1,102 @@
+{
+    "micro": {
+      "classifier": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "classifier+generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "classifier+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "generator+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      },
+      "pretrain": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+        "300000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/300k/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
+      }
+    },
+
+    "small": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      }
+    },
+
+    "medium": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      }
+    }
+
+  }

@@ -20,7 +20,6 @@ from pytorch_lightning.utilities import rank_zero_only
 from omnilearn_lightning.dataloader import PETDataModule
 from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
-    get_bigram,
     get_latest_checkpoint_dir,
     get_version_number,
     load_partial_checkpoint,
@@ -98,7 +97,7 @@ def main():
     parser.add_argument(
         "--scheduler_total_steps",
         type=int,
-        default=10_000,
+        default=500_000,
         help="Number of steps after which the learning rate scheduler reaches minimum LR. Will go back up afterwards.",
     )
 
@@ -111,7 +110,7 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=50)
+    parser.add_argument("--patience", type=int, default=5)
     parser.add_argument(
         "--mode",
         type=str,
@@ -177,7 +176,7 @@ def main():
     args = parser.parse_args()
 
     if args.model_size == "micro":
-        save_tag = f"_micro_{args.dataset}_dataset_{args.dataset_size}"
+        save_tag = f"_micro_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = {}
         model_params["num_transformers"] = 3
         model_params["num_transformers_head"] = 2
@@ -188,13 +187,13 @@ def main():
         model_params["mlp_ratio"] = 2
 
     elif args.model_size == "small":
-        save_tag = f"_small_{args.dataset}_dataset_{args.dataset_size}"
+        save_tag = f"_small_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "medium":
-        save_tag = f"_medium_{args.dataset}_dataset_{args.dataset_size}"
+        save_tag = f"_medium_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "large":
-        save_tag = f"_large_{args.dataset}_dataset_{args.dataset_size}"
+        save_tag = f"_large_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
 
     if "mpm" in args.mode or args.mode == "pretrain":
@@ -270,7 +269,7 @@ def main():
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 
     version = get_version_number(out_dir_save_tag)
-    run_name = f"v{version}_{get_bigram(add_timestamp=True)}"
+    run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
 
     run_dir = os.path.join(out_dir_save_tag, run_name)
     if rank_zero_only.rank == 0:
@@ -335,16 +334,15 @@ def main():
     #     print("Using MaskedPredictionCallback for self-supervised learning")
     #     callbacks.append(masked_prediction_callback)
 
-    if args.dataset != "jetclass":
-        print("Downstream Task! Adding Early Stopping...")
-        early_stop_callback = EarlyStopping(
-            monitor="val_loss",
-            patience=args.patience,
-            mode="min",
-            verbose=False,
-        )
-        callbacks.append(early_stop_callback)
+    early_stop_callback = EarlyStopping(
+        monitor="val_loss",
+        patience=args.patience,
+        mode="min",
+        verbose=False,
+    )
+    callbacks.append(early_stop_callback)
 
+    if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
             print("Training Downstream From Scratch")
         elif not args.fine_tune and args.resume:
