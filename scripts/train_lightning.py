@@ -45,13 +45,20 @@ def main():
     parser.add_argument(
         "--outdir",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/",
+        default="/pscratch/sd/i/ibrahime/checkpoints/",
         help="Output directory",
     )
     parser.add_argument(
         "--ckpt",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/lightning_logs/version_151/checkpoints/last.ckpt",
+        default=None,
+        help="Path to the model checkpoint to load",
+    )
+
+    parser.add_argument(
+        "--user",
+        type=str,
+        default="ibrahime",
         help="Path to the model checkpoint to load",
     )
 
@@ -110,7 +117,7 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=5)
+    parser.add_argument("--patience", type=int, default=4)
     parser.add_argument(
         "--mode",
         type=str,
@@ -187,14 +194,13 @@ def main():
         model_params["mlp_ratio"] = 2
 
     elif args.model_size == "small":
-        save_tag = f"_small_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "medium":
-        save_tag = f"_medium_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "large":
-        save_tag = f"_large_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
+
+    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
@@ -311,8 +317,8 @@ def main():
     )
 
     ckpt_val = ModelCheckpoint(
-        filename=f"{save_tag}-epoch{{epoch:06d}}",
-        monitor="train_loss",
+        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
+        monitor="val_loss",
         mode="min",
         save_top_k=5,
         save_last=True,
