@@ -350,7 +350,7 @@ class PETLightning(LightningModule):
             # if no tokenizer checkpoint is provided, use regression loss
             if tokenizer_ckpt is None:
                 print(
-                    "MPM will be done with regression loss (no tokenizer ckpt provided)."
+                    "MPM will be trained with regression loss (no tokenizer ckpt provided)."
                 )
             else:
                 with open(tokenizer_ckpt, "rb") as f:
