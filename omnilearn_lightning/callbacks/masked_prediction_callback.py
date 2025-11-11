@@ -119,9 +119,9 @@ class MaskedPredictionCallback(Callback):
         sampled = torch.multinomial(flat, num_samples=1).squeeze(-1)
         return sampled.view(probs.shape[0], -1)
 
-    def _save_and_log(self, trainer, fig, name: str) -> None:
+    def _save_and_log(self, trainer, fig, name: str, n_jets: int) -> None:
         """Save figure to disk and log to W&B if available."""
-        filename = f"{self.image_path}/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}.png"
+        filename = f"{self.image_path}/mpm_visualization_epoch_{name}_step{trainer.global_step:06d}_njets{n_jets}.png"
         print(f"Saving image to {filename}")
         fig.savefig(filename, dpi=150, bbox_inches="tight")
         for logger in getattr(trainer, "loggers", []) or []:
@@ -214,7 +214,7 @@ class MaskedPredictionCallback(Callback):
             trainer, pl_module, self.validation_batches, self.validation_outputs
         )
         # cleanup
-        self._init_phase_storage("validation")
+        # self._init_phase_storage("validation")
 
     def on_test_epoch_end(self, trainer, pl_module: LightningModule) -> None:
         # process test batches and produce plots
@@ -225,7 +225,7 @@ class MaskedPredictionCallback(Callback):
             return
         self._process_and_log(trainer, pl_module, self.test_batches, self.test_outputs)
         # cleanup
-        self._init_phase_storage("test")
+        # self._init_phase_storage("test")
 
     def _process_and_log(
         self,
@@ -447,7 +447,9 @@ class MaskedPredictionCallback(Callback):
             ax_size=(3.3, 2.5),
             ratio=True,
         )
-        self._save_and_log(trainer, fig, "jet_distributions")
+        self._save_and_log(
+            trainer, fig, "jet_distributions", n_jets=len(x_part_ak_pred)
+        )
 
         # jet-level residuals
         fig_res, axarr_res = plot_features(
@@ -471,7 +473,9 @@ class MaskedPredictionCallback(Callback):
             decorate_ax_kwargs={"yscale": 1.5},
             legend_kwargs={"loc": "upper left"},
         )
-        self._save_and_log(trainer, fig_res, "jet_residuals")
+        self._save_and_log(
+            trainer, fig_res, "jet_residuals", n_jets=len(x_part_ak_pred)
+        )
 
         # calculate number of particles and number of unique selected token-IDs
         num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
@@ -508,7 +512,7 @@ class MaskedPredictionCallback(Callback):
             y=1.04,
         )
         fig.tight_layout()
-        self._save_and_log(trainer, fig, "particle_distributions")
+        self._save_and_log(trainer, fig, "particle_distributions", n_jets=num_particles)
 
         # plot residuals of predicted vs true masked particles
         fig, axarr = plot_features(
@@ -543,7 +547,7 @@ class MaskedPredictionCallback(Callback):
             y=1.08,
         )
         fig.tight_layout()
-        self._save_and_log(trainer, fig, "particle_residuals")
+        self._save_and_log(trainer, fig, "particle_residuals", n_jets=num_particles)
 
         # ------ scatter plots for a few example jets ------
 
@@ -585,6 +589,6 @@ class MaskedPredictionCallback(Callback):
                 )
 
         fig.tight_layout()
-        self._save_and_log(trainer, fig, "example_jets")
+        self._save_and_log(trainer, fig, "example_jets", n_jets=self.n_example_jets)
 
-        plt.close("all")
+        # plt.close("all")

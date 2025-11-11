@@ -20,7 +20,6 @@ from pytorch_lightning.utilities import rank_zero_only
 from omnilearn_lightning.dataloader import PETDataModule
 from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
-    get_bigram,
     get_latest_checkpoint_dir,
     get_version_number,
     load_partial_checkpoint,
@@ -46,13 +45,20 @@ def main():
     parser.add_argument(
         "--outdir",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/",
+        default="/pscratch/sd/i/ibrahime/checkpoints/",
         help="Output directory",
     )
     parser.add_argument(
         "--ckpt",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/lightning_logs/version_151/checkpoints/last.ckpt",
+        default=None,
+        help="Path to the model checkpoint to load",
+    )
+
+    parser.add_argument(
+        "--user",
+        type=str,
+        default="ibrahime",
         help="Path to the model checkpoint to load",
     )
 
@@ -98,7 +104,7 @@ def main():
     parser.add_argument(
         "--scheduler_total_steps",
         type=int,
-        default=10_000,
+        default=500_000,
         help="Number of steps after which the learning rate scheduler reaches minimum LR. Will go back up afterwards.",
     )
 
@@ -111,7 +117,7 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=50)
+    parser.add_argument("--patience", type=int, default=4)
     parser.add_argument(
         "--mode",
         type=str,
@@ -177,7 +183,7 @@ def main():
     args = parser.parse_args()
 
     if args.model_size == "micro":
-        save_tag = f"_micro_{args.dataset}_dataset_{args.dataset_size}"
+        save_tag = f"_micro_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = {}
         model_params["num_transformers"] = 3
         model_params["num_transformers_head"] = 2
@@ -188,23 +194,22 @@ def main():
         model_params["mlp_ratio"] = 2
 
     elif args.model_size == "small":
-        save_tag = f"_small_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "medium":
-        save_tag = f"_medium_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
     elif args.model_size == "large":
-        save_tag = f"_large_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
 
     if "mpm" in args.mode or args.mode == "pretrain":
         if args.tokenizer_ckpt is None:
             raise ValueError("tokenizer_ckpt must be provided for MPM")
 
-        # from omnilearn_lightning.callbacks.masked_prediction_callback import (
-        #     MaskedPredictionCallback,
-        # )
-        # masked_prediction_callback = MaskedPredictionCallback()
+    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
+
+    # from omnilearn_lightning.callbacks.masked_prediction_callback import (
+    #     MaskedPredictionCallback,
+    # )
+    # masked_prediction_callback = MaskedPredictionCallback()
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
@@ -270,7 +275,7 @@ def main():
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 
     version = get_version_number(out_dir_save_tag)
-    run_name = f"v{version}_{get_bigram(add_timestamp=True)}"
+    run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
 
     run_dir = os.path.join(out_dir_save_tag, run_name)
     if rank_zero_only.rank == 0:
@@ -316,8 +321,8 @@ def main():
     )
 
     ckpt_val = ModelCheckpoint(
-        filename=f"{save_tag}-epoch{{epoch:06d}}",
-        monitor="train_loss",
+        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
+        monitor="val_loss",
         mode="min",
         save_top_k=5,
         save_last=True,
@@ -335,16 +340,15 @@ def main():
     #     print("Using MaskedPredictionCallback for self-supervised learning")
     #     callbacks.append(masked_prediction_callback)
 
-    if args.dataset != "jetclass":
-        print("Downstream Task! Adding Early Stopping...")
-        early_stop_callback = EarlyStopping(
-            monitor="val_loss",
-            patience=args.patience,
-            mode="min",
-            verbose=False,
-        )
-        callbacks.append(early_stop_callback)
+    early_stop_callback = EarlyStopping(
+        monitor="val_loss",
+        patience=args.patience,
+        mode="min",
+        verbose=False,
+    )
+    callbacks.append(early_stop_callback)
 
+    if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
             print("Training Downstream From Scratch")
         elif not args.fine_tune and args.resume:
@@ -355,6 +359,12 @@ def main():
             print("Finetuning Model on Downstream")
         elif args.fine_tune and args.resume:
             print("Resuming Downstream Finetuning")
+
+    if args.val_check_interval is not None:
+        if args.val_check_interval <= 1.0:
+            args.val_check_interval = float(args.val_check_interval)
+        else:
+            args.val_check_interval = int(args.val_check_interval)
 
     trainer = Trainer(
         max_epochs=args.epoch,
@@ -371,9 +381,7 @@ def main():
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
-        val_check_interval=int(args.val_check_interval)
-        if args.val_check_interval is not None
-        else 1.0,
+        val_check_interval=args.val_check_interval,
     )
 
     # Training
