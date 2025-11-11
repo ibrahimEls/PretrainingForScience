@@ -321,7 +321,7 @@ def main():
     )
 
     ckpt_val = ModelCheckpoint(
-        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}",
+        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
         monitor="val_loss",
         mode="min",
         save_top_k=5,
