@@ -273,10 +273,16 @@ class MaskedPredictionCallback(Callback):
         batches_jet_labels = []
         batches_pred_token_ids = []
 
-        # copy tokenizer
-        tokenizer = copy.deepcopy(pl_module.tokenizer)
-        # move tokenizer centroids to CPU for reconstruction
-        tokenizer.kmeans.centroids = tokenizer.kmeans.centroids.to("cpu")
+        if pl_module.tokenizer is not None:
+            # copy tokenizer
+            tokenizer = copy.deepcopy(pl_module.tokenizer)
+            # move tokenizer centroids to CPU for reconstruction
+            tokenizer.kmeans.centroids = tokenizer.kmeans.centroids.to("cpu")
+        else:
+            print(
+                "MaskedPredictionCallback: no tokenizer found in model, assuming MPM was done with regression target."
+            )
+            tokenizer = None
 
         for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
             # adjust feature names based on available features in the first batch
@@ -290,9 +296,15 @@ class MaskedPredictionCallback(Callback):
             targets_fullres = combine_features(
                 batch["X"], batch.get("pid"), batch.get("add_info")
             )
-            targets_transformed_x, targets_transformed_add_info = tokenizer.transform(
-                batch["X"], add_info=batch["add_info"]
-            )
+            if tokenizer is None:
+                targets_transformed_x = batch["X"]  # targets are full-res
+                targets_transformed_add_info = (
+                    batch["add_info"] if pl_module.use_add else None
+                )
+            else:
+                targets_transformed_x, targets_transformed_add_info = (
+                    tokenizer.transform(batch["X"], add_info=batch["add_info"])
+                )
             targets_transformed = combine_features(
                 targets_transformed_x,
                 batch.get("pid"),
@@ -305,33 +317,40 @@ class MaskedPredictionCallback(Callback):
             ].bool()
             targets_transformed[~mask_valid_particle] = 0  # set invalid points to 0
 
-            # Sample feature tokens
-            predicted_tokens = self._sample_token_ids(output["masked_pred"])
-
             # same for pid-tokens if pid is used
             if pl_module.use_pid:
                 predicted_pid_tokens = self._sample_token_ids(output["masked_pred_pid"])
 
-            # extract the reconstructed features from the predicted token IDs
-            predictions_reconstructed_x, predictions_reconstructed_add_info = (
-                tokenizer.reconstruct(
-                    predicted_tokens,
-                    num_features_x=batch["X"].shape[-1],
+            if tokenizer is None:
+                print(output["masked_pred"].shape)
+                predictions_reconstructed_x = output["masked_pred"][:, :, :4]
+                predictions_reconstructed_add_info = (
+                    output["masked_pred"][:, :, 4:] if pl_module.use_add else None
                 )
-            )
+            else:
+                # Sample feature tokens
+                predicted_tokens = self._sample_token_ids(output["masked_pred"])
+                batches_pred_token_ids.append(
+                    np_to_ak(
+                        predicted_tokens.unsqueeze(-1).cpu().numpy(),
+                        names=["token_id"],
+                        mask=mask_valid_particle_but_masked.cpu().numpy(),
+                    )
+                )
+
+                # extract the reconstructed features from the predicted token IDs
+                predictions_reconstructed_x, predictions_reconstructed_add_info = (
+                    tokenizer.reconstruct(
+                        predicted_tokens,
+                        num_features_x=batch["X"].shape[-1],
+                    )
+                )
             predictions_reconstructed = combine_features(
                 predictions_reconstructed_x,
                 pid=predicted_pid_tokens if pl_module.use_pid else None,
                 add_info=predictions_reconstructed_add_info,
             )
 
-            batches_pred_token_ids.append(
-                np_to_ak(
-                    predicted_tokens.unsqueeze(-1).cpu().numpy(),
-                    names=["token_id"],
-                    mask=mask_valid_particle_but_masked.cpu().numpy(),
-                )
-            )
             batches_masked_pred_ak.append(
                 np_to_ak(
                     predictions_reconstructed.cpu().numpy(),
@@ -365,19 +384,13 @@ class MaskedPredictionCallback(Callback):
 
             batches_jet_labels.append(batch["y"].cpu().numpy())
 
-        # Concatenate awkward arrays. Wrap in try/except to avoid throwing
-        # if any of the lists are empty or malformed. If concatenation fails
-        # skip visualization for safety.
-        try:
-            x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
-            x_part_ak_true = ak.concatenate(batches_masked_true_ak)
-            x_part_ak_survived = ak.concatenate(batches_survived_ak)
-            x_part_ak_true_tokenized = ak.concatenate(batches_masked_true_tokenized_ak)
+        x_part_ak_pred = ak.concatenate(batches_masked_pred_ak)
+        x_part_ak_true = ak.concatenate(batches_masked_true_ak)
+        x_part_ak_survived = ak.concatenate(batches_survived_ak)
+        x_part_ak_true_tokenized = ak.concatenate(batches_masked_true_tokenized_ak)
+        if tokenizer is not None:
             x_part_ak_pred_token_ids = ak.concatenate(batches_pred_token_ids)
-            jet_labels = np.concatenate(batches_jet_labels)
-        except Exception as e:
-            print(f"MaskedPredictionCallback: failed to concatenate batch arrays: {e}")
-            return
+        jet_labels = np.concatenate(batches_jet_labels)
 
         # shuffle the jets
         rng = np.random.default_rng(seed=42)
@@ -386,7 +399,8 @@ class MaskedPredictionCallback(Callback):
         x_part_ak_true = x_part_ak_true[shuffle_idx]
         x_part_ak_survived = x_part_ak_survived[shuffle_idx]
         x_part_ak_true_tokenized = x_part_ak_true_tokenized[shuffle_idx]
-        x_part_ak_pred_token_ids = x_part_ak_pred_token_ids[shuffle_idx]
+        if tokenizer is not None:
+            x_part_ak_pred_token_ids = x_part_ak_pred_token_ids[shuffle_idx]
         jet_labels = jet_labels[shuffle_idx]
 
         p4_conversion_kwargs = dict(
@@ -478,10 +492,14 @@ class MaskedPredictionCallback(Callback):
         )
 
         # calculate number of particles and number of unique selected token-IDs
-        num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
-        num_unique_tokens = len(
-            np.unique(ak.flatten(x_part_ak_pred_token_ids.token_id))
-        )
+        if tokenizer is None:
+            num_particles = np.sum(ak.num(x_part_ak_survived.eta))
+            num_unique_tokens = 0
+        else:
+            num_particles = np.sum(ak.num(x_part_ak_pred_token_ids.token_id))
+            num_unique_tokens = len(
+                np.unique(ak.flatten(x_part_ak_pred_token_ids.token_id))
+            )
 
         # compare distributions of predicted vs true masked vs survived particles
         fig, axarr = plot_features(
