@@ -354,6 +354,12 @@ def main():
         elif args.fine_tune and args.resume:
             print("Resuming Downstream Finetuning")
 
+    if args.val_check_interval is not None:
+        if args.val_check_interval <= 1.0:
+            args.val_check_interval = float(args.val_check_interval)
+        else:
+            args.val_check_interval = int(args.val_check_interval)
+
     trainer = Trainer(
         max_epochs=args.epoch,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
@@ -369,9 +375,7 @@ def main():
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
-        val_check_interval=int(args.val_check_interval)
-        if args.val_check_interval is not None
-        else 1.0,
+        val_check_interval=args.val_check_interval,
     )
 
     # Training
