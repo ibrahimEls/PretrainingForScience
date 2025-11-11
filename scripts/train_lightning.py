@@ -196,14 +196,10 @@ def main():
         save_tag = f"_large_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = get_model_parameters(args.model_size)
 
-    if "mpm" in args.mode or args.mode == "pretrain":
-        if args.tokenizer_ckpt is None:
-            raise ValueError("tokenizer_ckpt must be provided for MPM")
-
-        # from omnilearn_lightning.callbacks.masked_prediction_callback import (
-        #     MaskedPredictionCallback,
-        # )
-        # masked_prediction_callback = MaskedPredictionCallback()
+    # from omnilearn_lightning.callbacks.masked_prediction_callback import (
+    #     MaskedPredictionCallback,
+    # )
+    # masked_prediction_callback = MaskedPredictionCallback()
 
     # Create output directory only on rank 0
     if rank_zero_only.rank == 0:
