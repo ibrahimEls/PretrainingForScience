@@ -359,6 +359,10 @@ class PETLightning(LightningModule):
                         f, weights_only=False, map_location=self.device
                     )
 
+        number_continuous_features = num_feat
+        if use_add:
+            number_continuous_features += add_dim
+
         # --- model ---
         self.model = PET2(
             input_dim=num_feat,
@@ -375,7 +379,7 @@ class PETLightning(LightningModule):
             feature_drop=feature_drop,
             codebook_size=self.tokenizer.n_clusters
             if (self.use_mpm and self.tokenizer is not None)
-            else num_feat,
+            else number_continuous_features,
             pos_encoding_type=pos_encoding_type,
             **model_params,
         )
@@ -501,7 +505,11 @@ class PETLightning(LightningModule):
                 y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
             else:
                 # regression loss on the continuous features
-                y_masked = X.clone()
+                y_masked = (
+                    torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
+                    if self.use_add
+                    else X.clone()
+                )
 
         logs = get_logs(device=X.device)
         if stage == "train":
