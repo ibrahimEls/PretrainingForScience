@@ -322,7 +322,6 @@ class MaskedPredictionCallback(Callback):
                 predicted_pid_tokens = self._sample_token_ids(output["masked_pred_pid"])
 
             if tokenizer is None:
-                print(output["masked_pred"].shape)
                 predictions_reconstructed_x = output["masked_pred"][:, :, :4]
                 predictions_reconstructed_add_info = (
                     output["masked_pred"][:, :, 4:] if pl_module.use_add else None
