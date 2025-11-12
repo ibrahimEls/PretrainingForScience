@@ -142,7 +142,7 @@ def main():
     parser.add_argument(
         "--pos_encoding_type",
         type=str,
-        default=None,
+        default="sort_descending_in_masked_subset",
         help=(
             "Type of positional encoding to use. Options are "
             "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
