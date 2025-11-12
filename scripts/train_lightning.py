@@ -222,6 +222,7 @@ def main():
         use_pid=True if args.dataset == "jetclass" else args.use_pid,
         use_add=True if args.dataset == "jetclass" else args.use_add,
         num_samples=args.dataset_size,
+        shuffle_train_indices=True,  # always shuffle indices cause then we have balanced classes no matter which dataset size
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,
