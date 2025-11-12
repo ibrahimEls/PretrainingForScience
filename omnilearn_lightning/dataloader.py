@@ -5,7 +5,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 import torch
-from omnilearned.dataloader import collate_point_cloud, download_h5_files
+from omnilearned.dataloader import collate_point_cloud, download_h5_files, get_url
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 

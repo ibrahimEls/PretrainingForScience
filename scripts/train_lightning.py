@@ -142,7 +142,7 @@ def main():
     parser.add_argument(
         "--pos_encoding_type",
         type=str,
-        default=None,
+        default="sort_descending_in_masked_subset",
         help=(
             "Type of positional encoding to use. Options are "
             "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
@@ -200,10 +200,6 @@ def main():
     elif args.model_size == "large":
         model_params = get_model_parameters(args.model_size)
 
-    if "mpm" in args.mode or args.mode == "pretrain":
-        if args.tokenizer_ckpt is None:
-            raise ValueError("tokenizer_ckpt must be provided for MPM")
-
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
@@ -226,6 +222,7 @@ def main():
         use_pid=True if args.dataset == "jetclass" else args.use_pid,
         use_add=True if args.dataset == "jetclass" else args.use_add,
         num_samples=args.dataset_size,
+        shuffle_train_indices=True,  # always shuffle indices cause then we have balanced classes no matter which dataset size
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,

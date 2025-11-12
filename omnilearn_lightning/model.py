@@ -347,11 +347,21 @@ class PETLightning(LightningModule):
         self.use_mpm = "mpm" in mode or mode == "pretrain"
 
         if self.use_mpm:
-            with open(tokenizer_ckpt, "rb") as f:
-                print(f"Loading tokenizer from {tokenizer_ckpt}")
-                self.tokenizer = torch.load(
-                    f, weights_only=False, map_location=self.device
+            # if no tokenizer checkpoint is provided, use regression loss
+            if tokenizer_ckpt is None:
+                print(
+                    "MPM will be trained with regression loss (no tokenizer ckpt provided)."
                 )
+            else:
+                with open(tokenizer_ckpt, "rb") as f:
+                    print(f"Loading tokenizer from {tokenizer_ckpt}")
+                    self.tokenizer = torch.load(
+                        f, weights_only=False, map_location=self.device
+                    )
+
+        number_continuous_features = num_feat
+        if use_add:
+            number_continuous_features += add_dim
 
         # --- model ---
         self.model = PET2(
@@ -367,7 +377,9 @@ class PETLightning(LightningModule):
             mlp_drop=mlp_drop,
             attn_drop=attn_drop,
             feature_drop=feature_drop,
-            codebook_size=self.tokenizer.n_clusters if self.use_mpm else None,
+            codebook_size=self.tokenizer.n_clusters
+            if (self.use_mpm and self.tokenizer is not None)
+            else number_continuous_features,
             pos_encoding_type=pos_encoding_type,
             **model_params,
         )
@@ -375,7 +387,13 @@ class PETLightning(LightningModule):
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss()
         self.loss_gen = nn.MSELoss()
-        self.loss_masked = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+        if self.tokenizer is not None:
+            self.loss_masked_continuous = nn.CrossEntropyLoss(
+                ignore_index=-1, reduction="mean"
+            )
+        else:
+            self.loss_masked_continuous = nn.L1Loss(reduction="mean")
+        self.loss_masked_pid = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
 
@@ -414,13 +432,25 @@ class PETLightning(LightningModule):
             y_masked[mask_for_targets == 0] = -1
 
             B, T, C = masked_pred.shape
-            assert y_masked.shape == (B, T), (
-                f"y_masked.shape: {y_masked.shape}, masked_pred.shape {masked_pred.shape}"
-            )
-            lmp = self.loss_masked(
-                masked_pred.reshape(B * T, C),
-                y_masked.reshape(B * T),
-            )
+
+            if self.tokenizer is not None:
+                # predicting token-IDs
+                assert y_masked.shape == (B, T), (
+                    f"y_masked.shape: {y_masked.shape}, masked_pred.shape {masked_pred.shape}"
+                )
+                lmp = self.loss_masked_continuous(
+                    masked_pred.reshape(B * T, C),
+                    y_masked.reshape(B * T),
+                )
+            else:
+                # regression loss on continuous features
+                assert y_masked.shape == (B, T, C), (
+                    f"y_masked.shape: {y_masked.shape}, masked_pred.shape {masked_pred.shape}"
+                )
+                lmp = self.loss_masked_continuous(
+                    masked_pred[mask_for_targets], y_masked[mask_for_targets]
+                )
+
             mpm_logs["loss_masked"] = lmp
             loss = loss + lmp
 
@@ -429,7 +459,7 @@ class PETLightning(LightningModule):
                 masked_pred_pid = outputs["masked_pred_pid"]
                 y_masked_pid = outputs["pid"].clone()
                 y_masked_pid[mask_for_targets == 0] = -1
-                lmp_pid = self.loss_masked(
+                lmp_pid = self.loss_masked_pid(
                     masked_pred_pid.reshape(B * T, masked_pred_pid.shape[-1]),
                     y_masked_pid.reshape(B * T).long(),
                 )
@@ -466,13 +496,20 @@ class PETLightning(LightningModule):
         if self.use_mpm:
             # tokenize the input point clouds
             # make sure tokenizer is on the same device as the model
-            if self.tokenizer.kmeans.centroids.device != X.device:
-                self.tokenizer.kmeans.centroids = self.tokenizer.kmeans.centroids.to(
-                    X.device
-                )
             model_kwargs["masking_fraction"] = self.hparams.masking_fraction
-
-            y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
+            if self.tokenizer is not None:
+                if self.tokenizer.kmeans.centroids.device != X.device:
+                    self.tokenizer.kmeans.centroids = (
+                        self.tokenizer.kmeans.centroids.to(X.device)
+                    )
+                y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
+            else:
+                # regression loss on the continuous features
+                y_masked = (
+                    torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
+                    if self.use_add
+                    else X.clone()
+                )
 
         logs = get_logs(device=X.device)
         if stage == "train":
