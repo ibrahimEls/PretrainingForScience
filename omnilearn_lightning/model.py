@@ -230,9 +230,10 @@ class PET2(nn.Module):
                 mask_before_masking,
                 fraction=masking_fraction,
             )
+            # use pT as position encoding feature
             pos_encoding_feature = x[:, :, 2].clone()
-            # multiply x by mask_after_masking to zero out some points
-            # as the padding mask is calculated from zero points
+            # multiply x by mask_after_masking as the padding mask in the body
+            # is calculated from the input x (assuming 0-padded points)
             x = x * mask_after_masking.unsqueeze(-1)
 
             mask_valid_particle_but_masked = (
