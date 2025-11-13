@@ -23,10 +23,14 @@ DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
-DATASET_SIZE=1000000
-VAL_CHECK=1  # Set to one if DATASET_SIZE!=-1 else 5000
+DATASET_SIZE=-1
+VAL_CHECK=5000  # Set to 1 if DATASET_SIZE!=-1 else 5000
 
-TRAINING_CFG_ALL_SIZES="--user $USER --use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset_size=$DATASET_SIZE --use_pid y --use_add y --epoch=500  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603  --pos_encoding_type=sort_descending_in_masked_subset"
+# POS_ENCODING_TYPE="sort_descending_all"
+POS_ENCODING_TYPE="sort_descending_in_masked_subset"
+# POS_ENCODING_TYPE="None"
+
+TRAINING_CFG_ALL_SIZES="--user $USER --use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset_size=$DATASET_SIZE --use_pid y --use_add y --epoch=500  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603  --pos_encoding_type=$POS_ENCODING_TYPE"
 
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
@@ -39,13 +43,14 @@ TRAINING_CFG="$TRAINING_CFG_ALL_SIZES $TRAINING_CFG_SIZE_SPECIFIC"
 
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
+export cmd="python3 train_lightning.py $TRAINING_CFG --mode=mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier+generator"
 # export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
-# export cmd="python train_lightning.py $TRAINING_CFG --mode=mpm"
-export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=pretrain --tokenizer_ckpt=$TOKENIZER_CKPT"
+# MPM with regression target
+# export cmd="python train_lightning.py $TRAINING_CFG --mode=mpm"
+# export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm"
 
 # slurm job:
 srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
