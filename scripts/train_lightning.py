@@ -315,6 +315,7 @@ def main():
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
+        verbose=True,
     )
 
     ckpt_val = ModelCheckpoint(
@@ -325,6 +326,7 @@ def main():
         save_last=True,
         save_on_train_epoch_end=True,
         every_n_epochs=1,
+        verbose=True,
     )
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -341,7 +343,7 @@ def main():
         monitor="val_loss",
         patience=args.patience,
         mode="min",
-        verbose=False,
+        verbose=True,
     )
     callbacks.append(early_stop_callback)
 
