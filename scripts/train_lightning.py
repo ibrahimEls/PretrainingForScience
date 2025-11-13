@@ -315,7 +315,7 @@ def main():
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
-        verbose=True,
+        verbose=False,
     )
 
     ckpt_val = ModelCheckpoint(
