@@ -150,8 +150,8 @@ class PET2(nn.Module):
                 act_layer=act_layer,
                 mlp_drop=mlp_drop,
                 attn_drop=attn_drop,
-                # num_tokens=num_tokens,
-                # num_add=self.num_add,
+                num_tokens=num_tokens,
+                num_add=self.num_add,
                 # num_classes=num_classes,
                 codebook_size_continuous=codebook_size,
                 codebook_size_pid=pid_dim if pid else None,
@@ -257,6 +257,7 @@ class PET2(nn.Module):
                 vectors_to_insert=self.mask_embeddings,
             )
 
+            # add tokens and additional points in the point cloud back to the mask
             mask_for_masked_pred_head = torch.cat(
                 [
                     torch.ones(
@@ -268,21 +269,9 @@ class PET2(nn.Module):
                 dim=1,
             ).unsqueeze(-1)
 
-            masked_pred_continuous, masked_pred_pid = self.mpm_head(
-                x_body_masked, mask=mask_for_masked_pred_head.bool()
+            masked_pred_continuous, masked_pred_pid, mask_valid_particle = (
+                self.mpm_head(x_body_masked, mask=mask_for_masked_pred_head.bool())
             )
-
-            # remove tokens and time from masked_pred
-            masked_pred_continuous = masked_pred_continuous[
-                :, self.body.num_tokens + self.body.num_add :, :
-            ]
-            if masked_pred_pid is not None:
-                masked_pred_pid = masked_pred_pid[
-                    :, self.body.num_tokens + self.body.num_add :, :
-                ]
-            mask_valid_particle = mask_for_masked_pred_head[
-                :, self.body.num_tokens + self.body.num_add :
-            ]
 
         return {
             "y_pred": y_pred,
