@@ -251,7 +251,9 @@ def main():
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
         tokenizer_ckpt=args.tokenizer_ckpt,
-        pos_encoding_type=args.pos_encoding_type,
+        pos_encoding_type=args.pos_encoding_type
+        if args.pos_encoding_type != "None"
+        else None,
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
@@ -315,17 +317,18 @@ def main():
         save_top_k=5,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
-        verbose=True,
+        verbose=False,
     )
 
     ckpt_val = ModelCheckpoint(
-        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
+        filename=f"{save_tag}-{{epoch:06d}}-{{step:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
         monitor="val_loss",
         mode="min",
         save_top_k=5,
         save_last=True,
-        save_on_train_epoch_end=True,
-        every_n_epochs=1,
+        # we want to save this checkpoint after each *validation* check
+        save_on_train_epoch_end=False,
+        every_n_epochs=None,
         verbose=True,
     )
 
