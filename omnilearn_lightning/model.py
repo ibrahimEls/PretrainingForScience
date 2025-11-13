@@ -252,7 +252,7 @@ class PET2(nn.Module):
                 mask_is_valid=mask_before_masking.int(),
                 mask_is_valid_corrupted=mask_after_masking.int(),
                 mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
-                pos_encoding_feature=x[:, :, 3],
+                pos_encoding_feature=x[:, :, 2],
                 pos_encoding_type=self.pos_encoding_type,
                 vectors_to_insert=self.mask_embeddings,
             )
