@@ -842,3 +842,61 @@ class TestReplaceMaskedPositions(unittest.TestCase):
             ]
         )
         self.assertTrue(torch.equal(x, x_expected))
+
+    def test_sorting_none_equals_sort_descending_all_if_already_sorted(self):
+        """If the positional feature is already sorted descending in the input, then
+        using no positional encoding and using sort_descending_all should produce
+        the same output after replacement.
+        """
+        # Small example: one batch, 5 positions, 2 features
+        x = torch.tensor(
+            [
+                [
+                    [9.0, 0.0],  # valid, largest
+                    [7.0, 0.0],  # valid
+                    [5.0, 0.0],  # valid
+                    [3.0, 0.0],  # valid, smallest among valids
+                    [0.0, 0.0],  # invalid (ignored)
+                ]
+            ]
+        )
+
+        # valid mask: first 4 positions valid
+        mask_is_valid = torch.tensor([[1, 1, 1, 1, 0]], dtype=torch.int)
+        # corrupted mask: mark second position as corrupted so that
+        # mask_is_valid_but_masked selects positions 0,2,3 to be replaced
+        mask_is_valid_corrupted = torch.tensor([[0, 1, 0, 0, 0]], dtype=torch.int)
+        mask_is_valid_but_masked = mask_is_valid * (1 - mask_is_valid_corrupted)
+
+        vectors_to_insert = torch.tensor(
+            [[10.0, 10.0], [20.0, 20.0], [30.0, 30.0], [40.0, 40.0], [50.0, 50.0]],
+            dtype=torch.float,
+        )
+
+        # Replace without positional encoding
+        x_none = x.clone()
+        replace_masked_positions(
+            x=x_none,
+            mask_is_valid=mask_is_valid,
+            mask_is_valid_corrupted=mask_is_valid_corrupted,
+            mask_is_valid_but_masked=mask_is_valid_but_masked,
+            vectors_to_insert=vectors_to_insert,
+            pos_encoding_type=None,
+        )
+
+        # Replace with full sorting by the first feature (descending). The feature
+        # is already in descending order among valid positions, so result should
+        # be identical.
+        x_sorted = x.clone()
+        replace_masked_positions(
+            x=x_sorted,
+            mask_is_valid=mask_is_valid,
+            mask_is_valid_corrupted=mask_is_valid_corrupted,
+            mask_is_valid_but_masked=mask_is_valid_but_masked,
+            vectors_to_insert=vectors_to_insert,
+            pos_encoding_type="sort_descending_all",
+            pos_encoding_feature=x_sorted[..., 0],
+        )
+
+        # The two outputs should be equal
+        self.assertTrue(torch.equal(x_none, x_sorted))
