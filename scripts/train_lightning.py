@@ -251,7 +251,9 @@ def main():
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
         tokenizer_ckpt=args.tokenizer_ckpt,
-        pos_encoding_type=args.pos_encoding_type,
+        pos_encoding_type=args.pos_encoding_type
+        if args.pos_encoding_type != "None"
+        else None,
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
