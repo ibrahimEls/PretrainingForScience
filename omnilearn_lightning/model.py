@@ -230,6 +230,7 @@ class PET2(nn.Module):
                 mask_before_masking,
                 fraction=masking_fraction,
             )
+            pos_encoding_feature = x[:, :, 2].clone()
             # multiply x by mask_after_masking to zero out some points
             # as the padding mask is calculated from zero points
             x = x * mask_after_masking.unsqueeze(-1)
@@ -252,7 +253,7 @@ class PET2(nn.Module):
                 mask_is_valid=mask_before_masking.int(),
                 mask_is_valid_corrupted=mask_after_masking.int(),
                 mask_is_valid_but_masked=mask_valid_particle_but_masked[:, :, 0].int(),
-                pos_encoding_feature=x[:, :, 2],
+                pos_encoding_feature=pos_encoding_feature,
                 pos_encoding_type=self.pos_encoding_type,
                 vectors_to_insert=self.mask_embeddings,
             )
