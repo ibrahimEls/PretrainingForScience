@@ -117,7 +117,7 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=4)
+    parser.add_argument("--patience", type=int, default=20)
     parser.add_argument(
         "--mode",
         type=str,
