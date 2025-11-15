@@ -138,6 +138,7 @@ def main():
         "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
     )
 
+    # MPM-specific
     parser.add_argument("--tokenizer_ckpt", type=str, default=None)
     parser.add_argument(
         "--pos_encoding_type",
@@ -147,6 +148,9 @@ def main():
             "Type of positional encoding to use. Options are "
             "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
         ),
+    )
+    parser.add_argument(
+        "--masking_fraction", type=float, default=0.4, help="Masking fraction for MPM"
     )
 
     # Additional features
@@ -258,6 +262,7 @@ def main():
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
+        masking_fraction=args.masking_fraction,
     )
 
     if rank_zero_only.rank == 0:
