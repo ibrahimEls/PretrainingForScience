@@ -270,7 +270,7 @@ def main():
             base_dir=os.path.join(args.outdir, save_tag)
         )
 
-    pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
+    pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * args.num_nodes))
 
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 
@@ -315,7 +315,7 @@ def main():
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
         monitor="train_loss",
         mode="min",
-        save_top_k=5,
+        save_top_k=2,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
     )
