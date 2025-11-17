@@ -25,8 +25,9 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
 DATASET_SIZE=100000
 VAL_CHECK=1 # 5000  # Set to one if DATASET_SIZE!=-1 else 5000
+PATIENCE=10 # 4  # Set to 10 if DATASET_SIZE!=-1 else 4
 
-TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset_size=$DATASET_SIZE --use_pid y --use_add y --epoch=500  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603"
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset_size=$DATASET_SIZE --use_pid y --use_add y --epoch=500  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE"
 
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
