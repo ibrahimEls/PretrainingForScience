@@ -45,7 +45,6 @@ def main():
     parser.add_argument(
         "--outdir",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/",
         help="Output directory",
     )
     parser.add_argument(
@@ -60,12 +59,7 @@ def main():
         "--dataset", type=str, default="jetclass", help="Name of the dataset to load"
     )
     parser.add_argument("--num_nodes", type=int, default=1, help="Number of Nodes")
-    parser.add_argument(
-        "--path",
-        type=str,
-        default="/pscratch/sd/i/ibrahime/datasets/",
-        help="Path to dataset",
-    )
+    parser.add_argument("--path", type=str, help="Path to dataset")
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
