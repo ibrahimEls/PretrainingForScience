@@ -310,7 +310,7 @@ def load_data(
         pin_memory=torch.cuda.is_available(),
         shuffle=dataset_type == "train",
         sampler=None,
-        persistent_workers=True,
+        persistent_workers=False,
         # sampler=(
         #     DistributedSampler(data, shuffle=dataset_type == "train")
         #     if distributed

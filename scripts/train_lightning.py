@@ -45,7 +45,6 @@ def main():
     parser.add_argument(
         "--outdir",
         type=str,
-        default="/pscratch/sd/i/ibrahime/checkpoints/",
         help="Output directory",
     )
     parser.add_argument(
@@ -55,24 +54,12 @@ def main():
         help="Path to the model checkpoint to load",
     )
 
-    parser.add_argument(
-        "--user",
-        type=str,
-        default="ibrahime",
-        help="Path to the model checkpoint to load",
-    )
-
     # Data & training params
     parser.add_argument(
         "--dataset", type=str, default="jetclass", help="Name of the dataset to load"
     )
     parser.add_argument("--num_nodes", type=int, default=1, help="Number of Nodes")
-    parser.add_argument(
-        "--path",
-        type=str,
-        default="/pscratch/sd/i/ibrahime/datasets/",
-        help="Path to dataset",
-    )
+    parser.add_argument("--path", type=str, help="Path to dataset")
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
@@ -204,7 +191,9 @@ def main():
     elif args.model_size == "large":
         model_params = get_model_parameters(args.model_size)
 
-    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
+    user = os.getenv("USER")
+
+    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
