@@ -252,6 +252,7 @@ def main():
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
         masking_fraction=args.masking_fraction,
+        fine_tune=args.fine_tune,
     )
 
     if rank_zero_only.rank == 0:
