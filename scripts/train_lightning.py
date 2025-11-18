@@ -117,7 +117,7 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=4)
+    parser.add_argument("--patience", type=int, default=20)
     parser.add_argument(
         "--mode",
         type=str,
@@ -138,15 +138,19 @@ def main():
         "--use_amp", action="store_true", help="Use 16-bit precision training (AMP)"
     )
 
+    # MPM-specific
     parser.add_argument("--tokenizer_ckpt", type=str, default=None)
     parser.add_argument(
         "--pos_encoding_type",
         type=str,
-        default=None,
+        default="sort_descending_in_masked_subset",
         help=(
             "Type of positional encoding to use. Options are "
             "'sort_descending_in_masked_subset', 'sort_descending_all', or None."
         ),
+    )
+    parser.add_argument(
+        "--masking_fraction", type=float, default=0.4, help="Masking fraction for MPM"
     )
 
     # Additional features
@@ -200,10 +204,6 @@ def main():
     elif args.model_size == "large":
         model_params = get_model_parameters(args.model_size)
 
-    if "mpm" in args.mode or args.mode == "pretrain":
-        if args.tokenizer_ckpt is None:
-            raise ValueError("tokenizer_ckpt must be provided for MPM")
-
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
@@ -226,6 +226,7 @@ def main():
         use_pid=True if args.dataset == "jetclass" else args.use_pid,
         use_add=True if args.dataset == "jetclass" else args.use_add,
         num_samples=args.dataset_size,
+        shuffle_train_indices=True,  # always shuffle indices cause then we have balanced classes no matter which dataset size
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,
@@ -254,11 +255,14 @@ def main():
         use_add=args.use_add,
         ckpt_loaded=args.ckpt,
         tokenizer_ckpt=args.tokenizer_ckpt,
-        pos_encoding_type=args.pos_encoding_type,
+        pos_encoding_type=args.pos_encoding_type
+        if args.pos_encoding_type != "None"
+        else None,
         total_steps=args.scheduler_total_steps,
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
+        masking_fraction=args.masking_fraction,
     )
 
     if rank_zero_only.rank == 0:
@@ -318,16 +322,19 @@ def main():
         save_top_k=2,
         every_n_train_steps=pseudo_epoch_len,
         save_last=True,
+        verbose=False,
     )
 
     ckpt_val = ModelCheckpoint(
-        filename=f"{save_tag}-epoch{{epoch:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
+        filename=f"{save_tag}-{{epoch:06d}}-{{step:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
         monitor="val_loss",
         mode="min",
         save_top_k=5,
         save_last=True,
-        save_on_train_epoch_end=True,
-        every_n_epochs=1,
+        # we want to save this checkpoint after each *validation* check
+        save_on_train_epoch_end=False,
+        every_n_epochs=None,
+        verbose=True,
     )
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
@@ -344,7 +351,7 @@ def main():
         monitor="val_loss",
         patience=args.patience,
         mode="min",
-        verbose=False,
+        verbose=True,
     )
     callbacks.append(early_stop_callback)
 
