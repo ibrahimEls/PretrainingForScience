@@ -55,13 +55,6 @@ def main():
         help="Path to the model checkpoint to load",
     )
 
-    parser.add_argument(
-        "--user",
-        type=str,
-        default="ibrahime",
-        help="Path to the model checkpoint to load",
-    )
-
     # Data & training params
     parser.add_argument(
         "--dataset", type=str, default="jetclass", help="Name of the dataset to load"
@@ -204,7 +197,9 @@ def main():
     elif args.model_size == "large":
         model_params = get_model_parameters(args.model_size)
 
-    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{args.user}"
+    user = os.getenv("USER")
+
+    save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
