@@ -252,6 +252,7 @@ def main():
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
         masking_fraction=args.masking_fraction,
+        fine_tune=args.fine_tune,
     )
 
     if rank_zero_only.rank == 0:
@@ -328,7 +329,7 @@ def main():
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
+    strategy = DDPStrategy(find_unused_parameters=True, gradient_as_bucket_view=True)
 
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
