@@ -329,7 +329,7 @@ def main():
 
     lr_monitor = LearningRateMonitor(logging_interval="step")
 
-    strategy = DDPStrategy(find_unused_parameters=False, gradient_as_bucket_view=True)
+    strategy = DDPStrategy(find_unused_parameters=True, gradient_as_bucket_view=True)
 
     callbacks = [checkpoint_step, ckpt_val, lr_monitor]
 
