@@ -1,5 +1,5 @@
 #!/bin/sh
-#SBATCH -A m4287
+#SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q debug
 #SBATCH -t 00:30:00
@@ -37,10 +37,10 @@ VAL_CHECK=1
 PATIENCE=10
 
 ## RESUME
-#TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --fine_tune y --ckpt=$PRETRAINED_CKPT --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION "
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --fine_tune y --ckpt=$PRETRAINED_CKPT --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
 
 ## TRAIN FROM SCRATCH
-TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION"
+#TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
 
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"

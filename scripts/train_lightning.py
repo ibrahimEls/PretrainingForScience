@@ -197,11 +197,14 @@ def main():
 
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
+    ckpt_tag = ""
     if args.dataset != "jetclass":
         if args.fine_tune:
-            save_tag = save_tag + "_ckpt_" + extract_pretrained_ckpt_prefix(args.ckpt)
+            ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
+            save_tag = save_tag + "_ckpt_" + ckpt_tag
         else:
-            save_tag = save_tag + "_ckpt_from_scratch"
+            ckpt_tag = "from_scratch"
+        save_tag = save_tag + "_ckpt_" + ckpt_tag
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
@@ -261,6 +264,14 @@ def main():
         model_params=model_params,
         masking_fraction=args.masking_fraction,
         fine_tune=args.fine_tune,
+        all_head=True
+        if (
+            "class" not in ckpt_tag
+            and "pretrain" not in ckpt_tag
+            and "scratch" not in "ckpt_tag"
+            and args.fine_tune
+        )
+        else False,
     )
 
     if rank_zero_only.rank == 0:
