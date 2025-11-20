@@ -296,6 +296,7 @@ def load_data(
     data = HEPDataset(
         file_list,
         file_indices,
+        use_cond=use_cond,
         use_pid=use_pid,
         pid_idx=pid_idx,
         use_add=use_add,
