@@ -1,0 +1,888 @@
+{
+  "100k-Top": {
+    "medium": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "micro": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/class_only_val_loss=.5940.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/class_only_val_loss=.5163.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/class_gen_val_loss=3.913.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/class_gen_val_loss=3.0953.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/gen_only_val_loss=2.5528.ckpt",
+          "status": "missing_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/gen_only_val_loss=2.6142.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/gen_only_val_loss=2.5640.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    }
+  },
+  "10k-Top": {
+    "medium": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "micro": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/class_only_val_loss=.5940.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/class_only_val_loss=.5163.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/class_gen_val_loss=3.913.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/class_gen_val_loss=3.0953.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/gen_only_val_loss=2.5528.ckpt",
+          "status": "missing_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/gen_only_val_loss=2.6142.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/gen_only_val_loss=2.5640.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    }
+  },
+  "1M-Top": {
+    "medium": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "micro": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "auc": 0.9849168208678142,
+          "avg_loss": 0.5432917187333561,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_only_val_loss=.1533.ckpt",
+          "inv_bkg_eff": 1325.6118421052631
+        },
+        "1000000": {
+          "auc": 0.9857666028909501,
+          "avg_loss": 0.5420803882494057,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_only_val_loss=.1493.ckpt",
+          "inv_bkg_eff": 1752.1130434782608
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "auc": 0.9851715148042097,
+          "avg_loss": 0.543467429325723,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_gen_val_loss=.1520.ckpt",
+          "inv_bkg_eff": 1429.028368794326
+        },
+        "1000000": {
+          "auc": 0.986006492030758,
+          "avg_loss": 0.5411728357155411,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_gen_val_loss=.1482.ckpt",
+          "inv_bkg_eff": 1783.1238938053098
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "auc": 0.984451143964725,
+          "avg_loss": 0.5435169935415781,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/gen_only_val_loss=.1551.ckpt",
+          "inv_bkg_eff": 1221.169696969697
+        },
+        "100000": {
+          "auc": 0.9840586438240441,
+          "avg_loss": 0.5445149161461197,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/gen_only_val_loss=.1569.ckpt",
+          "inv_bkg_eff": 1144.846590909091
+        },
+        "1000000": {
+          "auc": 0.9838617746750695,
+          "avg_loss": 0.5441848559368975,
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/gen_only_val_loss=.1579.ckpt",
+          "inv_bkg_eff": 1101.0546448087432
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    }
+  },
+  "1k-Top": {
+    "medium": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "micro": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/class_only_val_loss=.5940.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/class_only_val_loss=.5163.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/class_gen_val_loss=3.913.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/class_gen_val_loss=3.0953.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/gen_only_val_loss=2.5528.ckpt",
+          "status": "missing_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/gen_only_val_loss=2.6142.ckpt",
+          "status": "missing_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/gen_only_val_loss=2.5640.ckpt",
+          "status": "missing_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "100000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "1000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        },
+        "10000000": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "classifier+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "generator+mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "mpm": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      },
+      "pretrain": {
+        "-1": {
+          "ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/",
+          "status": "no_ckpt_file"
+        }
+      }
+    }
+  }
+} 
