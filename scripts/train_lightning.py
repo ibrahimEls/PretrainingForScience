@@ -20,6 +20,7 @@ from pytorch_lightning.utilities import rank_zero_only
 from omnilearn_lightning.dataloader import PETDataModule
 from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
+    extract_pretrained_ckpt_prefix,
     get_latest_checkpoint_dir,
     get_version_number,
     load_partial_checkpoint,
@@ -60,6 +61,7 @@ def main():
     )
     parser.add_argument("--num_nodes", type=int, default=1, help="Number of Nodes")
     parser.add_argument("--path", type=str, help="Path to dataset")
+
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
@@ -194,6 +196,12 @@ def main():
     user = os.getenv("USER")
 
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
+
+    if args.dataset != "jetclass":
+        if args.fine_tune:
+            save_tag = save_tag + "_ckpt_" + extract_pretrained_ckpt_prefix(args.ckpt)
+        else:
+            save_tag = save_tag + "_ckpt_from_scratch"
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,

@@ -22,11 +22,11 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 # DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
-PRETRAINED_CKPT="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_micro_classifier_jetclass_dataset_-1_ibrahime/v1_micro_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_micro_classifier_jetclass_dataset_-1_ibrahime-step=049374-train_loss_step=0.4508.ckpt"
+PRETRAINED_CKPT="/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_only_val_loss=.5163.ckpt"
 FINETUNING_DATASET="top"
 
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
-DATASET_SIZE=100000
+DATASET_SIZE=-1
 
 # POS_ENCODING_TYPE="sort_descending_all"
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"

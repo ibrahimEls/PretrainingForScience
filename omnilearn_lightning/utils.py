@@ -360,3 +360,20 @@ def get_version_number(out_dir_save_tag):
                 pass
 
     return version
+
+
+def extract_pretrained_ckpt_prefix(path: str) -> str:
+    """
+    Extracts 'class_only', 'gen_only', or 'class_gen' from a checkpoint path.
+
+    Example:
+        "/.../class_only_val_loss=.5940.ckpt" -> "class_only"
+        "/.../gen_only_val_loss=2.6142.ckpt" -> "gen_only"
+    """
+    filename = os.path.basename(path)
+    match = re.search(
+        r"(class_only|gen_only|class_gen|mpm_only|class_mpm|gen_mpm|pretrain)", filename
+    )
+    if not match:
+        raise ValueError(f"No known prefix found in filename: {filename}")
+    return match.group(1)
