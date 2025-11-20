@@ -22,7 +22,7 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 # DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
-PRETRAINED_CKPT="/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_gen_val_loss=3.0953.ckpt"
+PRETRAINED_CKPT="/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_only_val_loss=.5940.ckpt"
 FINETUNING_DATASET="top"
 
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
@@ -37,10 +37,10 @@ VAL_CHECK=1
 PATIENCE=10
 
 ## RESUME
-#TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --fine_tune y --ckpt=$PRETRAINED_CKPT --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --fine_tune y --ckpt=$PRETRAINED_CKPT --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
 
 ## TRAIN FROM SCRATCH
-TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
+#TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset=$FINETUNING_DATASET --dataset_size=$DATASET_SIZE --use_pid n --use_add n --epoch=100  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --use_one_cycle y"
 
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"

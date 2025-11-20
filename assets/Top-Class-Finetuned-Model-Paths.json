@@ -1,95 +1,96 @@
 {
+  "1M-Top":{
     "micro": {
       "classifier": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/class_only_val_loss=.5940.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/class_only_val_loss=.5163.ckpt",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_only_val_loss=.5940.ckpt",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_only_val_loss=.5163.ckpt",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/gen_only_val_loss=2.6142.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/gen_only_val_loss=2.5640.ckpt",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/gen_only_val_loss=2.5528.ckpt"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/gen_only_val_loss=2.6142.ckpt",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/gen_only_val_loss=2.5640.ckpt",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/gen_only_val_loss=2.5528.ckpt"
       },
       "mpm": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "classifier+generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/class_gen_val_loss=3.913.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/class_gen_val_loss=3.0953.ckpt",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_gen_val_loss=3.913.ckpt",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_gen_val_loss=3.0953.ckpt",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_top/10M_pretrained/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_top/100M_pretrained/"
       },
       "classifier+mpm": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "generator+mpm": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "pretrain": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k/",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M/",
-        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M/"
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       }
     },
 
     "small": {
       "classifier": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "generator": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "classifier+generator": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "classifier+mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "generator+mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "pretrain": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       }
     },
 
     "medium": {
       "classifier": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "generator": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "classifier+generator": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "classifier+mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "generator+mpm": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "pretrain": {
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       }
     }
-
+  }
   }
