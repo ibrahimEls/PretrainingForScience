@@ -201,7 +201,6 @@ def main():
     if args.dataset != "jetclass":
         if args.fine_tune:
             ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
-            save_tag = save_tag + "_ckpt_" + ckpt_tag
         else:
             ckpt_tag = "from_scratch"
         save_tag = save_tag + "_ckpt_" + ckpt_tag
