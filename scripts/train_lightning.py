@@ -21,7 +21,6 @@ from omnilearn_lightning.dataloader import PETDataModule
 from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
     extract_pretrained_ckpt_prefix,
-    get_latest_checkpoint_dir,
     get_version_number,
     load_partial_checkpoint,
 )
@@ -113,7 +112,7 @@ def main():
         default="pretrain",
         help="Training mode (classifier/generator/other)",
     )
-    parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
+    parser.add_argument("--resume", type=str2bool, default=False)
 
     # Training hyperparams
     parser.add_argument("--lr_factor", type=float, default=0.1)
@@ -278,9 +277,7 @@ def main():
         print(model)
 
     if args.resume:
-        ckpt_path = get_latest_checkpoint_dir(
-            base_dir=os.path.join(args.outdir, save_tag)
-        )
+        ckpt_path = args.ckpt
 
     pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
 

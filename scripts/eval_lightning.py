@@ -2,9 +2,6 @@
 import argparse
 import json
 import os
-import sys
-
-sys.path.append("../")  # so omnilearn_lightning can be imported
 
 from omnilearn_lightning.eval_tasks import eval_top_tagging
 
@@ -93,7 +90,7 @@ def main():
     parser.add_argument("--radius", type=float, default=0.4)
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--model_size", type=str, default="micro")
-    parser.add_argument("--task", type=str, default="top_tagging")
+    parser.add_argument("--task", type=str)
 
     # Training hyperparams (used inside eval_top_tagging as needed)
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
