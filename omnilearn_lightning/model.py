@@ -329,6 +329,7 @@ class PETLightning(LightningModule):
         use_pid=False,
         add_dim=4,
         num_gen_classes=1,
+        all_head=False,
         **kwargs,
     ):
         super().__init__()
@@ -394,6 +395,7 @@ class PETLightning(LightningModule):
         self.event_threshold = event_threshold
         self.use_amp = use_amp
         self.fine_tune = fine_tune
+        self.all_head = all_head
         self.ckpt_loaded = ckpt_loaded
         self.use_pid = use_pid
         self.use_add = use_add
@@ -591,6 +593,7 @@ class PETLightning(LightningModule):
             lr=self.lr,
             lr_factor=self.lr_factor,
             fine_tune=self.fine_tune,
+            all_head=self.all_head,
         )
 
         if self.use_one_cycle:

@@ -20,7 +20,7 @@ from pytorch_lightning.utilities import rank_zero_only
 from omnilearn_lightning.dataloader import PETDataModule
 from omnilearn_lightning.model import PETLightning
 from omnilearn_lightning.utils import (
-    get_latest_checkpoint_dir,
+    extract_pretrained_ckpt_prefix,
     get_version_number,
     load_partial_checkpoint,
 )
@@ -60,6 +60,7 @@ def main():
     )
     parser.add_argument("--num_nodes", type=int, default=1, help="Number of Nodes")
     parser.add_argument("--path", type=str, help="Path to dataset")
+
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
@@ -111,7 +112,7 @@ def main():
         default="pretrain",
         help="Training mode (classifier/generator/other)",
     )
-    parser.add_argument("--resume", action="store_true", help="Use clip loss or not")
+    parser.add_argument("--resume", type=str2bool, default=False)
 
     # Training hyperparams
     parser.add_argument("--lr_factor", type=float, default=0.1)
@@ -195,6 +196,14 @@ def main():
 
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
+    ckpt_tag = ""
+    if args.dataset != "jetclass":
+        if args.fine_tune:
+            ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
+        else:
+            ckpt_tag = "from_scratch"
+        save_tag = save_tag + "_ckpt_" + ckpt_tag
+
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
     # )
@@ -253,6 +262,14 @@ def main():
         model_params=model_params,
         masking_fraction=args.masking_fraction,
         fine_tune=args.fine_tune,
+        all_head=True
+        if (
+            "class" not in ckpt_tag
+            and "pretrain" not in ckpt_tag
+            and "scratch" not in "ckpt_tag"
+            and args.fine_tune
+        )
+        else False,
     )
 
     if rank_zero_only.rank == 0:
@@ -260,9 +277,7 @@ def main():
         print(model)
 
     if args.resume:
-        ckpt_path = get_latest_checkpoint_dir(
-            base_dir=os.path.join(args.outdir, save_tag)
-        )
+        ckpt_path = args.ckpt
 
     pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
 
