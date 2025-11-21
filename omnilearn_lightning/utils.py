@@ -251,6 +251,7 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
             continue
 
         if all_head:
+            print("INCREASING LR ON WHOLE HEAD")
             is_last_layer = name.startswith("classifier")
         else:
             is_last_layer = name.startswith("classifier.out")
@@ -360,3 +361,32 @@ def get_version_number(out_dir_save_tag):
                 pass
 
     return version
+
+
+def extract_pretrained_ckpt_prefix(path: str) -> str:
+    """
+    Extracts a string like '100k_class_only', '1M_gen_only', etc. from a
+    checkpoint path.
+
+    Examples:
+        "/.../100k/class_only_val_loss=.5940.ckpt" -> "100k_class_only"
+        "/.../1M/gen_only_val_loss=2.6142.ckpt"   -> "1M_gen_only"
+    """
+    # ---- extract prefix from filename ----
+    filename = os.path.basename(path)
+    prefix_match = re.search(
+        r"(class_only|gen_only|class_gen|mpm_only|class_mpm|gen_mpm|pretrain)",
+        filename,
+    )
+    if not prefix_match:
+        raise ValueError(f"No known prefix found in filename: {filename}")
+    prefix = prefix_match.group(1)
+
+    # ---- extract scale (parent directory: 100k, 1M, 10M, 100M) ----
+    parent_dir = os.path.basename(os.path.dirname(path.rstrip("/")))
+    scale_match = re.fullmatch(r"(100k|1M|10M|100M)", parent_dir)
+    if not scale_match:
+        raise ValueError(f"No known scale folder found above file: {parent_dir}")
+    scale = scale_match.group(1)
+
+    return f"{scale}_{prefix}"
