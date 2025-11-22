@@ -307,7 +307,7 @@ def build_cmd_snippet(
         "num_nodes": num_nodes,
         "lr": hparams["lr"],
         "weight_decay": hparams["weight_decay"],
-        "batch_size": hparams["batch_size"],
+        "batch_size": hparams["batch_size"] if shots > 1000 else 32,
         "dataset": dataset,
         "repo_dir": repo_dir,
         "output_dir": output_dir,

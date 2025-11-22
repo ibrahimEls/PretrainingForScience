@@ -399,7 +399,7 @@ def main():
     # Training
     trainer.fit(model, data_module, ckpt_path=ckpt_path if args.resume else None)
     print("Training is complete!")
-    print(f"Best model checkpoint: {checkpoint_step.best_model_path}")
+    print(f"Best model checkpoint: {ckpt_val.best_model_path}")
 
     # Testing
     if args.test:

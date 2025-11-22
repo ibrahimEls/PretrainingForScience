@@ -25,23 +25,23 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 # --------- Config variables ---------
 PRETRAIN_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Pre-Trained-Model-Paths.json"
 LAYOUT_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-Template.json"
-STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States.json"
+STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States-test.json"
 
 DOWNSTREAM_DATASETS="all"
 MODEL_SIZES="micro"
 #PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="classifier,generator,classifier+generator,from_scratch"
+PRE_TRAINING_MODES="classifier" #classifier+generator,from_scratch"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
 N_RUNS=3
 BASE_SEED=1603
-NODES=4
+NODES=1
 
-CMD_TEMPLATE_FILE="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/finetune-template.sh"
+CMD_TEMPLATE_FILE="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/finetune-template-debug.sh"
 # -----------------------------------
 
-export cmd="python finetune_lightning.py \
+export cmd="python3 finetune_lightning.py \
   --pretrain-json $PRETRAIN_JSON \
   --layout-json $LAYOUT_JSON \
   --state-json $STATE_JSON \
@@ -59,9 +59,6 @@ export cmd="python finetune_lightning.py \
   --dataset_dir=$DATASET_PATH"
  # --dry-run <---- Turn on to see what will be run without running it
 
-# slurm job:
-srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
-
-# Interactive use:
-# (specify num_nodes=1 to avoid trying to use multiple nodes in interactive mode)
-#shifter --image=docker:jobirk/omnilearn-lightning:v1.0.0 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
+module load conda
+conda activate torchvenv
+cd $REPO_DIR/scripts/ && $cmd

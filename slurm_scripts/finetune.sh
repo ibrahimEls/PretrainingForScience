@@ -2,7 +2,7 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 24:00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 4
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
@@ -11,7 +11,7 @@
 #SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.0
 
 # print this file content (so we have the job configuration saved in the logs)
-cat $0
+at $0
 
 # ------- User-specific paths --------
 REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
@@ -30,18 +30,18 @@ STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-C
 DOWNSTREAM_DATASETS="all"
 MODEL_SIZES="micro"
 #PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="classifier,generator,classifier+generator,from_scratch"
+PRE_TRAINING_MODES="from_scratch" #classifier+generator,from_scratch"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
 N_RUNS=3
-BASE_SEED=1603
+BASE_SEED=0000
 NODES=4
 
 CMD_TEMPLATE_FILE="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/finetune-template.sh"
 # -----------------------------------
 
-export cmd="python finetune_lightning.py \
+export cmd="python3 finetune_lightning.py \
   --pretrain-json $PRETRAIN_JSON \
   --layout-json $LAYOUT_JSON \
   --state-json $STATE_JSON \
@@ -59,9 +59,6 @@ export cmd="python finetune_lightning.py \
   --dataset_dir=$DATASET_PATH"
  # --dry-run <---- Turn on to see what will be run without running it
 
-# slurm job:
-srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
-
-# Interactive use:
-# (specify num_nodes=1 to avoid trying to use multiple nodes in interactive mode)
-#shifter --image=docker:jobirk/omnilearn-lightning:v1.0.0 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
+module load conda
+conda activate torchvenv
+cd $REPO_DIR/scripts/ && $cmd
