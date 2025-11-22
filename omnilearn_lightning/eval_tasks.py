@@ -1,7 +1,16 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from sklearn.metrics import roc_auc_score, roc_curve
 from tqdm import tqdm
+
+from omnilearn_lightning.generation_utils import (
+    generate_and_postprocess,
+)
+from omnilearn_lightning.plotting.feature_plotting import (
+    plot_features,
+    set_mpl_style,
+)
 
 from .dataloader import PETDataModule
 from .model import PETLightning
@@ -144,3 +153,135 @@ def eval_quark_gluon(args, ckpt_path, gpuID):
     print(f"1/(background efficiency): {inv_bkg_eff:.4f}")
 
     return (avg_loss, auc, inv_bkg_eff)
+
+
+def eval_jet_generation(ckpt_path, output_path):
+    print(f"Loading model from checkpoint: {ckpt_path}")
+    lightning_model = PETLightning.load_from_checkpoint(ckpt_path)
+    print(lightning_model.model.generator)
+
+    # dataset_type = "top"
+    dataset_type = "jetclass"
+
+    datamodule = PETDataModule(
+        dataset=dataset_type,
+        path="/pscratch/sd/j/jobirk/omnilearn_datasets_dev/",
+        batch_size=200,
+        num_samples=-1,
+        use_pid=True if dataset_type == "jetclass" else False,
+        use_add=True if dataset_type == "jetclass" else False,
+        use_cond=True,
+        shuffle_val_test_indices=True,
+        seed_for_initial_shuffling=42,
+        load_val=True,
+    )
+
+    datamodule.setup("test")
+    dataloader = datamodule.test_dataloader()
+
+    feature_names_x = {
+        "eta": "Particle $\\Delta\\eta$",
+        "phi": "Particle $\\Delta\\phi$",
+        "log_pt": "Particle $\\log(p_{T})$",
+        "log_E": "Particle $\\log(E)$",
+    }
+
+    n_batches = 1
+    n_steps_to_test = [0, 2, 128]
+    ak_arrays_vs_steps, p4s_dict, p4s_sum_dict, substructure_dict = (
+        generate_and_postprocess(
+            n_batches,
+            n_steps_to_test,
+            dataloader,
+            lightning_model,
+            feature_names_x,
+        )
+    )
+
+    set_mpl_style()
+    fig, axarr = plot_features(
+        {
+            "Original": ak_arrays_vs_steps[0],
+        }
+        | {
+            f"Generated ({n_steps} steps)": ak_arrays_vs_steps[n_steps]
+            for n_steps in ak_arrays_vs_steps.keys()
+            if n_steps != 0
+        },
+        bins_dict={
+            "eta": np.linspace(-1, 1, 50),
+            "phi": np.linspace(-1, 1, 50),
+            "log_pt": np.linspace(-3, 6.5, 50),
+            "log_E": np.linspace(-3, 6.5, 50),
+        },
+        ratio=True,
+        names=feature_names_x,
+        flatten=True,
+    )
+    plt.show()
+
+    # plot jet features
+    set_mpl_style()
+    fig, axarr = plot_features(
+        {
+            "Original": p4s_sum_dict[0],
+        }
+        | {
+            f"Generated ({n_steps} steps)": p4s_sum_dict[n_steps]
+            for n_steps in p4s_sum_dict.keys()
+            if n_steps != 0
+        },
+        bins_dict={
+            "pt": np.linspace(0, 1500, 50),
+            "eta": np.linspace(-2.5, 2.5, 50),
+            "phi": np.linspace(-3.14, 3.14, 50),
+            "mass": np.linspace(0, 200, 50),
+        },
+        names={
+            "pt": "Jet $p_{T}$",
+            "eta": "Jet $\\eta$",
+            "phi": "Jet $\\phi$",
+            "mass": "Jet mass",
+        },
+        ratio=True,
+        flatten=False,
+    )
+    plt.show()
+
+    bins_dict_substructure = {
+        "tau21": np.linspace(0, 1.2, 80),
+        "tau32": np.linspace(0, 1.2, 80),
+        "jet_mass": np.linspace(0, 250, 80),
+        "jet_pt": np.linspace(200, 1200, 80),
+        "jet_n_constituents": np.linspace(-0.5, 100.5, 102),
+        "d2": np.linspace(0, 5, 50),
+    }
+    names_substructure = {
+        "tau21": "$\\tau_{21}$",
+        "tau32": "$\\tau_{32}$",
+        "d2": "$D_{2}$",
+        "jet_mass": "Jet mass [GeV]",
+        "jet_pt": "Jet $p_{T}$ [GeV]",
+        "jet_n_constituents": "Particle multiplicity",
+    }
+
+    set_mpl_style()
+    fig, axarr = plot_features(
+        {
+            "Original": substructure_dict[0],
+        }
+        | {
+            f"Gen. ({n_steps} steps)": substructure_dict[n_steps]
+            for n_steps in substructure_dict.keys()
+            if n_steps != 0
+        },
+        names=names_substructure,
+        # names=substructure_dict[0].fields,
+        bins_dict=bins_dict_substructure,
+        flatten=False,
+        ax_rows=2,
+        ax_size=(4.0, 2.5),
+        legend_kwargs=dict(ncol=2, loc="upper center"),
+        ratio=True,
+    )
+    plt.show()

@@ -231,9 +231,11 @@ def generate_and_postprocess(
 
     print(f"Generating {n_batches} batches...")
     print(f"Testing n_steps: {n_steps_to_test}")
-    for i_gen_loop, batch_i in tqdm(enumerate(dataloader)):
-        if i_gen_loop >= n_batches:
+    n_batches_generated = 0
+    for batch_i in tqdm(dataloader):
+        if n_batches_generated >= n_batches:
             break
+        n_batches_generated += 1
         for i_n_steps, n_steps in enumerate(lists.keys()):
             if i_n_steps == 0:
                 continue
