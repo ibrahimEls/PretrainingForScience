@@ -2,16 +2,16 @@
   "1M-Top":{
     "micro": {
       "classifier": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_only_val_loss=.1533.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_only_val_loss=.1493.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/gen_only_val_loss=.1569.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/gen_only_val_loss=.1579.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/gen_only_val_loss=.1551.ckpt"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "mpm": {
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
@@ -20,8 +20,8 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "classifier+generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/class_gen_val_loss=.1520.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/class_gen_val_loss=.1482.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
@@ -41,6 +41,9 @@
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1M_top/",
         "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1M_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1M_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
+      },
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       }
     },
@@ -66,6 +69,9 @@
       },
       "pretrain": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       }
     },
 
@@ -89,6 +95,9 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
+      },
+      "from_scratch":{
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       }
     }
@@ -96,16 +105,16 @@
   "1k-Top":{
     "micro": {
       "classifier": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/class_only_val_loss=.5940.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/class_only_val_loss=.5163.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
       },
       "generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/gen_only_val_loss=2.6142.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/gen_only_val_loss=2.5640.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/gen_only_val_loss=2.5528.ckpt"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
       },
       "mpm": {
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
@@ -114,8 +123,8 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
       },
       "classifier+generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/class_gen_val_loss=3.913.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/class_gen_val_loss=3.0953.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
       },
@@ -135,6 +144,9 @@
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/1k_top/",
         "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/1k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/1k_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
+      },
+      "from_scratch":{
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1k_top/"
       }
     },
@@ -160,6 +172,9 @@
       },
       "pretrain": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
+      },
+      "from_scratch":{
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       }
     },
 
@@ -183,6 +198,9 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
       "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
+      },
+      "from_scratch":{
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       }
     }
@@ -190,16 +208,16 @@
   "10k-Top":{
     "micro": {
       "classifier": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/class_only_val_loss=.5940.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/class_only_val_loss=.5163.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
       },
       "generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/gen_only_val_loss=2.6142.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/gen_only_val_loss=2.5640.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/gen_only_val_loss=2.5528.ckpt"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
       },
       "mpm": {
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
@@ -208,8 +226,8 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
       },
       "classifier+generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/class_gen_val_loss=3.913.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/class_gen_val_loss=3.0953.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
       },
@@ -229,6 +247,9 @@
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/10k_top/",
         "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/10k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/10k_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
+      },
+      "from_scratch":{
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/10k_top/"
       }
     },
@@ -254,6 +275,9 @@
       },
       "pretrain": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
+      },
+      "from_scratch":{
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       }
     },
 
@@ -277,6 +301,9 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
       "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
+      },
+      "from_scratch":{
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       }
     }
@@ -284,16 +311,16 @@
   "100k-Top":{
     "micro": {
       "classifier": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/class_only_val_loss=.5940.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/class_only_val_loss=.5163.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
       },
       "generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/gen_only_val_loss=2.6142.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/gen_only_val_loss=2.5640.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/gen_only_val_loss=2.5528.ckpt"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
       },
       "mpm": {
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
@@ -302,8 +329,8 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
       },
       "classifier+generator": {
-        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/class_gen_val_loss=3.913.ckpt",
-        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/class_gen_val_loss=3.0953.ckpt",
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
       },
@@ -323,6 +350,9 @@
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100k_pretrained/100k_top/",
         "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/1M_pretrained/100k_top/",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/10M_pretrained/100k_top/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
+      },
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/100k_top/"
       }
     },
@@ -348,6 +378,9 @@
       },
       "pretrain": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       }
     },
 
@@ -371,6 +404,9 @@
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
       "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
+      },
+      "from_scratch":  {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       }
     }

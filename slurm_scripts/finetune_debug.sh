@@ -52,18 +52,10 @@ TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --l
 TRAINING_CFG="$TRAINING_CFG_ALL_SIZES $TRAINING_CFG_SIZE_SPECIFIC"
 
 export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier+generator"
-# export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=pretrain --tokenizer_ckpt=$TOKENIZER_CKPT"
-# MPM with regression target
-# export cmd="python train_lightning.py $TRAINING_CFG --mode=mpm"
-# export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm"
+
 
 # slurm job:
-srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd"
+cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd
 
 # Interactive use:
 # (specify num_nodes=1 to avoid trying to use multiple nodes in interactive mode)
