@@ -56,7 +56,6 @@ class PETDataModule(LightningDataModule):
             num_workers=self.num_workers,
             rank=0,  # For single-GPU or single-node usage
             size=1,
-            limit_num_samples=self.num_samples,
         )
         if stage == "fit" or stage is None or stage == "validate":
             self.train_dataset = load_data(
@@ -65,6 +64,7 @@ class PETDataModule(LightningDataModule):
                 shuffle_indices=self.shuffle_train_indices,
                 seed_for_shuffling=self.seed_for_initial_shuffling,
                 use_cond=self.use_cond,
+                limit_num_samples=self.num_samples,
                 **loading_kwargs,
             )
             if self.load_val:

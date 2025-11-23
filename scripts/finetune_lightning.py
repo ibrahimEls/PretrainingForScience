@@ -40,10 +40,15 @@ MODEL_HPARAMS = {
 
 
 def load_json(path: str, default: Any) -> Any:
-    if os.path.exists(path):
-        with open(path, "r") as f:
-            return json.load(f)
-    return default
+    try:
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                return json.load(f)
+        return default
+    except Exception as e:
+        print(e)
+        print("Loading State Config Failed.. Falling back on default")
+        return default
 
 
 def safe_write_json(path: str, data: Any) -> None:
@@ -609,6 +614,7 @@ def main() -> None:
                     if not dest_base_dir:
                         continue
 
+                    state_cfg = load_json(args.state_json, default=state_cfg)
                     group = get_or_init_group(
                         state_cfg,
                         downstream_key=ds_key,
@@ -654,6 +660,16 @@ def main() -> None:
                             output_dir=args.output_dir,
                             dataset_dir=args.dataset_dir,
                             mode=args.mode,
+                        )
+
+                        state_cfg = load_json(args.state_json, default=state_cfg)
+                        group = get_or_init_group(
+                            state_cfg,
+                            downstream_key=ds_key,
+                            model_size=model_size,
+                            pre_training_mode=pre_training_mode,
+                            pretrain_label=pretrain_label,
+                            pretrain_ckpt=pretrain_ckpt,
                         )
 
                         timestamp = datetime.now().isoformat(timespec="seconds")
