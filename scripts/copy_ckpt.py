@@ -1,4 +1,5 @@
 import argparse
+import json
 import shutil
 from pathlib import Path
 
@@ -37,15 +38,6 @@ def main():
     )
     args = parser.parse_args()
     target_json = args.target_json
-
-    # open the json file and read its contents (with write permission)
-    import json
-
-    with open(target_json, "r") as f:
-        json_data = json.load(f)
-
-    # loop over the entries
-    # structure: {model_size: {method: {dataset_size: path}}}
 
     ckpt_src = args.run_dir / "checkpoints"
 
@@ -113,6 +105,11 @@ def main():
     shutil.copy(best_ckpt, dest_ckpt_path)
     # set permissions to shared group
     shutil.chown(dest_ckpt_path, group=SHARED_GROUP_ID)
+
+    # open the json file and read its contents
+    # structure: {model_size: {method: {dataset_size: path}}}
+    with open(target_json, "r") as f:
+        json_data = json.load(f)
 
     # write the path to the json file
     json_data[model_size][method][dataset_size] = str(dest_ckpt_path)
