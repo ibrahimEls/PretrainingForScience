@@ -201,6 +201,14 @@ def get_batch_and_generate(
                 print(f"{k}.shape: {v.shape}")
     mask = X[:, :, 0] != 0.0
 
+    # set pid and add_info to zeros
+    # if "pid" in model_kwargs:
+    #     print(f"Setting pid to zeros with shape: {model_kwargs['pid'].shape}")
+    #     model_kwargs["pid"] = torch.zeros_like(model_kwargs["pid"])
+    # if "add_info" in model_kwargs:
+    #     print(f"Setting add_info to zeros with shape: {model_kwargs['add_info'].shape}")
+    #     model_kwargs["add_info"] = torch.zeros_like(model_kwargs["add_info"])
+
     with torch.no_grad():
         gen_output = omnilearned.diffusion.generate(
             lightning_model.model,
@@ -222,39 +230,38 @@ def get_batch_and_generate(
 
 def generate_and_postprocess(
     n_batches,
-    n_steps_to_test,
     dataloader,
     lightning_model,
     feature_names_x,
+    n_sampling_steps=128,
 ):
-    lists = {n_steps: [] for n_steps in n_steps_to_test}
-
     print(f"Generating {n_batches} batches...")
-    print(f"Testing n_steps: {n_steps_to_test}")
     n_batches_generated = 0
+    original = []
+    generated = []
+
     for batch_i in tqdm(dataloader):
         if n_batches_generated >= n_batches:
             break
         n_batches_generated += 1
-        for i_n_steps, n_steps in enumerate(lists.keys()):
-            if i_n_steps == 0:
-                continue
-            output = get_batch_and_generate(
-                lightning_model,
-                batch_i,
-                feature_names_x,
-                verbose=False,
-                n_diffusion_steps=n_steps,
-            )
-            if i_n_steps == 1:
-                lists[0].append(output[0])
-            lists[n_steps].append(output[1])
+        output = get_batch_and_generate(
+            lightning_model,
+            batch_i,
+            feature_names_x,
+            verbose=False,
+            n_diffusion_steps=n_sampling_steps,
+        )
+        original.append(output[0])
+        generated.append(output[1])
 
     # concatenate the lists into a single ak.Array per n_steps
     # n_steps=0 corresponds to the original data
-    ak_arrays_vs_steps = {}
-    for n_steps, list_generated in lists.items():
-        ak_arrays_vs_steps[n_steps] = ak.concatenate(list_generated, axis=0)
+    x_ak_dict = {
+        "original": None,
+        "generated": None,
+    }
+    x_ak_dict["original"] = ak.concatenate(original, axis=0)
+    x_ak_dict["generated"] = ak.concatenate(generated, axis=0)
 
     # convert to p4s, based on pt, eta, phi, mass=0
     p4_conversion_kwargs = dict(
@@ -264,21 +271,30 @@ def generate_and_postprocess(
         pt_is_log=True,
     )
     p4s_dict = {
-        n_steps: p4s_from_ptetaphimass(
-            ak_arrays_vs_steps[n_steps], **p4_conversion_kwargs
-        )
-        for n_steps in ak_arrays_vs_steps.keys()
+        "original": p4s_from_ptetaphimass(
+            x_ak_dict["original"], **p4_conversion_kwargs
+        ),
+        "generated": p4s_from_ptetaphimass(
+            x_ak_dict["generated"], **p4_conversion_kwargs
+        ),
     }
     # calculate sum of constituent p4s = jet p4s
     p4s_sum_dict = {
-        n_steps: ak.sum(p4s_dict[n_steps], axis=1) for n_steps in p4s_dict.keys()
+        "original": ak.sum(p4s_dict["original"], axis=1),
+        "generated": ak.sum(p4s_dict["generated"], axis=1),
     }
     # calculate jet substructure (subjettiness ratios etc)
-    substructure_dict = {}
-    for n_steps in p4s_dict.keys():
-        substructure_calculator = JetSubstructure(p4s_dict[n_steps])
-        substructure_dict[n_steps] = (
-            substructure_calculator.get_substructure_as_ak_array()
-        )
+    substructure_calculator_original = JetSubstructure(p4s_dict["original"])
+    substructure_calculator_generated = JetSubstructure(p4s_dict["generated"])
 
-    return ak_arrays_vs_steps, p4s_dict, p4s_sum_dict, substructure_dict
+    substructure_dict = {
+        "original": (substructure_calculator_original.get_substructure_as_ak_array()),
+        "generated": (substructure_calculator_generated.get_substructure_as_ak_array()),
+    }
+
+    return {
+        "x_ak": x_ak_dict,
+        "p4s": p4s_dict,
+        "p4s_sum": p4s_sum_dict,
+        "substructure": substructure_dict,
+    }

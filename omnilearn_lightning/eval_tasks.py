@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -160,6 +162,10 @@ def eval_jet_generation(ckpt_path, output_path):
     lightning_model = PETLightning.load_from_checkpoint(ckpt_path)
     print(lightning_model.model.generator)
 
+    os.makedirs(output_path, exist_ok=True)
+    # resolve output path and print
+    print(f"Saving evaluation plots to: {output_path}")
+
     # dataset_type = "top"
     dataset_type = "jetclass"
 
@@ -198,6 +204,12 @@ def eval_jet_generation(ckpt_path, output_path):
         )
     )
 
+    plot_save_kwargs = dict(
+        dpi=200,
+        bbox_inches="tight",
+    )
+
+    # plot particle features
     set_mpl_style()
     fig, axarr = plot_features(
         {
@@ -219,6 +231,7 @@ def eval_jet_generation(ckpt_path, output_path):
         flatten=True,
     )
     plt.show()
+    fig.savefig(os.path.join(output_path, "particle_features.png"), **plot_save_kwargs)
 
     # plot jet features
     set_mpl_style()
@@ -247,6 +260,7 @@ def eval_jet_generation(ckpt_path, output_path):
         flatten=False,
     )
     plt.show()
+    fig.savefig(os.path.join(output_path, "jet_features.png"), **plot_save_kwargs)
 
     bins_dict_substructure = {
         "tau21": np.linspace(0, 1.2, 80),
@@ -285,3 +299,6 @@ def eval_jet_generation(ckpt_path, output_path):
         ratio=True,
     )
     plt.show()
+    fig.savefig(
+        os.path.join(output_path, "substructure_features.png"), **plot_save_kwargs
+    )
