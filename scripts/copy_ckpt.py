@@ -1,0 +1,124 @@
+import argparse
+import shutil
+from pathlib import Path
+
+DATASET_SIZE_FOLDER_NAME = {
+    "100000": "100k",
+    "1000000": "1M",
+    "10000000": "10M",
+    "-1": "100M",
+}
+METHOD_PREFIX = {
+    "mpm": "mpm_only",
+    "generator": "gen_only",
+    "classifier": "class_only",
+    "classifier+generator": "class_gen",
+    "classifier+mpm": "class_mpm",
+    "generator+mpm": "gen_mpm",
+    "pretrain": "class_gen_mpm",
+}
+TARGET_DIR = "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints"
+SHARED_GROUP_ID = "m3246"
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Move checkpoint files")
+    parser.add_argument(
+        "--target_json",
+        type=Path,
+        required=True,
+        help="Path to the target JSON file",
+    )
+    parser.add_argument(
+        "--run_dir",
+        type=Path,
+        required=True,
+        help="Path to the run directory containing checkpoints",
+    )
+    args = parser.parse_args()
+    target_json = args.target_json
+
+    # open the json file and read its contents (with write permission)
+    import json
+
+    with open(target_json, "r") as f:
+        json_data = json.load(f)
+
+    # loop over the entries
+    # structure: {model_size: {method: {dataset_size: path}}}
+
+    ckpt_src = args.run_dir / "checkpoints"
+
+    best_ckpt = None
+    best_loss = float("inf")
+    model_size = None
+    method = None
+    dataset_size = None
+    ckpts_with_val_loss = []
+
+    # loop over the files in the checkpoints directory
+    for ckpt_file in ckpt_src.iterdir():
+        if "val_loss" not in ckpt_file.name:
+            continue
+        # extract the val_loss value from the filename
+        # filename format: _<modelsize>_<method>_<dataset_type>_dataset_<num_samples>_<username>-epoch=<epoch>-step=<step>-val_loss=<val_loss>-train_loss_steps=<train_loss_steps>.ckpt
+        parts = ckpt_file.name.split("-")
+        val_loss_part = [p for p in parts if p.startswith("val_loss=")][0]
+        val_loss = float(val_loss_part.split("=")[1].replace(".ckpt", ""))
+        ckpts_with_val_loss.append((ckpt_file.name.split("/")[-1], val_loss))
+        if val_loss < best_loss:
+            best_loss = val_loss
+            best_ckpt = ckpt_file
+            # extract model_size, method, dataset_size from filename
+            name_parts = ckpt_file.name.split("_")
+            model_size = name_parts[1]
+            method = name_parts[2]
+            dataset_size = name_parts[5]
+
+    for ckpt, loss in ckpts_with_val_loss:
+        str_to_print = f"Checkpoint: {ckpt} with val_loss={loss}"
+        if loss == best_loss:
+            str_to_print += "  <-- best"
+        print(str_to_print)
+
+    print(f"Best checkpoint: {best_ckpt} with val_loss={best_loss}")
+
+    # write the path to the json file
+    json_data[model_size][method][dataset_size] = str(best_ckpt)
+    with open(target_json, "w") as f:
+        json.dump(json_data, f, indent=2)
+
+    # copy to target directory
+    dest_path = (
+        Path(TARGET_DIR)
+        / model_size.capitalize()
+        / DATASET_SIZE_FOLDER_NAME[dataset_size]
+    )
+    dest_path.mkdir(parents=True, exist_ok=True)
+
+    dest_ckpt_path = (
+        dest_path / f"{METHOD_PREFIX[method]}_val_loss={best_loss:.4f}.ckpt"
+    )
+
+    print(f"Copying to {dest_ckpt_path}")
+
+    # ask for confirmation before copying
+    response = input("Confirm with y\n")
+    if response.lower() != "y":
+        print("Aborting.")
+        return
+
+    # if exists, ask for confirmation to overwrite
+    if dest_ckpt_path.exists():
+        response = input(f"\n{dest_ckpt_path} already exists. Overwrite? (y/n): \n")
+        if response.lower() != "y":
+            print("Aborting copy.")
+            return
+
+    shutil.copy(best_ckpt, dest_ckpt_path)
+    # set permissions to shared group
+    shutil.chown(dest_ckpt_path, group=SHARED_GROUP_ID)
+
+
+if __name__ == "__main__":
+    main()
