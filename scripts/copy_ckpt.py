@@ -46,6 +46,7 @@ def main():
     model_size = None
     method = None
     dataset_size = None
+    best_step = 0
     ckpts_with_val_loss = []
 
     # loop over the files in the checkpoints directory
@@ -58,14 +59,26 @@ def main():
         val_loss_part = [p for p in parts if p.startswith("val_loss=")][0]
         val_loss = float(val_loss_part.split("=")[1].replace(".ckpt", ""))
         ckpts_with_val_loss.append((ckpt_file.name.split("/")[-1], val_loss))
-        if val_loss < best_loss:
-            best_loss = val_loss
-            best_ckpt = ckpt_file
+        if val_loss <= best_loss:
+            if val_loss == best_loss:
+                print(
+                    f"Warning: Found two checkpoints with the same val_loss={val_loss}: "
+                )
+                for ckpt, loss in ckpts_with_val_loss:
+                    if loss == best_loss:
+                        print(f" - {ckpt}")
             # extract model_size, method, dataset_size from filename
             name_parts = ckpt_file.name.split("_")
             model_size = name_parts[1]
             method = name_parts[2]
             dataset_size = name_parts[5]
+            step_part = [p for p in parts if p.startswith("step=")][0]
+            current_step = int(step_part.split("=")[1])
+            if val_loss == best_loss and current_step < best_step:
+                continue
+            best_step = current_step
+            best_loss = val_loss
+            best_ckpt = ckpt_file
 
     for ckpt, loss in ckpts_with_val_loss:
         str_to_print = f"Checkpoint: {ckpt} with val_loss={loss}"
