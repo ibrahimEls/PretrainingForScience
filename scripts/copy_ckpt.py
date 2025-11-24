@@ -83,11 +83,6 @@ def main():
 
     print(f"Best checkpoint: {best_ckpt} with val_loss={best_loss}")
 
-    # write the path to the json file
-    json_data[model_size][method][dataset_size] = str(best_ckpt)
-    with open(target_json, "w") as f:
-        json.dump(json_data, f, indent=2)
-
     # copy to target directory
     dest_path = (
         Path(TARGET_DIR)
@@ -118,6 +113,11 @@ def main():
     shutil.copy(best_ckpt, dest_ckpt_path)
     # set permissions to shared group
     shutil.chown(dest_ckpt_path, group=SHARED_GROUP_ID)
+
+    # write the path to the json file
+    json_data[model_size][method][dataset_size] = str(dest_ckpt_path)
+    with open(target_json, "w") as f:
+        json.dump(json_data, f, indent=2)
 
 
 if __name__ == "__main__":
