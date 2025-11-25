@@ -46,8 +46,8 @@ def eval_top_tagging(args, ckpt_path, gpuID):
         load_val=True,
     )
 
-    data_module.setup("fit")
-    dataloader = data_module.val_dataloader()
+    data_module.setup("test")
+    dataloader = data_module.test_dataloader()
 
     with torch.no_grad():
         for batch in tqdm(dataloader, desc="Val Batches"):
