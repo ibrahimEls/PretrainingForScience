@@ -529,7 +529,9 @@ class MaskedPredictionCallback(Callback):
             y=1.04,
         )
         fig.tight_layout()
-        self._save_and_log(trainer, fig, "particle_distributions", n_jets=num_particles)
+        self._save_and_log(
+            trainer, fig, "particle_distributions", n_jets=len(x_part_ak_pred)
+        )
 
         # plot residuals of predicted vs true masked particles
         fig, axarr = plot_features(
@@ -564,7 +566,9 @@ class MaskedPredictionCallback(Callback):
             y=1.08,
         )
         fig.tight_layout()
-        self._save_and_log(trainer, fig, "particle_residuals", n_jets=num_particles)
+        self._save_and_log(
+            trainer, fig, "particle_residuals", n_jets=len(x_part_ak_pred)
+        )
 
         # ------ scatter plots for a few example jets ------
 
