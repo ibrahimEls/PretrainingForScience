@@ -16,7 +16,7 @@ METHOD_PREFIX = {
     "classifier+generator": "class_gen",
     "classifier+mpm": "class_mpm",
     "generator+mpm": "gen_mpm",
-    "pretrain": "class_gen_mpm",
+    "pretrain": "pretrain",
 }
 TARGET_DIR = "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints"
 SHARED_GROUP_ID = "m3246"
