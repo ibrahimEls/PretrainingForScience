@@ -10,7 +10,7 @@
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/gen_only_val_loss=2.6142.ckpt",
         "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/gen_only_val_loss=2.5640.ckpt",
         "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/gen_only_val_loss_2.5336.ckpt",
-        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_only_val_loss=2.5528.ckpt"
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_only_val_loss=2.5374.ckpt"
       },
       "mpm": {
         "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",

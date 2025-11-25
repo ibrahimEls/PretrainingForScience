@@ -2,7 +2,7 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 24:00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 4
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
@@ -30,7 +30,7 @@ STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-C
 DOWNSTREAM_DATASETS="all"
 MODEL_SIZES="micro"
 #PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="generator" #classifier+generator,from_scratch"
+PRE_TRAINING_MODES="from_scratch" #classifier+generator,from_scratch"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
