@@ -13,7 +13,7 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_only_val_loss=2.5528.ckpt"
     },
     "mpm": {
-      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/mpm_only_val_loss=9.7760.ckpt",
       "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/mpm_only_val_loss=7.8850.ckpt",
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
@@ -25,20 +25,20 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
     },
     "classifier+mpm": {
-      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
-      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_mpm_val_loss=8.9076.ckpt",
+      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_mpm_val_loss=8.4280.ckpt",
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
     },
     "generator+mpm": {
-      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
-      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/gen_mpm_val_loss=10.6933.ckpt",
+      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/gen_mpm_val_loss=10.4631.ckpt",
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
     },
     "pretrain": {
-      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/",
-      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/",
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/pretrain_val_loss=11.8874.ckpt",
+      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/pretrain_val_loss=11.3194.ckpt",
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/"
     }
