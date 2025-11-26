@@ -3,6 +3,8 @@ import json
 import shutil
 from pathlib import Path
 
+import yaml
+
 DATASET_SIZE_FOLDER_NAME = {
     "100000": "100k",
     "1000000": "1M",
@@ -11,12 +13,16 @@ DATASET_SIZE_FOLDER_NAME = {
 }
 METHOD_PREFIX = {
     "mpm": "mpm_only",
+    "mpmregress": "mpmregress_only",
     "generator": "gen_only",
     "classifier": "class_only",
     "classifier+generator": "class_gen",
     "classifier+mpm": "class_mpm",
+    "classifier+mpmregress": "class_mpmregress",
     "generator+mpm": "gen_mpm",
+    "generator+mpmregress": "gen_mpmregress",
     "pretrain": "pretrain",
+    "pretrainregress": "pretrainregress",
 }
 TARGET_DIR = "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints"
 SHARED_GROUP_ID = "m3246"
@@ -71,6 +77,14 @@ def main():
             name_parts = ckpt_file.name.split("_")
             model_size = name_parts[1]
             method = name_parts[2]
+            if "mpm" in method or method == "pretrain":
+                # check if tokenizer_ckpt is None by looking at hparams.yaml in run_dir
+                hparams_file = args.run_dir / "hparams.yaml"
+                with open(hparams_file, "r") as f:
+                    hparams = yaml.safe_load(f)
+                if hparams.get("tokenizer_ckpt", None) is None:
+                    method += "regress"
+
             dataset_size = name_parts[5]
             step_part = [p for p in parts if p.startswith("step=")][0]
             current_step = int(step_part.split("=")[1])

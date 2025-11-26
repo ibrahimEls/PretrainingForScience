@@ -375,7 +375,7 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
     # ---- extract prefix from filename ----
     filename = os.path.basename(path)
     prefix_match = re.search(
-        r"(class_only|gen_only|class_gen|mpm_only|class_mpm|gen_mpm|pretrain)",
+        r"(class_only|gen_only|class_gen|mpm_only|class_mpm|mpmregress_only|gen_mpmregress|class_mpmregress|pretrainregress|gen_mpm|pretrain)",
         filename,
     )
     if not prefix_match:
