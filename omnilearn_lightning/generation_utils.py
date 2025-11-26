@@ -178,11 +178,13 @@ class JetSubstructure:
 
 
 def get_batch_and_generate(
-    lightning_model,
     batch,
-    feature_names_x,
+    lightning_model=None,
+    feature_names_x=None,
     verbose=True,
-    n_diffusion_steps=128,
+    n_sampling_steps=128,
+    set_pid_to_zeros=False,
+    set_add_info_to_zeros=False,
 ):
     X, y = (
         batch["X"].float().to(lightning_model.device),
@@ -202,20 +204,20 @@ def get_batch_and_generate(
     mask = X[:, :, 0] != 0.0
 
     # set pid and add_info to zeros
-    # if "pid" in model_kwargs:
-    #     print(f"Setting pid to zeros with shape: {model_kwargs['pid'].shape}")
-    #     model_kwargs["pid"] = torch.zeros_like(model_kwargs["pid"])
-    # if "add_info" in model_kwargs:
-    #     print(f"Setting add_info to zeros with shape: {model_kwargs['add_info'].shape}")
-    #     model_kwargs["add_info"] = torch.zeros_like(model_kwargs["add_info"])
+    if "pid" in model_kwargs and set_pid_to_zeros:
+        # print(f"Setting pid to zeros with shape: {model_kwargs['pid'].shape}")
+        model_kwargs["pid"] = torch.zeros_like(model_kwargs["pid"])
+    if "add_info" in model_kwargs and set_add_info_to_zeros:
+        # print(f"Setting add_info to zeros with shape: {model_kwargs['add_info'].shape}")
+        model_kwargs["add_info"] = torch.zeros_like(model_kwargs["add_info"])
 
     with torch.no_grad():
         gen_output = omnilearned.diffusion.generate(
             lightning_model.model,
             y=y,
             shape=X.shape,
+            nsteps=n_sampling_steps,
             **model_kwargs,
-            nsteps=n_diffusion_steps,
         )
 
     x_ak_original = np_to_ak(
@@ -231,9 +233,7 @@ def get_batch_and_generate(
 def generate_and_postprocess(
     n_batches,
     dataloader,
-    lightning_model,
-    feature_names_x,
-    n_sampling_steps=128,
+    **gen_kwargs,
 ):
     print(f"Generating {n_batches} batches...")
     n_batches_generated = 0
@@ -245,11 +245,8 @@ def generate_and_postprocess(
             break
         n_batches_generated += 1
         output = get_batch_and_generate(
-            lightning_model,
-            batch_i,
-            feature_names_x,
-            verbose=False,
-            n_diffusion_steps=n_sampling_steps,
+            batch=batch_i,
+            **gen_kwargs,
         )
         original.append(output[0])
         generated.append(output[1])
