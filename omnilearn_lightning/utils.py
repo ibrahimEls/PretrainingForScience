@@ -363,21 +363,38 @@ def get_version_number(out_dir_save_tag):
     return version
 
 
+_PREFIXES = [
+    "mpmregress_only",
+    "gen_mpmregress",
+    "class_mpmregress",
+    "pretrainregress",
+    "class_only",
+    "gen_only",
+    "class_gen",
+    "mpm_only",
+    "class_mpm",
+    "gen_mpm",
+    "pretrain",
+]
+
+_PREFIX_PATTERN = re.compile(
+    "(" + "|".join(re.escape(p) for p in sorted(_PREFIXES, key=len, reverse=True)) + ")"
+)
+
+
 def extract_pretrained_ckpt_prefix(path: str) -> str:
     """
-    Extracts a string like '100k_class_only', '1M_gen_only', etc. from a
-    checkpoint path.
+    Extracts a string like '100k_class_only', '1M_gen_only', '10M_pretrainregress', etc.
+    from a checkpoint path.
 
     Examples:
-        "/.../100k/class_only_val_loss=.5940.ckpt" -> "100k_class_only"
-        "/.../1M/gen_only_val_loss=2.6142.ckpt"   -> "1M_gen_only"
+        "/.../100k/class_only_val_loss=.5940.ckpt"       -> "100k_class_only"
+        "/.../1M/gen_only_val_loss=2.6142.ckpt"         -> "1M_gen_only"
+        "/.../10M/pretrainregress_val_loss=.123.ckpt"   -> "10M_pretrainregress"
     """
-    # ---- extract prefix from filename ----
+    # ---- extract prefix from filename (longest match wins) ----
     filename = os.path.basename(path)
-    prefix_match = re.search(
-        r"(class_only|gen_only|class_gen|mpm_only|class_mpm|mpmregress_only|gen_mpmregress|class_mpmregress|pretrainregress|gen_mpm|pretrain)",
-        filename,
-    )
+    prefix_match = _PREFIX_PATTERN.search(filename)
     if not prefix_match:
         raise ValueError(f"No known prefix found in filename: {filename}")
     prefix = prefix_match.group(1)

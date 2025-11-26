@@ -30,7 +30,7 @@ STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-C
 DOWNSTREAM_DATASETS="all"
 MODEL_SIZES="micro"
 #PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="mpm,classifier+mpm" #classifier+generator,from_scratch"
+PRE_TRAINING_MODES="generator+mpmregress,pretrainregress,classifier+mpmregress" #classifier+generator,from_scratch"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
