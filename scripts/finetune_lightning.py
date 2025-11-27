@@ -629,7 +629,7 @@ def main() -> None:
 
                     print(
                         f"        [INFO] Have {existing_runs} runs, need {args.n_runs}. "
-                        f"Launching {args.n - runs - existing_runs if False else args.n_runs - existing_runs} additional runs."
+                        f"Launching {args.n_runs - existing_runs} additional runs."
                     )
 
                     for local_run_idx in range(existing_runs, args.n_runs):

@@ -57,7 +57,7 @@ export cmd="python3 finetune_lightning.py \
   --repo_dir=$REPO_DIR\
   --output_dir=$OUTPUT_DIR\
   --dataset_dir=$DATASET_PATH"
- # --dry-run <---- Turn on to see what will be run without running it
+  # --dry-run" # <---- Turn on to see what will be run without running it
 
 module load conda
 conda activate torchvenv
