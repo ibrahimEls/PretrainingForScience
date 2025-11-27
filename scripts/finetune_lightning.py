@@ -8,9 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# ---------------------------------------------------------------------
-# Model-size-specific hyperparameters (from your shell script)
-# ---------------------------------------------------------------------
+# Model-size-specific hyperparameters
 
 MODEL_HPARAMS = {
     "micro": {
@@ -34,9 +32,7 @@ MODEL_HPARAMS = {
 }
 
 
-# ---------------------------------------------------------------------
-# Utility helpers
-# ---------------------------------------------------------------------
+# Utility helperss
 
 
 def load_json(path: str, default: Any) -> Any:
@@ -409,9 +405,7 @@ def run_single_finetune(
     return best_ckpt_src, dest_ckpt_path, cmd_snippet
 
 
-# ---------------------------------------------------------------------
 # Main orchestration
-# ---------------------------------------------------------------------
 
 
 def parse_args() -> argparse.Namespace:
@@ -685,7 +679,6 @@ def main() -> None:
 
                         group.setdefault("runs", []).append(run_record)
 
-                        # Save after every run (no dropping previous runs)
                         print(f"        [SAVE] Updating state JSON: {args.state_json}")
                         if not args.dry_run:
                             safe_write_json(args.state_json, state_cfg)
