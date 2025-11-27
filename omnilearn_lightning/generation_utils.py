@@ -240,7 +240,7 @@ def generate_and_postprocess(
     original = []
     generated = []
 
-    for batch_i in tqdm(dataloader):
+    for batch_i in tqdm(dataloader, total=n_batches):
         if n_batches_generated >= n_batches:
             break
         n_batches_generated += 1
