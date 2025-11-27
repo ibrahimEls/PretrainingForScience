@@ -289,9 +289,11 @@ def generate_and_postprocess(
         "generated": (substructure_calculator_generated.get_substructure_as_ak_array()),
     }
 
-    return {
-        "x_ak": x_ak_dict,
-        "p4s": p4s_dict,
-        "p4s_sum": p4s_sum_dict,
-        "substructure": substructure_dict,
-    }
+    return ak.Array(
+        {
+            "x_ak": x_ak_dict,
+            "p4s": p4s_dict,
+            "p4s_sum": p4s_sum_dict,
+            "substructure": substructure_dict,
+        }
+    )
