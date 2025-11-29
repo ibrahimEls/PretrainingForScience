@@ -217,8 +217,8 @@ class PET2(nn.Module):
         if "classifier" in self.mode or self.mode == "pretrain":
             x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
             y_pred = self.classifier(x_body)
-            if self.mode == "pretrain":
-                y_perturb = self.classifier(z_body)
+            # if self.mode == "pretrain":
+            #     y_perturb = self.classifier(z_body)
 
         # MPM forward pass
         if "mpm" in self.mode or self.mode == "pretrain":
