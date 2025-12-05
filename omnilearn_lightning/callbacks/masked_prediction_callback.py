@@ -11,9 +11,11 @@ from typing import Any, Dict
 import awkward as ak
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import torch
 import wandb
 from pytorch_lightning import Callback, LightningModule
+from sklearn.metrics import confusion_matrix
 
 from omnilearn_lightning.array_utils import ak_subtract, np_to_ak, p4s_from_ptetaphimass
 from omnilearn_lightning.plotting.feature_plotting import plot_features
@@ -108,12 +110,14 @@ class MaskedPredictionCallback(Callback):
         outs.append(saved_outputs)
 
     @staticmethod
-    def _sample_token_ids(logits: torch.Tensor) -> torch.Tensor:
+    def _sample_token_ids(
+        logits: torch.Tensor, temperature: float = 1.0
+    ) -> torch.Tensor:
         """Sample token IDs from logits via softmax + multinomial.
 
         Returns a tensor of shape (batch, num_points).
         """
-        probs = torch.softmax(logits, dim=-1)
+        probs = torch.softmax(logits / temperature, dim=-1)
         num_tokens = probs.shape[-1]
         flat = probs.view(-1, num_tokens)
         sampled = torch.multinomial(flat, num_samples=1).squeeze(-1)
@@ -233,6 +237,7 @@ class MaskedPredictionCallback(Callback):
         pl_module: LightningModule,
         batches_list,
         outputs_list,
+        temperature: float = 1.0,
     ) -> None:
         set_mpl_style()
 
@@ -319,7 +324,9 @@ class MaskedPredictionCallback(Callback):
 
             # same for pid-tokens if pid is used
             if pl_module.use_pid:
-                predicted_pid_tokens = self._sample_token_ids(output["masked_pred_pid"])
+                predicted_pid_tokens = self._sample_token_ids(
+                    output["masked_pred_pid"], temperature=temperature
+                )
 
             if tokenizer is None:
                 predictions_reconstructed_x = output["masked_pred"][:, :, :4]
@@ -328,7 +335,9 @@ class MaskedPredictionCallback(Callback):
                 )
             else:
                 # Sample feature tokens
-                predicted_tokens = self._sample_token_ids(output["masked_pred"])
+                predicted_tokens = self._sample_token_ids(
+                    output["masked_pred"], temperature=temperature
+                )
                 batches_pred_token_ids.append(
                     np_to_ak(
                         predicted_tokens.unsqueeze(-1).cpu().numpy(),
@@ -611,5 +620,59 @@ class MaskedPredictionCallback(Callback):
 
         fig.tight_layout()
         self._save_and_log(trainer, fig, "example_jets", n_jets=self.n_example_jets)
+
+        pid_pred_flat = ak.flatten(x_part_ak_pred.PID, axis=None).to_numpy()
+        pid_true_flat = ak.flatten(x_part_ak_true.PID, axis=None).to_numpy()
+        # plot confusion matrix
+
+        normalize_options = [
+            # None,
+            "true",
+            # "pred",
+            "all",
+        ]
+        fig, ax = plt.subplots(
+            1, len(normalize_options), figsize=(6 * len(normalize_options), 5)
+        )
+
+        for i, norm in enumerate(normalize_options):
+            cm = confusion_matrix(
+                pid_true_flat,
+                pid_pred_flat,
+                labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                normalize=norm,
+            )
+            sns.heatmap(
+                cm * 100,
+                ax=ax[i],
+                annot=True,
+                fmt=".0f",
+                cmap="Blues",
+                xticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                yticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            )
+            ax[i].set_xlabel("Predicted PID")
+            ax[i].set_ylabel("True PID")
+            ax[i].set_title(f"Confusion Matrix (normalize={norm}) [%]")
+
+        self._save_and_log(
+            trainer, fig, "pid_confusion_matrices", n_jets=len(x_part_ak_pred)
+        )
+
+        # plot the accuracy of each PID
+        cm = confusion_matrix(
+            pid_true_flat,
+            pid_pred_flat,
+            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            normalize=None,
+        )
+        pid_accuracy = cm.diagonal() / cm.sum(axis=1)
+        fig, ax = plt.subplots(figsize=(3, 3))
+        ax.bar(range(10), pid_accuracy)
+        ax.set_xlabel("True Particle ID")
+        ax.set_ylabel("Accuracy")
+        ax.set_title("Accuracy of Particle ID Predictions")
+        self._save_and_log(trainer, fig, "pid_accuracies", n_jets=len(x_part_ak_pred))
+        plt.show()
 
         # plt.close("all")
