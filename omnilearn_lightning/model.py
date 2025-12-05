@@ -330,6 +330,7 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
+        use_weights_for_pid_loss=False,
         **kwargs,
     ):
         super().__init__()
@@ -385,7 +386,16 @@ class PETLightning(LightningModule):
             )
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
-        self.loss_masked_pid = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+        self.loss_masked_pid = nn.CrossEntropyLoss(
+            ignore_index=-1,
+            reduction="mean",
+            weight=torch.tensor(
+                [4.2, 333, 234, 0, 221, 328, 2.4, 9.3, 4.2],
+                device=self.device,
+            )
+            if use_weights_for_pid_loss
+            else None,
+        )
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
 
