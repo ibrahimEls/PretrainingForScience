@@ -376,6 +376,15 @@ class PETLightning(LightningModule):
                             "Tokenizer was trained without add_info, but mpm_features "
                             f"'{mpm_features}' requires it."
                         )
+                    if (
+                        mpm_features == "kin"
+                        and self.tokenizer.scale_factors_add_info is not None
+                    ):
+                        raise ValueError(
+                            "Tokenizer has vertex information scale factors, but "
+                            "mpm_features is 'kin'. Use a tokenizer trained "
+                            "without those additional features."
+                        )
 
         number_continuous_features = num_feat
         if use_add:
