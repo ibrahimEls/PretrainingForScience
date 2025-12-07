@@ -1,9 +1,5 @@
 import argparse
 import os
-import sys
-
-sys.path.append("../")
-
 
 import torch
 from omnilearned.utils import get_model_parameters
@@ -149,6 +145,12 @@ def main():
         default=False,
         help="Use class weights for PID loss",
     )
+    parser.add_argument(
+        "--mpm_features",
+        type=str,
+        default="kin_pid_add",
+        help="Features to use for MPM ('kin', 'kin_pid', 'kin_pid_add')",
+    )
 
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
@@ -284,6 +286,7 @@ def main():
         )
         else False,
         use_weights_for_pid_loss=args.use_weights_for_pid_loss,
+        mpm_features=args.mpm_features,
     )
 
     if rank_zero_only.rank == 0:
