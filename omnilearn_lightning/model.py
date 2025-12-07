@@ -348,8 +348,8 @@ class PETLightning(LightningModule):
             # verify that mpm_features is valid
             supported_mpm_features = [
                 "kin",
-                "kin_pid",
-                "kin_add",
+                # "kin_pid",
+                # "kin_add",
                 "kin_pid_add",
             ]
             if mpm_features not in supported_mpm_features:
@@ -367,6 +367,15 @@ class PETLightning(LightningModule):
                     self.tokenizer = torch.load(
                         f, weights_only=False, map_location=self.device
                     )
+                    # verify that tokenizer corresponds to the requested mpm_features
+                    if (
+                        "add" in mpm_features
+                        and self.tokenizer.scale_factors_add_info is None
+                    ):
+                        raise ValueError(
+                            "Tokenizer was trained without add_info, but mpm_features "
+                            f"'{mpm_features}' requires it."
+                        )
 
         number_continuous_features = num_feat
         if use_add:
