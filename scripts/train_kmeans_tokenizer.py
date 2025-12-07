@@ -1,9 +1,6 @@
 import argparse
 import json
 import os
-import sys
-
-sys.path.append("..")
 
 import awkward as ak
 import matplotlib.pyplot as plt
@@ -25,8 +22,8 @@ NUM_PLOTS_SAMPLES = 10_000
 NUM_MAX_POINTS_PER_JET = 100
 NUM_FEATURES_X = 4
 NUM_FEATURES_ADD = 4
-# CODEBOOK_SIZE = 8_192
-CODEBOOK_SIZE = 16_384
+CODEBOOK_SIZE = 8_192
+# CODEBOOK_SIZE = 16_384
 # Default scale factors for x and add_info
 DEFAULT_SCALE_FACTORS_X = torch.tensor(
     [
@@ -206,6 +203,7 @@ training_y = torch.zeros(
 )
 
 # loop over batches to collect training data for kmeans
+print("Collecting training data...")
 start_idx = 0
 for batch in tqdm(dataloader):
     batch_size = batch["X"].shape[0]
@@ -228,6 +226,7 @@ for batch in tqdm(dataloader):
     start_idx += batch_size
     if start_idx >= NUM_TRAINING_SAMPLES:
         break
+print("Finished collecting training data.")
 
 # bar plot of training_y
 fig, ax = plt.subplots(figsize=(3, 2))
