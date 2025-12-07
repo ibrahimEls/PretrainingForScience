@@ -232,6 +232,18 @@ def load_data(
         "jetclass2",
         "h1",
         "toy",
+        "cms_qcd",
+        "cms_bsm",
+        "cms_top",
+        "aspen_bsm",
+        "aspen_top_ad_sb",
+        "aspen_top_ad_sr",
+        "aspen_top_ad_sr_hl",
+        "jetnet150",
+        "jetnet30",
+        "dctr",
+        "atlas_flav",
+        "custom",
     ]
     if dataset_name not in supported_datasets:
         raise ValueError(
