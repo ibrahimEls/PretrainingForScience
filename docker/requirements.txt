@@ -5,6 +5,7 @@ einops==0.8.1
 fast-pytorch-kmeans==0.2.2
 fastjet==3.4.2.1
 h5py==3.14.0
+jetnet==0.2.5
 lightning==2.5.5
 matplotlib==3.10.6
 omnilearned @ git+https://github.com/ViniciusMikuni/OmniLearned.git@922355db6269061af9e8a36a7c6a118e7c6609c4
@@ -13,6 +14,7 @@ pre-commit
 pyarrow==21.0.0
 pytest
 pytorch_optimizer==3.8.0
+rangerlite==1.0.2
 rich==14.1.0
 scikit-learn==1.7.2
 seaborn==0.13.2
