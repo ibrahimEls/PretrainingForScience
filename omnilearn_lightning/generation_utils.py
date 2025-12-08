@@ -203,6 +203,11 @@ def get_batch_and_generate(
                 print(f"{k}.shape: {v.shape}")
     mask = X[:, :, 0] != 0.0
 
+    # if "cond" is not in batch, then create the multiplicity entry
+    if model_kwargs.get("cond", None) is None:
+        multiplicity = torch.sum(mask, dim=1).float() / 100.0
+        model_kwargs["cond"] = multiplicity.unsqueeze(-1)
+
     # set pid and add_info to zeros
     if "pid" in model_kwargs and set_pid_to_zeros:
         # print(f"Setting pid to zeros with shape: {model_kwargs['pid'].shape}")
@@ -239,6 +244,7 @@ def generate_and_postprocess(
     n_batches_generated = 0
     original = []
     generated = []
+    y_values = []
 
     for batch_i in tqdm(dataloader, total=n_batches):
         if n_batches_generated >= n_batches:
@@ -250,6 +256,7 @@ def generate_and_postprocess(
         )
         original.append(output[0])
         generated.append(output[1])
+        y_values.append(batch_i["y"].cpu().numpy())
 
     # concatenate the lists into a single ak.Array per n_steps
     # n_steps=0 corresponds to the original data
@@ -295,5 +302,6 @@ def generate_and_postprocess(
             "p4s": p4s_dict,
             "p4s_sum": p4s_sum_dict,
             "substructure": substructure_dict,
+            "y": ak.concatenate(y_values, axis=0),
         }
     )
