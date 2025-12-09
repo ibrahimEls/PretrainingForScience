@@ -636,11 +636,13 @@ class MaskedPredictionCallback(Callback):
                 1, len(normalize_options), figsize=(6 * len(normalize_options), 5)
             )
 
+            pid_labels_range = range(9)
+
             for i, norm in enumerate(normalize_options):
                 cm = confusion_matrix(
                     pid_true_flat,
                     pid_pred_flat,
-                    labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    labels=pid_labels_range,
                     normalize=norm,
                 )
                 sns.heatmap(
@@ -649,8 +651,8 @@ class MaskedPredictionCallback(Callback):
                     annot=True,
                     fmt=".0f",
                     cmap="Blues",
-                    xticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                    yticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                    xticklabels=pid_labels_range,
+                    yticklabels=pid_labels_range,
                 )
                 ax[i].set_xlabel("Predicted PID")
                 ax[i].set_ylabel("True PID")
@@ -664,12 +666,12 @@ class MaskedPredictionCallback(Callback):
             cm = confusion_matrix(
                 pid_true_flat,
                 pid_pred_flat,
-                labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                labels=pid_labels_range,
                 normalize=None,
             )
             pid_accuracy = cm.diagonal() / cm.sum(axis=1)
             fig, ax = plt.subplots(figsize=(3, 3))
-            ax.bar(range(10), pid_accuracy)
+            ax.bar(range(9), pid_accuracy)
             ax.set_xlabel("True Particle ID")
             ax.set_ylabel("Accuracy")
             ax.set_title("Accuracy of Particle ID Predictions")
