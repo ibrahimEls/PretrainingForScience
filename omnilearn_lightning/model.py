@@ -58,7 +58,7 @@ class PET2(nn.Module):
         pos_encoding_type="sort_descending_in_masked_subset",
         skip=False,
         num_gen_classes=1,
-        mpm_features="kin_pid_add",
+        mpm_features="kin",
     ):
         super().__init__()
         self.mode = mode
