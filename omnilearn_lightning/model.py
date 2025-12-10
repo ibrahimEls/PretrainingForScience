@@ -334,7 +334,7 @@ class PETLightning(LightningModule):
         num_gen_classes=1,
         all_head=False,
         use_weights_for_pid_loss=False,
-        mpm_features="kin_pid_add",
+        mpm_features="kin",
         **kwargs,
     ):
         super().__init__()
