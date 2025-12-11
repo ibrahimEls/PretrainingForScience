@@ -58,7 +58,7 @@ class PET2(nn.Module):
         pos_encoding_type="sort_descending_in_masked_subset",
         skip=False,
         num_gen_classes=1,
-        mpm_features="kin_pid_add",
+        mpm_features="kin",
     ):
         super().__init__()
         self.mode = mode
@@ -336,7 +336,7 @@ class PETLightning(LightningModule):
         num_gen_classes=1,
         all_head=False,
         use_weights_for_pid_loss=False,
-        mpm_features="kin_pid_add",
+        mpm_features="kin",
         **kwargs,
     ):
         super().__init__()
@@ -417,14 +417,17 @@ class PETLightning(LightningModule):
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss()
         self.loss_gen = nn.MSELoss()
+
         if self.tokenizer is not None:
             self.loss_masked_continuous = nn.CrossEntropyLoss(
                 ignore_index=-1, reduction="mean"
             )
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
-        self.loss_masked_pid = (
-            nn.CrossEntropyLoss(
+
+        if "pid" in self.mpm_features:
+            print("Using PID in MPM.")
+            self.loss_masked_pid = nn.CrossEntropyLoss(
                 ignore_index=-1,
                 reduction="mean",
                 weight=torch.tensor(
@@ -434,9 +437,9 @@ class PETLightning(LightningModule):
                 if use_weights_for_pid_loss
                 else None,
             )
-            if "pid" in self.mpm_features
-            else None
-        )
+        else:
+            self.loss_masked_pid = None
+
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
 
