@@ -148,8 +148,8 @@ def main():
     parser.add_argument(
         "--mpm_features",
         type=str,
-        default="kin_pid_add",
-        help="Features to use for MPM ('kin', 'kin_pid', 'kin_pid_add')",
+        default="kin",
+        help="Features to use for MPM ('kin', 'kin_pid_add')",
     )
 
     # Additional features
