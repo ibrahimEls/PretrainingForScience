@@ -22,7 +22,8 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 #DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
-TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
+# TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"  # <-- with trajectory displacement features
+TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-07-20-13-56-Funky-Desktop_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE=-1
 # POS_ENCODING_TYPE="sort_descending_all"
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
