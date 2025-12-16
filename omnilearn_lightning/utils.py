@@ -39,7 +39,7 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         }
         model.load_state_dict(filtered_state, strict=False)
 
-    elif task == "gen":
+    elif "jetnet" in task.lower():
         ckpt = torch.load(ckpt_path, map_location="cpu")
         ckpt_state_dict = ckpt["state_dict"]
         filtered_state = {
@@ -51,6 +51,15 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
             )
         }
         model.load_state_dict(filtered_state, strict=False)
+        # print matching and non-matching keys
+        model_state_dict = model.state_dict()
+        for key in filtered_state.keys():
+            if key in model_state_dict:
+                print(f"Loaded: {key}")
+            else:
+                print(f"Not Loaded: {key}")
+    else:
+        raise ValueError(f"Solving task {task} not recognized.")
 
     return model
 
