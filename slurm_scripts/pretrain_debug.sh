@@ -8,7 +8,7 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.0
+#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.2
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
@@ -19,7 +19,7 @@ REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
 OUTPUT_DIR="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/"
 #OUTPUT_DIR=/pscratch/sd/j/jobirk/omnilearned_output/omnilearn_output
 DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
-#DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
+#DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets_dev/
 # ------------------------------------
 
 # TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"  # <-- with trajectory displacement features
@@ -30,8 +30,8 @@ POS_ENCODING_TYPE="sort_descending_in_masked_subset"
 # POS_ENCODING_TYPE="None"
 MASKING_FRACTION=0.4
 
-VAL_CHECK=5000 # 5000  # Set to one if DATASET_SIZE!=-1 else 5000
-PATIENCE=10 # 4  # Set to 10 if DATASET_SIZE!=-1 else 4
+VAL_CHECK=1 # 5000  # Set to one if DATASET_SIZE!=-1 else 5000
+PATIENCE=100 # 4  # Set to 10 if DATASET_SIZE!=-1 else 4
 
 PRETRAINED_CKPT="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_micro_classifier_jetclass_dataset_-1_ibrahime/v3_micro_classifier_jetclass_dataset_-1_ibrahime/checkpoints/last.ckpt"
 RESUME=y
