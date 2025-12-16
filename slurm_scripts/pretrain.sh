@@ -25,13 +25,11 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 # TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"  # <-- with trajectory displacement features
 TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-07-20-13-56-Funky-Desktop_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE=-1
-# POS_ENCODING_TYPE="sort_descending_all"
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
-# POS_ENCODING_TYPE="None"
 MASKING_FRACTION=0.4
 
 VAL_CHECK=5000 # 5000  # Set to one if DATASET_SIZE!=-1 else 5000
-PATIENCE=100 # 4  # Set to 10 if DATASET_SIZE!=-1 else 4
+PATIENCE=100
 
 PRETRAINED_CKPT="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_micro_classifier_jetclass_dataset_10000000_ibrahime/v1_micro_classifier_jetclass_dataset_10000000_ibrahime/checkpoints/last.ckpt"
 RESUME=n
