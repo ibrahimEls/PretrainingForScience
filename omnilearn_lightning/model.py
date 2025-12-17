@@ -332,7 +332,7 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
-        use_weights_for_mpm=False,
+        use_weights_in_mpm=False,
         mpm_features="kin",
         **kwargs,
     ):
@@ -418,7 +418,7 @@ class PETLightning(LightningModule):
                 ignore_index=-1,
                 reduction="mean",
                 weight=self.tokenizer.weights.to(self.device)
-                if use_weights_for_mpm
+                if use_weights_in_mpm
                 else None,
             )
         else:
