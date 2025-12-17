@@ -292,9 +292,9 @@ class MaskedPredictionCallback(Callback):
         for i, (batch, output) in enumerate(zip(batches_list, outputs_list)):
             # adjust feature names based on available features in the first batch
             if i == 0:
-                if pl_module.use_pid is False or batch.get("pid") is None:
+                if "pid" not in pl_module.mpm_features or batch.get("pid") is None:
                     feature_names.pop("PID")
-                if pl_module.use_add is False or batch.get("add_info") is None:
+                if "add" not in pl_module.mpm_features or batch.get("add_info") is None:
                     for add_info_name in ["d0val", "d0err", "dzval", "dzerr"]:
                         feature_names.pop(add_info_name)
 
@@ -323,7 +323,7 @@ class MaskedPredictionCallback(Callback):
             targets_transformed[~mask_valid_particle] = 0  # set invalid points to 0
 
             # same for pid-tokens if pid is used
-            if pl_module.use_pid:
+            if "pid" in pl_module.mpm_features:
                 predicted_pid_tokens = self._sample_token_ids(
                     output["masked_pred_pid"], temperature=temperature
                 )
@@ -355,7 +355,7 @@ class MaskedPredictionCallback(Callback):
                 )
             predictions_reconstructed = combine_features(
                 predictions_reconstructed_x,
-                pid=predicted_pid_tokens if pl_module.use_pid else None,
+                pid=predicted_pid_tokens if "pid" in pl_module.mpm_features else None,
                 add_info=predictions_reconstructed_add_info,
             )
 
@@ -621,58 +621,63 @@ class MaskedPredictionCallback(Callback):
         fig.tight_layout()
         self._save_and_log(trainer, fig, "example_jets", n_jets=self.n_example_jets)
 
-        pid_pred_flat = ak.flatten(x_part_ak_pred.PID, axis=None).to_numpy()
-        pid_true_flat = ak.flatten(x_part_ak_true.PID, axis=None).to_numpy()
-        # plot confusion matrix
+        if "pid" in pl_module.mpm_features and pl_module.use_pid:
+            pid_pred_flat = ak.flatten(x_part_ak_pred.PID, axis=None).to_numpy()
+            pid_true_flat = ak.flatten(x_part_ak_true.PID, axis=None).to_numpy()
+            # plot confusion matrix
 
-        normalize_options = [
-            # None,
-            "true",
-            # "pred",
-            "all",
-        ]
-        fig, ax = plt.subplots(
-            1, len(normalize_options), figsize=(6 * len(normalize_options), 5)
-        )
+            normalize_options = [
+                # None,
+                "true",
+                # "pred",
+                "all",
+            ]
+            fig, ax = plt.subplots(
+                1, len(normalize_options), figsize=(6 * len(normalize_options), 5)
+            )
 
-        for i, norm in enumerate(normalize_options):
+            pid_labels_range = range(9)
+
+            for i, norm in enumerate(normalize_options):
+                cm = confusion_matrix(
+                    pid_true_flat,
+                    pid_pred_flat,
+                    labels=pid_labels_range,
+                    normalize=norm,
+                )
+                sns.heatmap(
+                    cm * 100,
+                    ax=ax[i],
+                    annot=True,
+                    fmt=".0f",
+                    cmap="Blues",
+                    xticklabels=pid_labels_range,
+                    yticklabels=pid_labels_range,
+                )
+                ax[i].set_xlabel("Predicted PID")
+                ax[i].set_ylabel("True PID")
+                ax[i].set_title(f"Confusion Matrix (normalize={norm}) [%]")
+
+            self._save_and_log(
+                trainer, fig, "pid_confusion_matrices", n_jets=len(x_part_ak_pred)
+            )
+
+            # plot the accuracy of each PID
             cm = confusion_matrix(
                 pid_true_flat,
                 pid_pred_flat,
-                labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                normalize=norm,
+                labels=pid_labels_range,
+                normalize=None,
             )
-            sns.heatmap(
-                cm * 100,
-                ax=ax[i],
-                annot=True,
-                fmt=".0f",
-                cmap="Blues",
-                xticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                yticklabels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            pid_accuracy = cm.diagonal() / cm.sum(axis=1)
+            fig, ax = plt.subplots(figsize=(3, 3))
+            ax.bar(range(9), pid_accuracy)
+            ax.set_xlabel("True Particle ID")
+            ax.set_ylabel("Accuracy")
+            ax.set_title("Accuracy of Particle ID Predictions")
+            self._save_and_log(
+                trainer, fig, "pid_accuracies", n_jets=len(x_part_ak_pred)
             )
-            ax[i].set_xlabel("Predicted PID")
-            ax[i].set_ylabel("True PID")
-            ax[i].set_title(f"Confusion Matrix (normalize={norm}) [%]")
-
-        self._save_and_log(
-            trainer, fig, "pid_confusion_matrices", n_jets=len(x_part_ak_pred)
-        )
-
-        # plot the accuracy of each PID
-        cm = confusion_matrix(
-            pid_true_flat,
-            pid_pred_flat,
-            labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-            normalize=None,
-        )
-        pid_accuracy = cm.diagonal() / cm.sum(axis=1)
-        fig, ax = plt.subplots(figsize=(3, 3))
-        ax.bar(range(10), pid_accuracy)
-        ax.set_xlabel("True Particle ID")
-        ax.set_ylabel("Accuracy")
-        ax.set_title("Accuracy of Particle ID Predictions")
-        self._save_and_log(trainer, fig, "pid_accuracies", n_jets=len(x_part_ak_pred))
         plt.show()
 
         # plt.close("all")

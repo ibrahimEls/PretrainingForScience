@@ -1,13 +1,9 @@
 import argparse
 import os
-import sys
-
-sys.path.append("../")
-
 
 import torch
 from omnilearned.utils import get_model_parameters
-from pytorch_lightning import Trainer
+from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import (
     EarlyStopping,
     LearningRateMonitor,
@@ -95,6 +91,9 @@ def main():
         default=500_000,
         help="Number of steps after which the learning rate scheduler reaches minimum LR. Will go back up afterwards.",
     )
+    parser.add_argument(
+        "--seed", type=int, default=None, help="Random seed for reproducibility"
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -139,6 +138,18 @@ def main():
     )
     parser.add_argument(
         "--masking_fraction", type=float, default=0.4, help="Masking fraction for MPM"
+    )
+    parser.add_argument(
+        "--use_weights_for_pid_loss",
+        type=str2bool,
+        default=False,
+        help="Use class weights for PID loss",
+    )
+    parser.add_argument(
+        "--mpm_features",
+        type=str,
+        default="kin",
+        help="Features to use for MPM ('kin', 'kin_pid_add')",
     )
 
     # Additional features
@@ -213,6 +224,10 @@ def main():
     if rank_zero_only.rank == 0:
         os.makedirs(args.outdir, exist_ok=True)
 
+    # Set random seed for reproducibility
+    if args.seed is not None:
+        seed_everything(args.seed, workers=True)
+
     data_module = PETDataModule(
         dataset=args.dataset,
         path=args.path,
@@ -270,6 +285,8 @@ def main():
             and args.fine_tune
         )
         else False,
+        use_weights_for_pid_loss=args.use_weights_for_pid_loss,
+        mpm_features=args.mpm_features,
     )
 
     if rank_zero_only.rank == 0:

@@ -58,9 +58,12 @@ class PET2(nn.Module):
         pos_encoding_type="sort_descending_in_masked_subset",
         skip=False,
         num_gen_classes=1,
+        mpm_features="kin",
     ):
         super().__init__()
         self.mode = mode
+        self.mpm_features = mpm_features
+
         if self.mode not in [
             "classifier",
             "generator",
@@ -154,7 +157,7 @@ class PET2(nn.Module):
                 num_add=self.num_add,
                 # num_classes=num_classes,
                 codebook_size_continuous=codebook_size,
-                codebook_size_pid=pid_dim if pid else None,
+                codebook_size_pid=pid_dim if "pid" in self.mpm_features else None,
             )
             # initialize trainable mask token embeddings
             # those are used to fill in the masked positions
@@ -330,6 +333,8 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
+        use_weights_for_pid_loss=False,
+        mpm_features="kin",
         **kwargs,
     ):
         super().__init__()
@@ -337,8 +342,20 @@ class PETLightning(LightningModule):
 
         self.tokenizer = None
         self.use_mpm = "mpm" in mode or mode == "pretrain"
+        self.mpm_features = mpm_features
 
         if self.use_mpm:
+            # verify that mpm_features is valid
+            supported_mpm_features = [
+                "kin",
+                # "kin_pid",
+                # "kin_add",
+                "kin_pid_add",
+            ]
+            if mpm_features not in supported_mpm_features:
+                raise ValueError(
+                    f"mpm_features '{mpm_features}' not supported. Supported: {supported_mpm_features}"
+                )
             # if no tokenizer checkpoint is provided, use regression loss
             if tokenizer_ckpt is None:
                 print(
@@ -350,6 +367,24 @@ class PETLightning(LightningModule):
                     self.tokenizer = torch.load(
                         f, weights_only=False, map_location=self.device
                     )
+                    # verify that tokenizer corresponds to the requested mpm_features
+                    if (
+                        "add" in mpm_features
+                        and self.tokenizer.scale_factors_add_info is None
+                    ):
+                        raise ValueError(
+                            "Tokenizer was trained without add_info, but mpm_features "
+                            f"'{mpm_features}' requires it."
+                        )
+                    if (
+                        mpm_features == "kin"
+                        and self.tokenizer.scale_factors_add_info is not None
+                    ):
+                        raise ValueError(
+                            "Tokenizer has vertex information scale factors, but "
+                            "mpm_features is 'kin'. Use a tokenizer trained "
+                            "without those additional features."
+                        )
 
         number_continuous_features = num_feat
         if use_add:
@@ -373,19 +408,36 @@ class PETLightning(LightningModule):
             if (self.use_mpm and self.tokenizer is not None)
             else number_continuous_features,
             pos_encoding_type=pos_encoding_type,
+            mpm_features=mpm_features,
             **model_params,
         )
 
         # --- losses ---
         self.loss_class = nn.CrossEntropyLoss()
         self.loss_gen = nn.MSELoss()
+
         if self.tokenizer is not None:
             self.loss_masked_continuous = nn.CrossEntropyLoss(
                 ignore_index=-1, reduction="mean"
             )
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
-        self.loss_masked_pid = nn.CrossEntropyLoss(ignore_index=-1, reduction="mean")
+
+        if "pid" in self.mpm_features:
+            print("Using PID in MPM.")
+            self.loss_masked_pid = nn.CrossEntropyLoss(
+                ignore_index=-1,
+                reduction="mean",
+                weight=torch.tensor(
+                    [4.2, 333, 234, 0, 221, 328, 2.4, 9.3, 4.2],
+                    device=self.device,
+                )
+                if use_weights_for_pid_loss
+                else None,
+            )
+        else:
+            self.loss_masked_pid = None
+
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
 
@@ -458,9 +510,9 @@ class PETLightning(LightningModule):
                 )
                 mpm_logs["loss_masked_pid"] = lmp_pid
                 loss = loss + lmp_pid
+                mpm_logs["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
 
             mpm_logs["masked_pred"] = masked_pred
-            mpm_logs["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
             mpm_logs["mask_valid_particle"] = outputs["mask_valid_particle"]
             mpm_logs["mask_valid_particle_but_masked"] = outputs[
                 "mask_valid_particle_but_masked"
