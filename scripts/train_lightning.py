@@ -140,12 +140,6 @@ def main():
         "--masking_fraction", type=float, default=0.4, help="Masking fraction for MPM"
     )
     parser.add_argument(
-        "--use_weights_for_pid_loss",
-        type=str2bool,
-        default=False,
-        help="Use class weights for PID loss",
-    )
-    parser.add_argument(
         "--use_weights_for_mpm",
         type=str2bool,
         default=True,
@@ -291,7 +285,6 @@ def main():
             and args.fine_tune
         )
         else False,
-        use_weights_for_pid_loss=args.use_weights_for_pid_loss,
         use_weights_for_mpm=args.use_weights_for_mpm,
         mpm_features=args.mpm_features,
     )

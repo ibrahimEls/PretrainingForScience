@@ -16,14 +16,13 @@ from .utils import get_param_groups
 
 
 def get_logs(device):
-    logs_buff = torch.zeros((6), dtype=torch.float32, device=device)
+    logs_buff = torch.zeros((5), dtype=torch.float32, device=device)
     logs = {}
     logs["loss"] = logs_buff[0].view(-1)
     logs["loss_class"] = logs_buff[1].view(-1)
     logs["loss_gen"] = logs_buff[2].view(-1)
     logs["loss_clip"] = logs_buff[3].view(-1)
     logs["loss_class_event"] = logs_buff[4].view(-1)
-    logs["loss_masked_pid"] = logs_buff[5].view(-1)
 
     return logs
 
@@ -333,7 +332,6 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
-        use_weights_for_pid_loss=False,
         use_weights_for_mpm=False,
         mpm_features="kin",
         **kwargs,
@@ -349,9 +347,7 @@ class PETLightning(LightningModule):
             # verify that mpm_features is valid
             supported_mpm_features = [
                 "kin",
-                # "kin_pid",
-                # "kin_add",
-                "kin_pid_add",
+                "kin_add",
             ]
             if mpm_features not in supported_mpm_features:
                 raise ValueError(
@@ -428,21 +424,6 @@ class PETLightning(LightningModule):
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
 
-        if "pid" in self.mpm_features:
-            print("Using PID in MPM.")
-            self.loss_masked_pid = nn.CrossEntropyLoss(
-                ignore_index=-1,
-                reduction="mean",
-                weight=torch.tensor(
-                    [4.2, 333, 234, 0, 221, 328, 2.4, 9.3, 4.2],
-                    device=self.device,
-                )
-                if use_weights_for_pid_loss
-                else None,
-            )
-        else:
-            self.loss_masked_pid = None
-
         self.clip_loss = CLIPLoss()
         self.use_one_cycle = use_one_cycle
 
@@ -503,19 +484,6 @@ class PETLightning(LightningModule):
 
             mpm_logs["loss_masked"] = lmp
             loss = loss + lmp
-
-            # if pid is used, add its loss too
-            if self.use_pid and outputs.get("masked_pred_pid") is not None:
-                masked_pred_pid = outputs["masked_pred_pid"]
-                y_masked_pid = outputs["pid"].clone()
-                y_masked_pid[mask_for_targets == 0] = -1
-                lmp_pid = self.loss_masked_pid(
-                    masked_pred_pid.reshape(B * T, masked_pred_pid.shape[-1]),
-                    y_masked_pid.reshape(B * T).long(),
-                )
-                mpm_logs["loss_masked_pid"] = lmp_pid
-                loss = loss + lmp_pid
-                mpm_logs["masked_pred_pid"] = masked_pred_pid if self.use_pid else None
 
             mpm_logs["masked_pred"] = masked_pred
             mpm_logs["mask_valid_particle"] = outputs["mask_valid_particle"]
