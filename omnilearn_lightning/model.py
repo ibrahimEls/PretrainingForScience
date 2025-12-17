@@ -334,6 +334,7 @@ class PETLightning(LightningModule):
         num_gen_classes=1,
         all_head=False,
         use_weights_for_pid_loss=False,
+        use_weights_for_mpm=False,
         mpm_features="kin",
         **kwargs,
     ):
@@ -418,7 +419,11 @@ class PETLightning(LightningModule):
 
         if self.tokenizer is not None:
             self.loss_masked_continuous = nn.CrossEntropyLoss(
-                ignore_index=-1, reduction="mean"
+                ignore_index=-1,
+                reduction="mean",
+                weight=self.tokenizer.weights.to(self.device)
+                if use_weights_for_mpm
+                else None,
             )
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")

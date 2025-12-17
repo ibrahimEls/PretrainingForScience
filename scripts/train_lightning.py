@@ -146,6 +146,12 @@ def main():
         help="Use class weights for PID loss",
     )
     parser.add_argument(
+        "--use_weights_for_mpm",
+        type=str2bool,
+        default=True,
+        help="Use weights for masked continuous loss",
+    )
+    parser.add_argument(
         "--mpm_features",
         type=str,
         default="kin",
@@ -286,6 +292,7 @@ def main():
         )
         else False,
         use_weights_for_pid_loss=args.use_weights_for_pid_loss,
+        use_weights_for_mpm=args.use_weights_for_mpm,
         mpm_features=args.mpm_features,
     )
 
