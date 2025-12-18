@@ -26,4 +26,4 @@ TRAINING_CFG_SIZE_SPECIFIC="--num_workers={num_workers} --num_nodes={num_nodes} 
 TRAINING_CFG="${{TRAINING_CFG_ALL_SIZES}} ${{TRAINING_CFG_SIZE_SPECIFIC}}"
 
 # Final command
-srun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.0 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${{REPO_DIR}}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode={mode}"
+srun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${{REPO_DIR}}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode={mode}"

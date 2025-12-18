@@ -8,7 +8,7 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.0
+#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
@@ -37,9 +37,11 @@ fi
 
 PRETRAIN_JSON="${REPO_DIR}/assets/Paths/Pre-Trained-Model-Paths.json"
 
-DOWNSTREAM_DATASETS="all"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150"
+# DOWNSTREAM_DATASETS="all"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150,100k-JetNet150"
+DOWNSTREAM_DATASETS="100k-JetNet150"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150,100k-JetNet150"
 MODEL_SIZES="micro"
-PRE_TRAINING_MODES="from_scratch,classifier,classifier+generator"  # comma-separated list list "from_scratch,classifier,classifier+generator"
+# PRE_TRAINING_MODES="from_scratch,classifier,classifier+generator"  # comma-separated list list "from_scratch,classifier,classifier+generator"
+PRE_TRAINING_MODES="from_scratch"  # comma-separated list list "from_scratch,classifier,classifier+generator"
 MODE="generator"
 
 N_RUNS=1
