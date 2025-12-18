@@ -142,8 +142,14 @@ def main():
     parser.add_argument(
         "--use_weights_in_mpm",
         type=str2bool,
-        default=True,
+        default=False,
         help="Use weights for the token-IDs in MPM loss calculation",
+    )
+    parser.add_argument(
+        "--mpm_label_smoothing",
+        type=float,
+        default=0.1,
+        help="Label smoothing factor for MPM loss",
     )
     parser.add_argument(
         "--mpm_features",
@@ -287,6 +293,7 @@ def main():
         else False,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
+        mpm_label_smoothing=args.mpm_label_smoothing,
     )
 
     if rank_zero_only.rank == 0:

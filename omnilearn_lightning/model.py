@@ -336,6 +336,7 @@ class PETLightning(LightningModule):
         all_head=False,
         use_weights_in_mpm=False,
         mpm_features="kin",
+        mpm_label_smoothing=0.0,
         **kwargs,
     ):
         super().__init__()
@@ -422,6 +423,7 @@ class PETLightning(LightningModule):
                 weight=self.tokenizer.weights.to(self.device)
                 if use_weights_in_mpm
                 else None,
+                label_smoothing=mpm_label_smoothing,
             )
         else:
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
