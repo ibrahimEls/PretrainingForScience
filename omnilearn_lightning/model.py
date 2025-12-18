@@ -7,7 +7,7 @@ from omnilearned.layers import DynamicTanh
 from omnilearned.network import PET_body, PET_classifier, PET_generator
 from omnilearned.utils import CLIPLoss, get_loss
 from pytorch_lightning import LightningModule
-from pytorch_optimizer import Lion
+from rangerlite import RangerLite
 from torch.optim.lr_scheduler import OneCycleLR
 
 from .array_utils import replace_masked_positions, set_fraction_ones_to_zeros
@@ -647,7 +647,17 @@ class PETLightning(LightningModule):
             }
 
         else:
-            optimizer = Lion(pg, betas=self.betas)
+            # optimizer = Lion(pg, betas=self.betas)
+            optimizer = RangerLite(
+                pg,
+                lr=self.lr,
+                # weight_decay=1e-2,
+                betas=(0.95, 0.999),
+                eps=1e-5,
+                lookahead_alpha=0.5,
+                lookahead_steps=6,
+            )
+            print(f"Optimizer = {optimizer}")
 
             scheduler = get_cosine_schedule_with_warmup(
                 optimizer,
