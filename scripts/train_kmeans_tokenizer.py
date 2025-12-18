@@ -244,6 +244,7 @@ kmeans_tokenizer = KMeansTokenizer(
     n_clusters=CODEBOOK_SIZE,
     scale_factors_x=SCALE_FACTORS_X,
     scale_factors_add_info=SCALE_FACTORS_ADD_INFO if args.use_add_info else None,
+    max_iter=300,
 )
 print("Fitting kmeans tokenizer...")
 kmeans_tokenizer.fit(
@@ -252,6 +253,23 @@ kmeans_tokenizer.fit(
     mask=mask,
     fit_with_torchpq=torch.cuda.is_available(),
 )
+# get token ids
+token_ids = kmeans_tokenizer.predict(
+    training_x,
+    add_info=training_add_info if args.use_add_info else None,
+)
+# calculate unique token ids and their counts
+unique_token_ids, token_id_counts = torch.unique(token_ids[mask], return_counts=True)
+# make sure all token-ids have been used
+assert unique_token_ids.shape[0] == CODEBOOK_SIZE, (
+    f"Expected {CODEBOOK_SIZE} unique token ids, got {unique_token_ids.shape[0]}"
+)
+# calculate class weights inversely proportional to counts
+class_weights = 1.0 / token_id_counts.float()
+class_weights = class_weights / class_weights.mean()
+
+# register class weights as tensor
+kmeans_tokenizer.weights = class_weights
 
 # save and load the kmeans model
 filepath = f"{OUTPUT_DIR}/{UNIQUE_ID}.pth"

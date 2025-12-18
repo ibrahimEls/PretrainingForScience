@@ -40,6 +40,7 @@ class KMeansTokenizer:
         )
         self.scale_factors_x = scale_factors_x
         self.scale_factors_add_info = scale_factors_add_info
+        self.weights = torch.ones(n_clusters)
 
     def _use_add_info(self, add_info):
         """Helper to determine if add_info features should be used."""
