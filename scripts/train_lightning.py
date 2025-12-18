@@ -143,7 +143,7 @@ def main():
         "--use_weights_in_mpm",
         type=str2bool,
         default=True,
-        help="Use weights for masked continuous loss",
+        help="Use weights for the token-IDs in MPM loss calculation",
     )
     parser.add_argument(
         "--mpm_features",
