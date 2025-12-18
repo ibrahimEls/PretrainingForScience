@@ -148,7 +148,7 @@ def main():
     parser.add_argument(
         "--mpm_label_smoothing",
         type=float,
-        default=0.0,
+        default=0.1,
         help="Label smoothing factor for MPM loss",
     )
     parser.add_argument(
