@@ -142,7 +142,7 @@ def main():
     parser.add_argument(
         "--use_weights_in_mpm",
         type=str2bool,
-        default=True,
+        default=False,
         help="Use weights for the token-IDs in MPM loss calculation",
     )
     parser.add_argument(
