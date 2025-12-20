@@ -7,6 +7,7 @@ from omnilearned.layers import DynamicTanh
 from omnilearned.network import PET_body, PET_classifier, PET_generator
 from omnilearned.utils import CLIPLoss, get_loss
 from pytorch_lightning import LightningModule
+from pytorch_optimizer import Lion
 from rangerlite import RangerLite
 from torch.optim.lr_scheduler import OneCycleLR
 
@@ -335,6 +336,7 @@ class PETLightning(LightningModule):
         use_weights_in_mpm=False,
         mpm_features="kin",
         mpm_label_smoothing=0.0,
+        optimizer_type="Lion",  # Lion or Ranger
         **kwargs,
     ):
         super().__init__()
@@ -647,16 +649,17 @@ class PETLightning(LightningModule):
             }
 
         else:
-            # optimizer = Lion(pg, betas=self.betas)
-            optimizer = RangerLite(
-                pg,
-                lr=self.lr,
-                # weight_decay=1e-2,
-                betas=(0.95, 0.999),
-                eps=1e-5,
-                lookahead_alpha=0.5,
-                lookahead_steps=6,
-            )
+            if self.hparams.optimizer_type == "Lion":
+                optimizer = Lion(pg, betas=self.betas)
+            elif self.hparams.optimizer_type == "Ranger":
+                optimizer = RangerLite(
+                    pg,
+                    lr=self.lr,
+                    betas=(0.95, 0.999),
+                    eps=1e-5,
+                    lookahead_alpha=0.5,
+                    lookahead_steps=6,
+                )
             print(f"Optimizer = {optimizer}")
 
             scheduler = get_cosine_schedule_with_warmup(

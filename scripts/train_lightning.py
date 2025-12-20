@@ -405,7 +405,7 @@ def main():
     trainer = Trainer(
         max_epochs=args.epoch,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        devices=4 if torch.cuda.is_available() else None,
+        devices=4 if torch.cuda.is_available() else 1,
         precision=16 if args.use_amp else 32,
         callbacks=callbacks,
         default_root_dir=run_dir,
