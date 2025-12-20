@@ -649,9 +649,9 @@ class PETLightning(LightningModule):
             }
 
         else:
-            if self.hparams.optimizer_type == "Lion":
+            if self.hparams.optimizer_type.lower() == "lion":
                 optimizer = Lion(pg, betas=self.betas)
-            elif self.hparams.optimizer_type == "Ranger":
+            elif self.hparams.optimizer_type.lower() == "ranger":
                 optimizer = RangerLite(
                     pg,
                     lr=self.lr,
