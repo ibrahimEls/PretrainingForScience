@@ -119,6 +119,9 @@ def main():
 
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
+    parser.add_argument(
+        "--optimizer_type", type=str, default="lion", help="Optimizer type"
+    )
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay")
     parser.add_argument("--use_clip", action="store_true", help="Use clip loss or not")
     parser.add_argument(
@@ -294,6 +297,7 @@ def main():
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
+        optimizer_type=args.optimizer_type,
     )
 
     if rank_zero_only.rank == 0:
