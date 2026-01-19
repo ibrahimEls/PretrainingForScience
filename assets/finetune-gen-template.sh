@@ -7,7 +7,7 @@ DATASET_PATH="{dataset_dir}"
 PRETRAINED_CKPT="{pretrain_ckpt}"
 FINETUNING_DATASET="{dataset}"
 
-TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only
+TOKENIZER_CKPT="${{REPO_DIR}}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE="{downstream_shots}"
 
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
