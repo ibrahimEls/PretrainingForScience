@@ -371,7 +371,7 @@ def run_single_finetune(
         f"[PRETRAIN CKPT] {pretrain_ckpt if pretrain_ckpt else 'None (from_scratch)'}"
     )
     print("[SHELL SNIPPET]")
-    # print(cmd_snippet)
+    print(cmd_snippet)
 
     if dry_run:
         print("[DRY-RUN] Not executing command; returning without paths.")
