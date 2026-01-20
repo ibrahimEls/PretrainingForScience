@@ -8,7 +8,7 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.0
+#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
@@ -31,7 +31,7 @@ GPU_ID=0
 TASK="top_tagging"
 
 
-shifter --image=docker:jobirk/omnilearn-lightning:v1.0.0 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && \
+shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && \
   python eval_lightning.py \
   --states_json $STATES_JSON \
   --eval_json $EVAL_JSON \

@@ -244,6 +244,8 @@ class PET2(nn.Module):
             )
 
             x_body = self.body(
+                # Important: x needs to be multiplied with mask earlier in
+                # forward pass, cause that's used for padding
                 x,
                 cond,
                 pid,

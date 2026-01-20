@@ -8,7 +8,7 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.2
+#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
@@ -61,4 +61,4 @@ srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/con
 
 # Interactive use:
 # (specify num_nodes=1 to avoid trying to use multiple nodes in interactive mode)
-# shifter --image=docker:jobirk/omnilearn-lightning:v1.0.2 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd --num_nodes=1"
+# shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd --num_nodes=1"
