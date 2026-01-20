@@ -7,7 +7,7 @@ DATASET_PATH="{dataset_dir}"
 PRETRAINED_CKPT="{pretrain_ckpt}"
 FINETUNING_DATASET="{dataset}"
 
-TOKENIZER_CKPT="${{REPO_DIR}}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
+TOKENIZER_CKPT="${{REPO_DIR}}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE="{downstream_shots}"
 
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
@@ -17,7 +17,7 @@ VAL_CHECK=1
 PATIENCE=10
 
 # For finetuning vs from-scratch
-# JetNet-specific: --num_classes=5 --use_pid=n --use_add=n
+# JetNet-specific (important that this is correct in args below): --num_classes=5 --use_pid=n --use_add=n
 TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${{VAL_CHECK}} --dataset=${{FINETUNING_DATASET}} --dataset_size=${{DATASET_SIZE}} {fine_tune_flag} {ckpt_flag} --use_pid n --use_add n --num_classes=5 --epoch=100 --outdir=${{OUTPUT_DIR}} --path=${{DATASET_PATH}} --shuffle_val_test_indices y --seed_for_initial_shuffling={seed} --patience=${{PATIENCE}} --pos_encoding_type=${{POS_ENCODING_TYPE}} --masking_fraction=${{MASKING_FRACTION}} --use_one_cycle y"
 
 # Size-specific hyperparams (Python fills these)

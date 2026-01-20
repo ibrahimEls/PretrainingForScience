@@ -22,7 +22,7 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 #DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
-TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only, with weights
+TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE=-1
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
 MASKING_FRACTION=0.4
