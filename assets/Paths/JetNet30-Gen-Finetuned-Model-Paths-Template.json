@@ -1,0 +1,341 @@
+{
+  "1k-JetNet30": {
+    "micro": {
+      "classifier": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "generator+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "pretrain": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/1k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/1k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/1k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "generator+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "pretrainregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/1k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/from_scratch/1k_jetnet30/"
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/1k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/from_scratch/1k_jetnet30/"
+      }
+    },
+    "medium": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/1k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/from_scratch/1k_jetnet30/"
+      }
+    }
+  },
+  "10k-JetNet30": {
+    "micro": {
+      "classifier": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "generator+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "pretrain": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/10k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/10k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/10k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "generator+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "pretrainregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/10k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/from_scratch/10k_jetnet30/"
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/10k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/from_scratch/10k_jetnet30/"
+      }
+    },
+    "medium": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/10k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/from_scratch/10k_jetnet30/"
+      }
+    }
+  },
+  "100k-JetNet30": {
+    "micro": {
+      "classifier": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+generator": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "generator+mpm": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "pretrain": {
+        "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100k_pretrained/100k_jetnet30/",
+        "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/1M_pretrained/100k_jetnet30/",
+        "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/10M_pretrained/100k_jetnet30/",
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "generator+mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "mpmregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "pretrainregress": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/100M_pretrained/100k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Micro/from_scratch/100k_jetnet30/"
+      }
+    },
+    "small": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/100M_pretrained/100k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Small/from_scratch/100k_jetnet30/"
+      }
+    },
+    "medium": {
+      "classifier": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+generator": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "classifier+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "generator+mpm": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "pretrain": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/100M_pretrained/100k_jetnet30/"
+      },
+      "from_scratch": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/JetNet30_Gen_Finetuned_Paths/Medium/from_scratch/100k_jetnet30/"
+      }
+    }
+  }
+}

@@ -11,34 +11,42 @@
 #SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
-at $0
+cat $0
 
 # ------- User-specific paths --------
-REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
-# REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning"
-OUTPUT_DIR="/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/"
-# OUTPUT_DIR=/pscratch/sd/j/jobirk/omnilearned_output/omnilearn_output
-DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
-# DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
+REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning_dev"
+OUTPUT_DIR=/pscratch/sd/j/jobirk/omnilearned_output/omnilearn_output
+DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
 # --------- Config variables ---------
-PRETRAIN_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Pre-Trained-Model-Paths.json"
-LAYOUT_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-Template.json"
-STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States.json"
+# Toggle which JetNet dataset to use: "jetnet150" or "jetnet30"
+FINETUNING_DATASET="jetnet150"
+
+# Set paths based on dataset selection
+if [ "$FINETUNING_DATASET" = "jetnet150" ]; then
+    LAYOUT_JSON="${REPO_DIR}/assets/Paths/JetNet150-Gen-Finetuned-Model-Paths-Template.json"
+    STATE_JSON="${REPO_DIR}/assets/Paths/JetNet150-Gen-Finetuned-Model-Paths-States.json"
+elif [ "$FINETUNING_DATASET" = "jetnet30" ]; then
+    LAYOUT_JSON="${REPO_DIR}/assets/Paths/JetNet30-Gen-Finetuned-Model-Paths-Template.json"
+    STATE_JSON="${REPO_DIR}/assets/Paths/JetNet30-Gen-Finetuned-Model-Paths-States.json"
+else
+    echo "Error: FINETUNING_DATASET must be 'jetnet150' or 'jetnet30'"
+    exit 1
+fi
+
+PRETRAIN_JSON="${REPO_DIR}/assets/Paths/Pre-Trained-Model-Paths.json"
 
 DOWNSTREAM_DATASETS="all"
 MODEL_SIZES="micro"
-#PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="generator+mpmregress,pretrainregress,classifier+mpmregress" #classifier+generator,from_scratch"
-MODE="classifier"
+PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,pretrain,from_scratch"
+MODE="generator"
 
-FINETUNING_DATASET="top"
 N_RUNS=3
 BASE_SEED=0000
 NODES=4
 
-CMD_TEMPLATE_FILE="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/finetune-template.sh"
+CMD_TEMPLATE_FILE="${REPO_DIR}/assets/finetune-gen-template.sh"
 # -----------------------------------
 
 export cmd="python3 finetune_lightning.py \

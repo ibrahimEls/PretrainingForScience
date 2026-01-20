@@ -4,11 +4,13 @@ import logging
 from typing import Union
 
 import awkward as ak
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import vector
+from cycler import cycler
 from matplotlib.lines import Line2D
 
 import omnilearn_lightning.plotting.utils as plot_utils
@@ -29,6 +31,56 @@ def binclip(x, bins, dropinf=False):
         x = x[~np.isinf(x)]
         print("len(x) after:", len(x))
     return np.clip(x, binfirst_center, binlast_center)
+
+
+DEFAULT_COLORS = [
+    # "steelblue",
+    # "orange",
+    # "forestgreen",
+    # "purple",
+    # "firebrick",
+    # "lightseagreen",
+    # "yellowgreen",
+    # "hotpink",
+    # "dimgrey",
+    # "olive",
+    # list of 10 colors based on table 1 in https://arxiv.org/pdf/2107.02270
+    "#3f90da",  # blue
+    "#bd1f01",  # red
+    "#ffa90e",  # orange (yellow-ish)
+    "#832db6",  # purple
+    "#b9ac70",  # olive
+    "#92dadd",  # light blue
+    "#817175",  # grey (darker)
+    "#a96b59",  # brown
+    "#E76300",  # orange (red-ish)
+    "#a4a294",  # grey
+]
+DEFAULT_ALPHA = 0.95
+rcParams = mpl.rcParams
+
+params_to_update = {
+    # --- axes ---
+    # https://matplotlib.org/stable/gallery/color/named_colors.html
+    "axes.prop_cycle": cycler(
+        "color",
+        [
+            mpl.colors.ColorConverter().to_rgba(col, DEFAULT_ALPHA)
+            for col in DEFAULT_COLORS
+        ],
+    ),
+}
+
+
+def reset_mpl_style():
+    """Reset matplotlib rcParams to default."""
+    rcParams.update(mpl.rcParamsDefault)
+
+
+def set_mpl_style(darkmode=False):
+    """Set matplotlib rcParams to custom configuration."""
+    reset_mpl_style()
+    rcParams.update(params_to_update)
 
 
 def get_bin_centers_and_bin_heights_from_hist(hist):

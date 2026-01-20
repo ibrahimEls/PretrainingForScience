@@ -8,7 +8,7 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.2
+#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
@@ -22,7 +22,7 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 #DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets/
 # ------------------------------------
 
-TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only, with weights
+TOKENIZER_CKPT="${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"  # <-- kinematic features only
 DATASET_SIZE=-1
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
 MASKING_FRACTION=0.4
@@ -61,4 +61,4 @@ srun --gpus-per-node 4 shifter bash -c "cd $REPO_DIR/scripts/ && source /opt/con
 
 # Interactive use:
 # (specify num_nodes=1 to avoid trying to use multiple nodes in interactive mode)
-# shifter --image=docker:jobirk/omnilearn-lightning:v1.0.2 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd --num_nodes=1"
+# shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && $cmd --num_nodes=1"
