@@ -218,14 +218,16 @@ def plot_features(
 
     # if ratio_references is given, check that all labels are in the dict
     if ratio and ratio_references is not None:
-        for label in ak_array_dict.keys():
+        for i, label in enumerate(ak_array_dict.keys()):
+            ref_label = ratio_references[label]
             if label not in ratio_references:
                 raise ValueError(
                     f"Label '{label}' not found in ratio_references. "
                     "Please provide a baseline for each label."
                 )
         # check that no reference is called before it's plotted itself
-        for i, ref_label in enumerate(ratio_references.values()):
+        for i, label in enumerate(ak_array_dict.keys()):
+            ref_label = ratio_references[label]
             if ref_label not in list(ak_array_dict.keys())[: i + 1]:
                 raise ValueError(
                     f"The array {ref_label} is used as ratio reference before "
