@@ -18,8 +18,7 @@
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/mpm_only_val_loss=6.4536.ckpt",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/mpm_only_val_loss=6.4574.ckpt"
     },
-    "mpmregress": {
-    },
+    "mpmregress": {},
     "classifier+generator": {
       "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_gen_val_loss=3.913.ckpt",
       "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_gen_val_loss=3.0953.ckpt",
@@ -32,22 +31,21 @@
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/class_mpm_val_loss=6.9444.ckpt",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/class_mpm_val_loss=6.9633.ckpt"
     },
-    "classifier+mpmregress": {
-    },
+    "classifier+mpmregress": {},
     "generator+mpm": {
       "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/gen_mpm_val_loss=10.2611.ckpt",
-      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/gen_mpm_val_loss=9.1866.ckpt"
+      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/gen_mpm_val_loss=9.1866.ckpt",
+      "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/gen_mpm_val_loss=9.0675.ckpt",
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_mpm_val_loss=9.0693.ckpt"
     },
-    "generator+mpmregress": {
-    },
+    "generator+mpmregress": {},
     "pretrain": {
       "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/pretrain_val_loss=10.9821.ckpt",
       "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/pretrain_val_loss=9.7475.ckpt",
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/pretrain_val_loss=9.5900.ckpt",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/pretrain_val_loss=9.6299.ckpt"
     },
-    "pretrainregress": {
-    }
+    "pretrainregress": {}
   },
   "small": {
     "classifier": {
