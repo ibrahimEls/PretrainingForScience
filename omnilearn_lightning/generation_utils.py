@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import awkward as ak
 import fastjet
 import numpy as np
@@ -305,3 +307,84 @@ def generate_and_postprocess(
             "y": ak.concatenate(y_values, axis=0),
         }
     )
+
+
+def save_gen_output(gen_output: ak.Array, output_path: str | Path) -> None:
+    """Save generated jet output to parquet file.
+
+    Parameters
+    ----------
+    gen_output : ak.Array
+        The output from generate_and_postprocess containing x_ak, substructure, y, etc.
+    output_path : str | Path
+        Path to save the parquet file (should end with .parquet)
+    """
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    ak.to_parquet(gen_output, output_path)
+    print(f"Saved generated jets to {output_path}")
+
+
+def load_gen_output(output_path: str | Path) -> ak.Array:
+    """Load generated jet output from parquet file.
+
+    Parameters
+    ----------
+    output_path : str | Path
+        Path to the parquet file
+
+    Returns
+    -------
+    ak.Array
+        The loaded generation output
+    """
+    output_path = Path(output_path)
+    gen_output = ak.from_parquet(output_path)
+    print(f"Loaded generated jets from {output_path}")
+    return gen_output
+
+
+def generate_or_load(
+    output_path: str | Path,
+    lightning_model,
+    gen_kwargs: dict,
+    set_pid_to_zeros: bool = False,
+    set_add_info_to_zeros: bool = False,
+    force_regenerate: bool = False,
+) -> ak.Array:
+    """Generate jets or load from cache if already exists.
+
+    Parameters
+    ----------
+    output_path : str | Path
+        Path to save/load the parquet file
+    lightning_model : PETLightning
+        The model to use for generation (only used if file doesn't exist)
+    gen_kwargs : dict
+        Keyword arguments for generate_and_postprocess
+    set_pid_to_zeros : bool
+        Whether to zero out PID features
+    set_add_info_to_zeros : bool
+        Whether to zero out additional info features
+    force_regenerate : bool
+        If True, regenerate even if file exists
+
+    Returns
+    -------
+    ak.Array
+        The generation output (either loaded or freshly generated)
+    """
+    output_path = Path(output_path)
+
+    if output_path.exists() and not force_regenerate:
+        return load_gen_output(output_path)
+
+    print(f"Generating jets (will save to {output_path})...")
+    gen_output = generate_and_postprocess(
+        lightning_model=lightning_model,
+        **gen_kwargs,
+        set_pid_to_zeros=set_pid_to_zeros,
+        set_add_info_to_zeros=set_add_info_to_zeros,
+    )
+    save_gen_output(gen_output, output_path)
+    return gen_output
