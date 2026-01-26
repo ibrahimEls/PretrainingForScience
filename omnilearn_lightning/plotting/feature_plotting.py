@@ -112,6 +112,7 @@ def plot_features(
     legend_only_on: int = None,
     legend_kwargs: dict = {},
     fig_legend_kwargs: dict = None,
+    ak_array_dict_labels: dict = None,
     ax_rows: int = 1,
     decorate_ax_kwargs: dict = {},
     bins_dict: dict = None,
@@ -157,6 +158,9 @@ def plot_features(
         - Top: {'loc': 'upper center', 'bbox_to_anchor': (0.5, 1.05), 'ncol': 3}
         - Right: {'loc': 'center left', 'bbox_to_anchor': (1.02, 0.5), 'ncol': 1}
         Default is None (use per-axis legends).
+    ak_array_dict_labels: dict=None,
+        Optional dict of {"array_name": "label", ...} to use custom labels for the arrays
+        in the legend. If None, the keys of ak_array_dict will be used.
     ax_rows : int, optional
         Number of rows of the subplot grid. Default is 1.
     decorate_ax_kwargs : dict, optional
@@ -199,6 +203,9 @@ def plot_features(
         "bins": 50,
         "linewidth": 1.5,
     }
+
+    if ak_array_dict_labels is None:
+        ak_array_dict_labels = {key: key for key in ak_array_dict.keys()}
 
     # setup colors
     if colors is not None:
@@ -341,7 +348,7 @@ def plot_features(
         else:
             histkwargs["linestyle"] = "solid"
 
-        legend_labels.append(label)
+        legend_labels.append(ak_array_dict_labels[label])
         for i, (feat, feat_label) in enumerate(names.items()):
             # if multiple ratio references are use: draw horizontal line
             if ratio and i_label == 0 and len(base_label) > 1:
@@ -413,7 +420,7 @@ def plot_features(
                         [],
                         color=patches[0].get_edgecolor(),
                         lw=patches[0].get_linewidth(),
-                        label=label,
+                        label=ak_array_dict_labels[label],
                         linestyle=patches[0].get_linestyle(),
                     )
                 )
