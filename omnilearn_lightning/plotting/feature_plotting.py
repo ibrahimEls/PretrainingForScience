@@ -111,6 +111,7 @@ def plot_features(
     histkwargs: dict = None,
     legend_only_on: int = None,
     legend_kwargs: dict = {},
+    fig_legend_kwargs: dict = None,
     ax_rows: int = 1,
     decorate_ax_kwargs: dict = {},
     bins_dict: dict = None,
@@ -143,8 +144,19 @@ def plot_features(
         Keyword arguments passed to plt.hist.
     legend_only_on : int, optional
         Plot the legend only on the i-th subplot. Default is None.
+        Ignored if fig_legend_kwargs is not None.
     legend_kwargs : dict, optional
         Keyword arguments passed to ax.legend.
+        Ignored if fig_legend_kwargs is not None.
+    fig_legend_kwargs : dict, optional
+        Keyword arguments passed to fig.legend to create a figure-level legend.
+        If not None, a single legend will be created for the entire figure instead
+        of per-axis legends. The function automatically provides 'handles' and 'labels',
+        so you can specify other kwargs like 'loc', 'ncol', 'bbox_to_anchor', 'title', etc.
+        Common placements:
+        - Top: {'loc': 'upper center', 'bbox_to_anchor': (0.5, 1.05), 'ncol': 3}
+        - Right: {'loc': 'center left', 'bbox_to_anchor': (1.02, 0.5), 'ncol': 1}
+        Default is None (use per-axis legends).
     ax_rows : int, optional
         Number of rows of the subplot grid. Default is 1.
     decorate_ax_kwargs : dict, optional
@@ -219,12 +231,12 @@ def plot_features(
     # if ratio_references is given, check that all labels are in the dict
     if ratio and ratio_references is not None:
         for i, label in enumerate(ak_array_dict.keys()):
-            ref_label = ratio_references[label]
             if label not in ratio_references:
                 raise ValueError(
                     f"Label '{label}' not found in ratio_references. "
                     "Please provide a baseline for each label."
                 )
+
         # check that no reference is called before it's plotted itself
         for i, label in enumerate(ak_array_dict.keys()):
             ref_label = ratio_references[label]
@@ -484,18 +496,40 @@ def plot_features(
     legend_kwargs["handles"] = legend_handles
     legend_kwargs["labels"] = legend_labels
     legend_kwargs["frameon"] = False
-    for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
-        if legend_only_on is None:
-            _ax.legend(**legend_kwargs)
-        else:
-            if i == legend_only_on:
-                _ax.legend(**legend_kwargs)
 
+    # Create figure-level legend if fig_legend_kwargs is provided
+    if fig_legend_kwargs is not None:
+        # Merge handles and labels with user-provided kwargs
+        fig_legend_kwargs_merged = {
+            "handles": legend_handles,
+            "labels": legend_labels,
+            **fig_legend_kwargs,
+        }
+        fig.legend(**fig_legend_kwargs_merged)
+    else:
+        # Create per-axis legends (original behavior)
+        for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
+            if legend_only_on is None:
+                _ax.legend(**legend_kwargs)
+            else:
+                if i == legend_only_on:
+                    _ax.legend(**legend_kwargs)
+
+            if (logscale_features is not None and feat_name in logscale_features) or (
+                logscale_features == "all"
+            ):
+                _ax.set_yscale("log")
+            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+
+    # Apply log scale and decorations for all axes (in case fig_legend_kwargs was used)
+    for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
         if (logscale_features is not None and feat_name in logscale_features) or (
             logscale_features == "all"
         ):
             _ax.set_yscale("log")
-        plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+        if fig_legend_kwargs is not None:
+            # Only apply decorations if we didn't already do it above
+            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
 
     # make empty plots invisible
     for i in range(len(names), len(axarr_main)):
