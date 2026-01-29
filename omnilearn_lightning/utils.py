@@ -45,10 +45,7 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         filtered_state = {
             key: value
             for key, value in ckpt_state_dict.items()
-            if (
-                "generator.pid_embed.0.weight" not in key
-                and "classifier.out" not in key
-            )
+            if ("generator.pid_embed" not in key and "classifier.out" not in key)
         }
         model.load_state_dict(filtered_state, strict=False)
         # print matching and non-matching keys
