@@ -8,13 +8,12 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-##SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
 
 # ------- User-specific paths --------
-REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning_dev"
+REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning"
 OUTPUT_DIR=/pscratch/sd/j/jobirk/omnilearned_output/omnilearn_output
 DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets_dev/
 # ------------------------------------
