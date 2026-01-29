@@ -111,6 +111,7 @@ def main():
         default="pretrain",
         help="Training mode (classifier/generator/other)",
     )
+    parser.add_argument("--use_perturbed_loss_terms", type=str2bool, default=False)
     parser.add_argument("--resume", type=str2bool, default=False)
 
     # Training hyperparams
