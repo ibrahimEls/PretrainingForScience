@@ -15,10 +15,11 @@ MASKING_FRACTION=0.4
 
 VAL_CHECK=1
 PATIENCE=100
+MAX_EPOCHS=500
 
 # For finetuning vs from-scratch
 # JetNet-specific (important that this is correct in args below): --num_classes=5 --use_pid=n --use_add=n
-TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --wandb_entity joschka-birk --limit_val_batches=1.0 --val_check_interval=${{VAL_CHECK}} --dataset=${{FINETUNING_DATASET}} --dataset_size=${{DATASET_SIZE}} {fine_tune_flag} {ckpt_flag} --use_pid n --use_add n --num_classes=5 --epoch=100 --outdir=${{OUTPUT_DIR}} --path=${{DATASET_PATH}} --shuffle_val_test_indices y --seed_for_initial_shuffling={seed} --patience=${{PATIENCE}} --pos_encoding_type=${{POS_ENCODING_TYPE}} --masking_fraction=${{MASKING_FRACTION}} --use_one_cycle y"
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --wandb_entity joschka-birk --limit_val_batches=1.0 --val_check_interval=${{VAL_CHECK}} --dataset=${{FINETUNING_DATASET}} --dataset_size=${{DATASET_SIZE}} {fine_tune_flag} {ckpt_flag} --use_pid n --use_add n --num_classes=5 --epoch=$MAX_EPOCHS --outdir=${{OUTPUT_DIR}} --path=${{DATASET_PATH}} --shuffle_val_test_indices y --seed_for_initial_shuffling={seed} --patience=${{PATIENCE}} --pos_encoding_type=${{POS_ENCODING_TYPE}} --masking_fraction=${{MASKING_FRACTION}} --use_one_cycle y"
 
 # Size-specific hyperparams (Python fills these)
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers={num_workers} --num_nodes={num_nodes} --model_size={model_size} --lr {lr} --weight_decay {weight_decay} --batch_size={batch_size} --wandb_tag={dataset}-gen-finetuning"
