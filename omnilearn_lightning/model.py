@@ -365,6 +365,7 @@ class PETLightning(LightningModule):
         self.tokenizer = None
         self.use_mpm = "mpm" in mode or mode == "pretrain"
         self.mpm_features = mpm_features
+        number_continuous_features = num_feat
 
         if self.use_mpm:
             # verify that mpm_features is valid
@@ -376,6 +377,12 @@ class PETLightning(LightningModule):
                 raise ValueError(
                     f"mpm_features '{mpm_features}' not supported. Supported: {supported_mpm_features}"
                 )
+            if mpm_features == "kin_add":
+                if not use_add:
+                    raise ValueError(
+                        f"mpm_features '{mpm_features}' requires use_add=True."
+                    )
+                number_continuous_features += add_dim
             # if no tokenizer checkpoint is provided, use regression loss
             if tokenizer_ckpt is None:
                 print(
@@ -405,10 +412,6 @@ class PETLightning(LightningModule):
                             "mpm_features is 'kin'. Use a tokenizer trained "
                             "without those additional features."
                         )
-
-        number_continuous_features = num_feat
-        if use_add:
-            number_continuous_features += add_dim
 
         # --- model ---
         self.model = PET2(
@@ -509,7 +512,7 @@ class PETLightning(LightningModule):
             # remove tokens and time from masked_pred
             masked_pred = outputs["masked_pred"]
             mask_for_targets = outputs["mask_valid_particle_but_masked"][:, :, 0]
-            # set the targets to -1 where the mask is 0
+            # set the targets to -1 where the mask is 0/False
             y_masked[mask_for_targets == 0] = -1
 
             B, T, C = masked_pred.shape
@@ -573,11 +576,18 @@ class PETLightning(LightningModule):
                 y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
             else:
                 # regression loss on the continuous features
-                y_masked = (
-                    torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
-                    if self.use_add
-                    else X.clone()
-                )
+                if self.mpm_features == "kin":
+                    y_masked = X.clone()
+                elif self.mpm_features == "kin_add":
+                    y_masked = (
+                        torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
+                        if self.use_add
+                        else X.clone()
+                    )
+                else:
+                    raise ValueError(
+                        f"mpm_features '{self.mpm_features}' not supported."
+                    )
 
         logs = get_logs(device=X.device)
         if stage == "train":
