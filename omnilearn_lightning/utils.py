@@ -39,18 +39,34 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         }
         model.load_state_dict(filtered_state, strict=False)
 
-    elif task == "gen":
+    elif "jetnet" in task.lower():
         ckpt = torch.load(ckpt_path, map_location="cpu")
         ckpt_state_dict = ckpt["state_dict"]
         filtered_state = {
             key: value
             for key, value in ckpt_state_dict.items()
-            if (
-                "generator.pid_embed.0.weight" not in key
-                and "classifier.out" not in key
-            )
+            if ("generator.pid_embed" not in key and "classifier.out" not in key)
         }
+        # print the keys that *won't* be loaded
+        print(
+            "Keys dropped from checkpoint (i.e. available in checkpoint, but not loaded):"
+        )
+        for key in ckpt_state_dict.keys():
+            if key not in filtered_state:
+                print(f"Not Loaded: {key}")
         model.load_state_dict(filtered_state, strict=False)
+        # print matching and non-matching keys
+        model_state_dict = model.state_dict()
+        print(
+            "\nCheckpoint keys loaded into model (if model has matching key and shape):"
+        )
+        for key in filtered_state.keys():
+            if key in model_state_dict:
+                print(f"Loaded: {key}")
+            else:
+                print(f"Not Loaded: {key}")
+    else:
+        raise ValueError(f"Solving task {task} not recognized.")
 
     return model
 

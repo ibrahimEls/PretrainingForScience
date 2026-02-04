@@ -111,6 +111,7 @@ def main():
         default="pretrain",
         help="Training mode (classifier/generator/other)",
     )
+    parser.add_argument("--use_perturbed_loss_terms", type=str2bool, default=False)
     parser.add_argument("--resume", type=str2bool, default=False)
 
     # Training hyperparams
@@ -119,6 +120,9 @@ def main():
 
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
+    parser.add_argument(
+        "--optimizer_type", type=str, default="lion", help="Optimizer type"
+    )
     parser.add_argument("--weight_decay", type=float, default=0.01, help="Weight decay")
     parser.add_argument("--use_clip", action="store_true", help="Use clip loss or not")
     parser.add_argument(
@@ -140,10 +144,16 @@ def main():
         "--masking_fraction", type=float, default=0.4, help="Masking fraction for MPM"
     )
     parser.add_argument(
-        "--use_weights_for_pid_loss",
+        "--use_weights_in_mpm",
         type=str2bool,
         default=False,
-        help="Use class weights for PID loss",
+        help="Use weights for the token-IDs in MPM loss calculation",
+    )
+    parser.add_argument(
+        "--mpm_label_smoothing",
+        type=float,
+        default=0.1,
+        help="Label smoothing factor for MPM loss",
     )
     parser.add_argument(
         "--mpm_features",
@@ -276,6 +286,7 @@ def main():
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
         masking_fraction=args.masking_fraction,
+        use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
         all_head=True
         if (
@@ -285,8 +296,10 @@ def main():
             and args.fine_tune
         )
         else False,
-        use_weights_for_pid_loss=args.use_weights_for_pid_loss,
+        use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
+        mpm_label_smoothing=args.mpm_label_smoothing,
+        optimizer_type=args.optimizer_type,
     )
 
     if rank_zero_only.rank == 0:
@@ -398,7 +411,7 @@ def main():
     trainer = Trainer(
         max_epochs=args.epoch,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        devices=4 if torch.cuda.is_available() else None,
+        devices=4 if torch.cuda.is_available() else 1,
         precision=16 if args.use_amp else 32,
         callbacks=callbacks,
         default_root_dir=run_dir,

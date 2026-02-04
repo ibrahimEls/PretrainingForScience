@@ -7,7 +7,7 @@ DATASET_PATH="{dataset_dir}"
 PRETRAINED_CKPT="{pretrain_ckpt}"
 FINETUNING_DATASET="{dataset}"
 
-TOKENIZER_CKPT="${{REPO_DIR}}/assets/kmeans_model_2025-11-01-00-13-29-Idiotic-Name_withAddInfo_16384_codes.pth"
+TOKENIZER_CKPT="${{REPO_DIR}}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth"
 DATASET_SIZE="{downstream_shots}"
 
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
@@ -25,4 +25,4 @@ TRAINING_CFG_SIZE_SPECIFIC="--num_workers={num_workers} --num_nodes={num_nodes} 
 TRAINING_CFG="${{TRAINING_CFG_ALL_SIZES}} ${{TRAINING_CFG_SIZE_SPECIFIC}}"
 
 # Final command
-srun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.0 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${{REPO_DIR}}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode={mode}"
+srun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${{REPO_DIR}}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode={mode}"

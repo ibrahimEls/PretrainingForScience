@@ -232,6 +232,18 @@ def load_data(
         "jetclass2",
         "h1",
         "toy",
+        "cms_qcd",
+        "cms_bsm",
+        "cms_top",
+        "aspen_bsm",
+        "aspen_top_ad_sb",
+        "aspen_top_ad_sr",
+        "aspen_top_ad_sr_hl",
+        "jetnet150",
+        "jetnet30",
+        "dctr",
+        "atlas_flav",
+        "custom",
     ]
     if dataset_name not in supported_datasets:
         raise ValueError(
@@ -288,7 +300,16 @@ def load_data(
                         file_indices.extend([(file_idx, i) for i in range(num_samples)])
                 except Exception as e:
                     print(f"ERROR: File {path} is likely corrupted: {e}")
-            np.save(index_file, np.array(file_indices, dtype=np.int32))
+            file_indices = np.array(file_indices, dtype=np.int32)
+
+            # save index file to speed up future loading
+            np.save(index_file, file_indices)
+
+            if shuffle_indices:
+                # shuffle indices once here to ensure that jet types are mixed
+                rng = np.random.default_rng(seed=seed_for_shuffling)
+                perm = rng.permutation(len(file_indices))
+                file_indices = file_indices[perm]
 
     # Shift labels if they are not used for pretrain
     label_shift = {"jetclass": 2, "aspen": 12, "jetclass2": 13}
@@ -296,6 +317,7 @@ def load_data(
     data = HEPDataset(
         file_list,
         file_indices,
+        use_cond=use_cond,
         use_pid=use_pid,
         pid_idx=pid_idx,
         use_add=use_add,
