@@ -23,6 +23,7 @@ from pytorch_lightning import Callback, LightningModule
 from omnilearn_lightning.array_utils import p4s_from_ptetaphimass
 from omnilearn_lightning.generation_utils import (
     JetSubstructure,
+    calc_metrics_for_dict,
     get_batch_and_generate,
     save_gen_output,
 )
@@ -323,7 +324,7 @@ class JetGenerationCallback(Callback):
             self.output_path / f"gen_output_{phase}_epoch{epoch}_step{step}.parquet",
         )
 
-        self._plot(self.gen_output[phase], phase, epoch=epoch, step=step)
+        self._plot(self.gen_output[phase], phase, pl_module, epoch=epoch, step=step)
 
     # ------------------------------------------------------------------ #
     #  Internal methods                                                    #
@@ -456,7 +457,14 @@ class JetGenerationCallback(Callback):
             }
         )
 
-    def _plot(self, gen_output, stage: str, epoch: int = 0, step: int = 0) -> None:
+    def _plot(
+        self,
+        gen_output,
+        stage: str,
+        pl_module: LightningModule,
+        epoch: int = 0,
+        step: int = 0,
+    ) -> None:
         """Plot jet substructure comparison between original and generated jets."""
 
         set_mpl_style()
@@ -518,3 +526,36 @@ class JetGenerationCallback(Callback):
             fig.savefig(outfile, bbox_inches="tight", dpi=150)
             print(f"Saved figure to {outfile}")
             plt.show()
+
+            # Calculate and log metrics for jet-level features
+            jet_level_metrics = calc_metrics_for_dict(
+                dict_reference=gen_output[mask_this_type].substructure.original,
+                dict_approx=gen_output[mask_this_type].substructure.generated,
+                names=list(names_substructure.keys()),
+                return_zero_if_nan_or_inf=True,
+            )
+            jet_type_label = self.jet_types_dict[jet_type_i]["label"]
+            print(f"Jet-level metrics for {jet_type_label}:")
+            for metric_name, metric_values in jet_level_metrics.items():
+                for feature_name, (mean, std) in metric_values.items():
+                    print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
+                    pl_module.log(
+                        f"gen/{stage}/jet/{jet_type_label}/{metric_name}_{feature_name}",
+                        mean,
+                    )
+
+            # Calculate and log metrics for particle-level features
+            particle_level_metrics = calc_metrics_for_dict(
+                dict_reference=gen_output[mask_this_type].x_ak.original,
+                dict_approx=gen_output[mask_this_type].x_ak.generated,
+                names=list(feature_names_x.keys()),
+                return_zero_if_nan_or_inf=True,
+            )
+            print(f"Particle-level metrics for {jet_type_label}:")
+            for metric_name, metric_values in particle_level_metrics.items():
+                for feature_name, (mean, std) in metric_values.items():
+                    print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
+                    pl_module.log(
+                        f"gen/{stage}/particle/{jet_type_label}/{metric_name}_{feature_name}",
+                        mean,
+                    )
