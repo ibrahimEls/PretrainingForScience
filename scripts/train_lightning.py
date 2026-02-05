@@ -1,6 +1,6 @@
 import argparse
+import atexit
 import os
-import tempfile
 import time
 
 import torch
@@ -320,10 +320,14 @@ def main():
 
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 
-    # TEMP FIX: Share run_dir across ranks via file (torch.distributed not yet initialized)
+    # Share run_dir across ranks via file on shared filesystem
+    # (torch.distributed not yet initialized, and tempfile.gettempdir() is node-local)
+    run_dir_meta_folder = os.path.join(args.outdir, ".run_dirs_meta")
+    os.makedirs(run_dir_meta_folder, exist_ok=True)
     run_dir_file = os.path.join(
-        tempfile.gettempdir(), f"run_dir_{os.environ.get('SLURM_JOB_ID', 'local')}.txt"
+        run_dir_meta_folder, f"run_dir_{os.environ.get('SLURM_JOB_ID', 'local')}.txt"
     )
+    print(f"Rank {rank_zero_only.rank}: run_dir_file = {run_dir_file}")
     if rank_zero_only.rank == 0:
         version = get_version_number(out_dir_save_tag)
         run_name = f"v{version}{save_tag}"
@@ -332,6 +336,13 @@ def main():
         print(f"Output directory of this run: {run_dir}")
         with open(run_dir_file, "w") as f:
             f.write(run_dir)
+
+        # Register cleanup to remove the temp file on exit
+        def cleanup_run_dir_file():
+            if os.path.exists(run_dir_file):
+                os.remove(run_dir_file)
+
+        atexit.register(cleanup_run_dir_file)
     else:
         for _ in range(300):
             if os.path.exists(run_dir_file):
@@ -340,6 +351,11 @@ def main():
                 if run_dir:
                     break
             time.sleep(0.1)
+        else:
+            raise RuntimeError(
+                f"Rank {rank_zero_only.rank}: Timed out waiting for run_dir file "
+                f"({run_dir_file}). Make sure rank 0 can write to {args.outdir}."
+            )
         run_name = os.path.basename(run_dir)
 
     print(f"Rank {rank_zero_only.rank}: Run directory is {run_dir}")
