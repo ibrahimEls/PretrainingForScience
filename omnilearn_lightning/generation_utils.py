@@ -4,6 +4,7 @@ import awkward as ak
 import fastjet
 import numpy as np
 import omnilearned
+import scipy
 import torch
 import vector
 from scipy.stats import wasserstein_distance
@@ -54,6 +55,77 @@ def wasserstein_distance_batched(
         w1.append(wasserstein_distance(rand_sample1, rand_sample2))
 
     return np.mean(w1), np.std(w1)
+
+
+def quantiled_kl_divergence(
+    sample_ref: np.ndarray,
+    sample_approx: np.ndarray,
+    n_bins: int = 30,
+    return_bin_edges=False,
+    return_zero_if_nan_or_inf=False,
+):
+    """Calculate the KL divergence using quantiles on sample_ref to define the bounds.
+
+    Parameters
+    ----------
+    sample_ref : np.ndarray
+        The first sample to compare (this is the reference, so in the context of
+        jet generation, those are the real jets).
+    sample_approx : np.ndarray
+        The second sample to compare (this is the model/approximation, so in the
+        context of jet generation, those are the generated jets).
+    n_bins : int
+        The number of bins to use for the histogram. Those bins are defined by
+        equiprobably quantiles of sample_ref.
+    return_bin_edges : bool, optional
+        If True, return the bins used to calculate the KL divergence.
+    return_zero_if_nan_or_inf : bool, optional
+        If True, return 0 if the KL divergence is NaN or inf. Default is False.
+    """
+    bin_edges = np.quantile(sample_ref, np.linspace(0.0, 1.0, n_bins + 1))
+    bin_edges[0] = float("-inf")
+    bin_edges[-1] = float("inf")
+    pk = np.histogram(sample_ref, bin_edges)[0] / len(sample_ref)
+    qk = np.histogram(sample_approx, bin_edges)[0] / len(sample_approx)
+    kl = scipy.stats.entropy(pk, qk)
+    # check if kl is nan or inf, if it is, return 0
+    if return_zero_if_nan_or_inf and (np.isnan(kl) or np.isinf(kl)):
+        kl = 0
+    if return_bin_edges:
+        return kl, bin_edges
+    return kl
+
+
+def calc_quantiled_kl_divergence_for_dict(
+    dict_reference: dict,
+    dict_approx: dict,
+    names: list,
+    n_bins: int = 30,
+    return_zero_if_nan_or_inf=False,
+):
+    """Calculate the quantiled KL divergence for two dictionaries of samples.
+
+    Parameters
+    ----------
+    dict_reference : dict
+        The first dictionary of samples.
+    dict_approx : dict
+        The second dictionary of samples.
+    names : list
+        The names of the samples to compare. All names must be included in both dicts.
+    return_zero_if_nan_or_inf : bool, optional
+        If True, return 0 if the KL divergence is NaN or inf. Default is False
+    """
+    # loop over the names and calculate the quantiled kld for each name
+    klds = {}
+    for name in names:
+        klds[name] = quantiled_kl_divergence(
+            sample_ref=np.array(dict_reference[name]),
+            sample_approx=np.array(dict_approx[name]),
+            n_bins=n_bins,
+            return_zero_if_nan_or_inf=return_zero_if_nan_or_inf,
+        )
+    return klds
 
 
 def calc_deltaR(particles, jet):
