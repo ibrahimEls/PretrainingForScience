@@ -569,10 +569,9 @@ class JetGenerationCallback(Callback):
                 wandb_logger.experiment.log(
                     {
                         f"gen/{stage}/jet_substructure/{jet_type_label}": wandb.Image(
-                            fig
+                            outfile
                         ),
                     },
-                    step=step,
                 )
             plt.close(fig)
 
@@ -600,10 +599,9 @@ class JetGenerationCallback(Callback):
                 wandb_logger.experiment.log(
                     {
                         f"gen/{stage}/constituent_features/{jet_type_label}": wandb.Image(
-                            fig
+                            outfile
                         ),
                     },
-                    step=step,
                 )
             plt.close(fig)
 
