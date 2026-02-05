@@ -19,6 +19,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from pytorch_lightning import Callback, LightningModule
+from tqdm import tqdm
 
 from omnilearn_lightning.array_utils import p4s_from_ptetaphimass
 from omnilearn_lightning.generation_utils import (
@@ -375,7 +376,7 @@ class JetGenerationCallback(Callback):
         generateds = []
         y_values = []
 
-        for batch in batches:
+        for batch in tqdm(batches):
             x_orig, x_gen = get_batch_and_generate(
                 batch=batch,
                 lightning_model=pl_module,
@@ -572,6 +573,7 @@ class JetGenerationCallback(Callback):
                             outfile
                         ),
                     },
+                    commit=False,
                 )
             plt.close(fig)
 
@@ -602,6 +604,7 @@ class JetGenerationCallback(Callback):
                             outfile
                         ),
                     },
+                    commit=False,
                 )
             plt.close(fig)
 
