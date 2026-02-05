@@ -162,6 +162,8 @@ class JetGenerationCallback(Callback):
         Zero-out PID features before generation.
     set_add_info_to_zeros : bool
         Zero-out additional-info features before generation.
+    every_n_epochs : int
+        Run generation every n epochs. Default is 1 (every epoch).
     verbose : bool
         Forward to ``get_batch_and_generate``.
     """
@@ -174,6 +176,7 @@ class JetGenerationCallback(Callback):
         n_sampling_steps: int = 128,
         set_pid_to_zeros: bool = False,
         set_add_info_to_zeros: bool = False,
+        every_n_epochs: int = 1,
         verbose: bool = False,
     ):
         super().__init__()
@@ -183,6 +186,7 @@ class JetGenerationCallback(Callback):
         self.n_sampling_steps = n_sampling_steps
         self.set_pid_to_zeros = set_pid_to_zeros
         self.set_add_info_to_zeros = set_add_info_to_zeros
+        self.every_n_epochs = every_n_epochs
         self.verbose = verbose
 
         supported_datasets = ["jetnet150", "jetnet30", "jetclass"]
@@ -296,10 +300,16 @@ class JetGenerationCallback(Callback):
     def _on_epoch_end(
         self, phase: str, pl_module: LightningModule, trainer=None
     ) -> None:
+        epoch = trainer.current_epoch if trainer is not None else 0
+
+        # Skip if not on the right epoch interval
+        if epoch % self.every_n_epochs != 0:
+            self._batches[phase] = []  # Clear batches to free memory
+            return
+
         rank = self._rank()
         world_size = self._world_size()
         batches = self._batches.get(phase, [])
-        epoch = trainer.current_epoch if trainer is not None else 0
         step = trainer.global_step if trainer is not None else 0
 
         # -- Phase 1: every rank generates from its own collected batches --
