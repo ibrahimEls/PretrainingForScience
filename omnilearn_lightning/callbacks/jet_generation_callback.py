@@ -231,6 +231,24 @@ class JetGenerationCallback(Callback):
             else 1
         )
 
+    @staticmethod
+    def _get_wandb_logger(pl_module: LightningModule):
+        """Return the WandbLogger if it exists, else None."""
+        from pytorch_lightning.loggers import WandbLogger
+
+        if pl_module.logger is None:
+            return None
+        if isinstance(pl_module.logger, WandbLogger):
+            return pl_module.logger
+        # Handle LoggerCollection (multiple loggers)
+        if hasattr(pl_module.logger, "experiment"):
+            # Check if it's a list of loggers
+            loggers = getattr(pl_module, "loggers", [pl_module.logger])
+            for logger in loggers:
+                if isinstance(logger, WandbLogger):
+                    return logger
+        return None
+
     # ------------------------------------------------------------------ #
     #  Lightning hooks – thin wrappers that delegate to shared methods     #
     # ------------------------------------------------------------------ #
@@ -324,7 +342,8 @@ class JetGenerationCallback(Callback):
 
         save_gen_output(
             self.gen_output[phase],
-            self.output_path / f"gen_output_{phase}_epoch{epoch}_step{step}.parquet",
+            self.output_path
+            / f"gen_output_{phase}_epoch{epoch:03d}_step{step:06d}.parquet",
         )
 
         self._plot(self.gen_output[phase], phase, pl_module, epoch=epoch, step=step)
@@ -521,14 +540,31 @@ class JetGenerationCallback(Callback):
                 **plot_kwargs_common,
             )
 
-            outfile_suffix = f"_{stage}_epoch{epoch}_step{step}_jettype{jet_type_i}"
+            outfile_suffix = (
+                f"_{stage}_epoch{epoch:03d}_step{step:06d}_jettype{jet_type_i}"
+            )
+            jet_type_label = self.jet_types_dict[jet_type_i]["label"]
 
             outfile = (
                 self.output_path / f"jet_substructure_comparison{outfile_suffix}.png"
             )
             fig.savefig(outfile, bbox_inches="tight", dpi=150)
-            plt.close(fig)
             print(f"Saved figure to {outfile}")
+
+            # Log to wandb if available
+            wandb_logger = self._get_wandb_logger(pl_module)
+            if wandb_logger is not None:
+                import wandb
+
+                wandb_logger.experiment.log(
+                    {
+                        f"gen/{stage}/jet_substructure/{jet_type_label}": wandb.Image(
+                            fig
+                        ),
+                    },
+                    step=step,
+                )
+            plt.close(fig)
 
             # constituent-level features
             fig, axarr = plot_features(
@@ -545,8 +581,21 @@ class JetGenerationCallback(Callback):
                 self.output_path / f"constituent_feature_comparison{outfile_suffix}.png"
             )
             fig.savefig(outfile, bbox_inches="tight", dpi=150)
-            plt.close(fig)
             print(f"Saved figure to {outfile}")
+
+            # Log to wandb if available
+            if wandb_logger is not None:
+                import wandb
+
+                wandb_logger.experiment.log(
+                    {
+                        f"gen/{stage}/constituent_features/{jet_type_label}": wandb.Image(
+                            fig
+                        ),
+                    },
+                    step=step,
+                )
+            plt.close(fig)
 
             metrics_calc_kwargs = dict(
                 return_zero_if_nan_or_inf=True,
@@ -561,7 +610,6 @@ class JetGenerationCallback(Callback):
                 names=list(names_substructure.keys()),
                 **metrics_calc_kwargs,
             )
-            jet_type_label = self.jet_types_dict[jet_type_i]["label"]
             print(f"Jet-level metrics for {jet_type_label}:")
             for metric_name, metric_values in jet_level_metrics.items():
                 for feature_name, (mean, std) in metric_values.items():
