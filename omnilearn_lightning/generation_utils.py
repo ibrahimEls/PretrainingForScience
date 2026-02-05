@@ -6,11 +6,54 @@ import numpy as np
 import omnilearned
 import torch
 import vector
+from scipy.stats import wasserstein_distance
 from tqdm import tqdm
 
 from omnilearn_lightning.array_utils import np_to_ak, p4s_from_ptetaphimass
 
 vector.register_awkward()
+
+
+def wasserstein_distance_batched(
+    data1: ak.Array,
+    data2: ak.Array,
+    num_eval_samples: int,
+    num_batches: int,
+    replace: bool = True,
+):
+    """Calculate the Wasserstein distance between two datasets multiple times and return mean and
+    std.
+
+    Args:
+        data1 (ak.Array): Data1 usually the real data, can be num_batches times smaller than data2
+        data2 (ak.Array): Data2 usually the generated data, can be num_batches times larger than data1
+        num_eval_samples (int): Number of samples to use for each Wasserstein distance calculation
+        num_batches (int): Number of batches to split the data into
+        replace (bool): Whether to sample with replacement. Default is True.
+
+    Returns:
+        float: Mean Wasserstein distance of all batches
+        float: Standard deviation of the Wasserstein distances of all batches
+    """
+    w1 = []
+    rng = np.random.default_rng(seed=42)
+    if data1.ndim != data2.ndim:
+        raise ValueError(
+            f"data1 and data2 must have the same number of dimensions, got {data1.ndim} and {data2.ndim}"
+        )
+    for _ in range(num_batches):
+        rand1 = rng.choice(len(data1), size=num_eval_samples, replace=replace)
+        rand2 = rng.choice(len(data2), size=num_eval_samples, replace=replace)
+        rand_sample1 = data1[rand1]
+        rand_sample2 = data2[rand2]
+        # flatten in case the data is not 1D
+        if rand_sample1.ndim > 1:
+            rand_sample1 = ak.flatten(rand_sample1)
+            rand_sample2 = ak.flatten(rand_sample2)
+
+        w1.append(wasserstein_distance(rand_sample1, rand_sample2))
+
+    return np.mean(w1), np.std(w1)
 
 
 def calc_deltaR(particles, jet):
