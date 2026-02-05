@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 import awkward as ak
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.distributed as dist
@@ -40,12 +41,12 @@ bins_dict_substructure = {
     "d2": np.linspace(0, 5, 50),
 }
 names_substructure = {
+    "jet_pt": "Jet $p_{T}$ [GeV]",
+    "jet_mass": "Jet mass [GeV]",
+    "jet_n_constituents": "Particle multiplicity",
     "tau21": "$\\tau_{21}$",
     "tau32": "$\\tau_{32}$",
-    # "d2": "$D_{2}$",
-    "jet_mass": "Jet mass [GeV]",
-    "jet_pt": "Jet $p_{T}$ [GeV]",
-    "jet_n_constituents": "Particle multiplicity",
+    "d2": "$D_{2}$",
 }
 bins_dict = {
     "eta": np.linspace(-1, 1, 50),
@@ -167,6 +168,7 @@ class JetGenerationCallback(Callback):
     def __init__(
         self,
         output_path: str | Path,
+        dataset_type: str,
         n_batches: int = 10,
         n_sampling_steps: int = 128,
         set_pid_to_zeros: bool = False,
@@ -181,6 +183,23 @@ class JetGenerationCallback(Callback):
         self.set_pid_to_zeros = set_pid_to_zeros
         self.set_add_info_to_zeros = set_add_info_to_zeros
         self.verbose = verbose
+
+        supported_datasets = ["jetnet150", "jetnet30", "jetclass"]
+        if dataset_type not in supported_datasets:
+            raise ValueError(
+                f"{dataset_type} not supported. Supported datasets: {supported_datasets}"
+            )
+        self.dataset_type = dataset_type
+
+        if self.dataset_type == "jetclass":
+            self.jet_types = range(10)
+            self.jet_types_dict = jet_types_dict_jetclass
+        elif "jetnet" in self.dataset_type:
+            self.jet_types = range(5)
+            self.jet_types_dict = jet_types_dict_jetnet
+        else:
+            self.jet_types = None
+            self.jet_types_dict = None
 
         # Populated at epoch end (rank 0 only), keyed by phase
         self.gen_output: Dict[str, Optional[ak.Array]] = {
@@ -442,41 +461,60 @@ class JetGenerationCallback(Callback):
 
         set_mpl_style()
 
-        # jet-level features
-        fig, axarr = plot_features(
-            {
-                "Target": gen_output.substructure.original,
-                "Generated": gen_output.substructure.generated,
-            },
-            names=names_substructure,
-            bins_dict=bins_dict_substructure,
-            ax_rows=2,
-            flatten=False,
-            ratio=True,
-        )
+        # loop over all jet types, and produce those plots for each jet type individually
 
-        outfile = (
-            self.output_path
-            / f"jet_substructure_comparison_{stage}_epoch{epoch}_step{step}.png"
-        )
-        fig.savefig(outfile, bbox_inches="tight", dpi=150)
-        print(f"Saved figure to {outfile}")
+        for jet_type_i in self.jet_types:
+            mask_this_type = gen_output.y == jet_type_i
 
-        # constituent-level features
-        fig, axarr = plot_features(
-            {
-                "Target": gen_output.x_ak.original,
-                "Generated": gen_output.x_ak.generated,
-            },
-            names=feature_names_x,
-            bins_dict=bins_dict,
-            ax_rows=2,
-            flatten=True,
-            ratio=True,
-        )
-        outfile = (
-            self.output_path
-            / f"constituent_feature_comparison_{stage}_epoch{epoch}_step{step}.png"
-        )
-        fig.savefig(outfile, bbox_inches="tight", dpi=150)
-        print(f"Saved figure to {outfile}")
+            plot_kwargs_common = dict(
+                fig_legend_kwargs=dict(
+                    bbox_to_anchor=(0.5, 1.10),
+                    loc="upper center",
+                    fontsize=10,
+                    title=f"{self.jet_types_dict[jet_type_i]['tex_label']} jets",
+                    ncol=2,
+                ),
+                ratio=True,
+                ax_rows=2,
+                decorate_ax_kwargs=dict(
+                    yscale=1.05,
+                ),
+            )
+
+            # jet-level features
+            fig, axarr = plot_features(
+                {
+                    "Target": gen_output[mask_this_type].substructure.original,
+                    "Generated": gen_output[mask_this_type].substructure.generated,
+                },
+                names=names_substructure,
+                bins_dict=bins_dict_substructure,
+                flatten=False,
+                **plot_kwargs_common,
+            )
+
+            outfile_suffix = f"_{stage}_epoch{epoch}_step{step}_jettype{jet_type_i}"
+
+            outfile = (
+                self.output_path / f"jet_substructure_comparison{outfile_suffix}.png"
+            )
+            fig.savefig(outfile, bbox_inches="tight", dpi=150)
+            print(f"Saved figure to {outfile}")
+
+            # constituent-level features
+            fig, axarr = plot_features(
+                {
+                    "Target": gen_output[mask_this_type].x_ak.original,
+                    "Generated": gen_output[mask_this_type].x_ak.generated,
+                },
+                names=feature_names_x,
+                bins_dict=bins_dict,
+                flatten=True,
+                **plot_kwargs_common,
+            )
+            outfile = (
+                self.output_path / f"constituent_feature_comparison{outfile_suffix}.png"
+            )
+            fig.savefig(outfile, bbox_inches="tight", dpi=150)
+            print(f"Saved figure to {outfile}")
+            plt.show()
