@@ -170,7 +170,7 @@ class JetGenerationCallback(Callback):
         self,
         output_path: str | Path,
         dataset_type: str,
-        n_batches: int = 10,
+        n_batches: int = -1,
         n_sampling_steps: int = 128,
         set_pid_to_zeros: bool = False,
         set_add_info_to_zeros: bool = False,
@@ -265,7 +265,7 @@ class JetGenerationCallback(Callback):
         self._batches[phase] = []
 
     def _on_batch_end(self, phase: str, batch: Any) -> None:
-        if len(self._batches[phase]) >= self.n_batches:
+        if self.n_batches != -1 and len(self._batches[phase]) >= self.n_batches:
             return
 
         saved: Dict[str, Any] = {}
@@ -392,11 +392,17 @@ class JetGenerationCallback(Callback):
         else:
             ak.to_parquet(ak.Array({"empty": [True]}), rank_file)
 
+        print(f"JetGenerationCallback [rank {rank}]: wrote temporary file {rank_file}")
+
         # Wait for all ranks to finish writing
         dist.barrier()
 
         if rank != 0:
             return None, None
+
+        print(
+            f"JetGenerationCallback [rank {rank}]: combining results from all ranks..."
+        )
 
         # -- Rank 0: load and merge all partial results --
         all_originals = []
@@ -527,12 +533,18 @@ class JetGenerationCallback(Callback):
             print(f"Saved figure to {outfile}")
             plt.show()
 
+            metrics_calc_kwargs = dict(
+                return_zero_if_nan_or_inf=True,
+                num_eval_samples=10_000,
+                num_batches=10,
+            )
+
             # Calculate and log metrics for jet-level features
             jet_level_metrics = calc_metrics_for_dict(
                 dict_reference=gen_output[mask_this_type].substructure.original,
                 dict_approx=gen_output[mask_this_type].substructure.generated,
                 names=list(names_substructure.keys()),
-                return_zero_if_nan_or_inf=True,
+                **metrics_calc_kwargs,
             )
             jet_type_label = self.jet_types_dict[jet_type_i]["label"]
             print(f"Jet-level metrics for {jet_type_label}:")
@@ -549,7 +561,7 @@ class JetGenerationCallback(Callback):
                 dict_reference=gen_output[mask_this_type].x_ak.original,
                 dict_approx=gen_output[mask_this_type].x_ak.generated,
                 names=list(feature_names_x.keys()),
-                return_zero_if_nan_or_inf=True,
+                **metrics_calc_kwargs,
             )
             print(f"Particle-level metrics for {jet_type_label}:")
             for metric_name, metric_values in particle_level_metrics.items():
