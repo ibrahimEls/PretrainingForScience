@@ -301,6 +301,9 @@ class JetGenerationCallback(Callback):
             x_ak_all, y_all = self._build_x_ak(originals, generateds, y_values)
 
         # -- Phase 3: rank 0 computes substructure and assembles final output --
+        # Clear batch storage to free memory (all ranks)
+        self._batches[phase] = []
+
         if rank != 0:
             return
 
@@ -436,6 +439,14 @@ class JetGenerationCallback(Callback):
             field_name_pt="log_pt",
             pt_is_log=True,
         )
+
+        # filter for jets with at least 3 constituents, otherwise substructure
+        # calculation can fail
+        mask_more_than_3_constituents = ak.num(x_ak["original"].eta) >= 3
+        x_ak["original"] = x_ak["original"][mask_more_than_3_constituents]
+        x_ak["generated"] = x_ak["generated"][mask_more_than_3_constituents]
+        y = y[mask_more_than_3_constituents]
+
         p4s = {
             "original": p4s_from_ptetaphimass(x_ak["original"], **p4_kwargs),
             "generated": p4s_from_ptetaphimass(x_ak["generated"], **p4_kwargs),
@@ -472,6 +483,9 @@ class JetGenerationCallback(Callback):
         step: int = 0,
     ) -> None:
         """Plot jet substructure comparison between original and generated jets."""
+
+        if self._rank() != 0:
+            return
 
         set_mpl_style()
 
@@ -513,6 +527,7 @@ class JetGenerationCallback(Callback):
                 self.output_path / f"jet_substructure_comparison{outfile_suffix}.png"
             )
             fig.savefig(outfile, bbox_inches="tight", dpi=150)
+            plt.close(fig)
             print(f"Saved figure to {outfile}")
 
             # constituent-level features
@@ -530,8 +545,8 @@ class JetGenerationCallback(Callback):
                 self.output_path / f"constituent_feature_comparison{outfile_suffix}.png"
             )
             fig.savefig(outfile, bbox_inches="tight", dpi=150)
+            plt.close(fig)
             print(f"Saved figure to {outfile}")
-            plt.show()
 
             metrics_calc_kwargs = dict(
                 return_zero_if_nan_or_inf=True,
@@ -554,6 +569,7 @@ class JetGenerationCallback(Callback):
                     pl_module.log(
                         f"gen/{stage}/jet/{jet_type_label}/{metric_name}_{feature_name}",
                         mean,
+                        # sync_dist=True,
                     )
 
             # Calculate and log metrics for particle-level features
@@ -570,4 +586,5 @@ class JetGenerationCallback(Callback):
                     pl_module.log(
                         f"gen/{stage}/particle/{jet_type_label}/{metric_name}_{feature_name}",
                         mean,
+                        # sync_dist=True,
                     )

@@ -1,5 +1,7 @@
 import argparse
 import os
+import tempfile
+import time
 
 import torch
 from omnilearned.utils import get_model_parameters
@@ -93,6 +95,12 @@ def main():
     )
     parser.add_argument(
         "--seed", type=int, default=None, help="Random seed for reproducibility"
+    )
+    parser.add_argument(
+        "--use_gen_callback",
+        type=str2bool,
+        default=False,
+        help="Use generation callback or not",
     )
 
     # Model hyper-parameters
@@ -301,7 +309,6 @@ def main():
         mpm_label_smoothing=args.mpm_label_smoothing,
         optimizer_type=args.optimizer_type,
     )
-
     if rank_zero_only.rank == 0:
         print("Model initialized.")
         print(model)
@@ -313,13 +320,29 @@ def main():
 
     out_dir_save_tag = os.path.join(args.outdir, save_tag)
 
-    version = get_version_number(out_dir_save_tag)
-    run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
-
-    run_dir = os.path.join(out_dir_save_tag, run_name)
+    # TEMP FIX: Share run_dir across ranks via file (torch.distributed not yet initialized)
+    run_dir_file = os.path.join(
+        tempfile.gettempdir(), f"run_dir_{os.environ.get('SLURM_JOB_ID', 'local')}.txt"
+    )
     if rank_zero_only.rank == 0:
+        version = get_version_number(out_dir_save_tag)
+        run_name = f"v{version}{save_tag}"
+        run_dir = os.path.join(out_dir_save_tag, run_name)
         os.makedirs(run_dir, exist_ok=True)
         print(f"Output directory of this run: {run_dir}")
+        with open(run_dir_file, "w") as f:
+            f.write(run_dir)
+    else:
+        for _ in range(300):
+            if os.path.exists(run_dir_file):
+                with open(run_dir_file, "r") as f:
+                    run_dir = f.read().strip()
+                if run_dir:
+                    break
+            time.sleep(0.1)
+        run_name = os.path.basename(run_dir)
+
+    print(f"Rank {rank_zero_only.rank}: Run directory is {run_dir}")
 
     # Configure loggers
     loggers = []
@@ -390,6 +413,18 @@ def main():
     )
     callbacks.append(early_stop_callback)
 
+    if args.use_gen_callback:
+        from omnilearn_lightning.callbacks.jet_generation_callback import (
+            JetGenerationCallback,
+        )
+
+        gen_callback = JetGenerationCallback(
+            output_path=f"{run_dir}/callbacks",
+            dataset_type=args.dataset,
+            n_batches=-1,
+        )
+        callbacks.append(gen_callback)
+
     if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
             print("Training Downstream From Scratch")
@@ -407,6 +442,10 @@ def main():
             args.val_check_interval = float(args.val_check_interval)
         else:
             args.val_check_interval = int(args.val_check_interval)
+
+    print("Using the following callbacks:")
+    for cb in callbacks:
+        print(f" - {cb}")
 
     trainer = Trainer(
         max_epochs=args.epoch,
