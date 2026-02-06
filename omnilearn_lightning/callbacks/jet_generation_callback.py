@@ -626,12 +626,12 @@ class JetGenerationCallback(Callback):
                 for feature_name, (mean, std) in metric_values.items():
                     print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
                     pl_module.log(
-                        f"gen/{stage}/jet/{jet_type_label}/{metric_name}_{feature_name}_mean",
+                        f"gen/{stage}/jet/{jet_type_label}/{feature_name}/{metric_name}_mean",
                         mean,
                         # sync_dist=True,
                     )
                     pl_module.log(
-                        f"gen/{stage}/jet/{jet_type_label}/{metric_name}_{feature_name}_std",
+                        f"gen/{stage}/jet/{jet_type_label}/{feature_name}/{metric_name}_std",
                         std,
                         # sync_dist=True,
                     )
@@ -648,12 +648,12 @@ class JetGenerationCallback(Callback):
                 for feature_name, (mean, std) in metric_values.items():
                     print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
                     pl_module.log(
-                        f"gen/{stage}/particle/{jet_type_label}/{metric_name}_{feature_name}_mean",
+                        f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_mean",
                         mean,
                         # sync_dist=True,
                     )
                     pl_module.log(
-                        f"gen/{stage}/particle/{jet_type_label}/{metric_name}_{feature_name}_std",
+                        f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_std",
                         std,
                         # sync_dist=True,
                     )
