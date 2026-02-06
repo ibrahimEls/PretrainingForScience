@@ -366,35 +366,37 @@ def main():
         run_dir_meta_folder, f"run_dir_{os.environ.get('SLURM_JOB_ID', 'local')}.txt"
     )
     print(f"Rank {rank_zero_only.rank}: run_dir_file = {run_dir_file}")
-    if rank_zero_only.rank == 0:
-        version = get_version_number(out_dir_save_tag)
-        run_name = f"v{version}{save_tag}"
-        run_dir = os.path.join(out_dir_save_tag, run_name)
-        os.makedirs(run_dir, exist_ok=True)
-        print(f"Output directory of this run: {run_dir}")
-        with open(run_dir_file, "w") as f:
-            f.write(run_dir)
 
-        # Register cleanup to remove the temp file on exit
-        def cleanup_run_dir_file():
-            if os.path.exists(run_dir_file):
-                os.remove(run_dir_file)
+    if args.run_dir is None:
+        if rank_zero_only.rank == 0:
+            version = get_version_number(out_dir_save_tag)
+            run_name = f"v{version}{save_tag}"
+            run_dir = os.path.join(out_dir_save_tag, run_name)
+            os.makedirs(run_dir, exist_ok=True)
+            print(f"Output directory of this run: {run_dir}")
+            with open(run_dir_file, "w") as f:
+                f.write(run_dir)
 
-        atexit.register(cleanup_run_dir_file)
-    else:
-        for _ in range(300):
-            if os.path.exists(run_dir_file):
-                with open(run_dir_file, "r") as f:
-                    run_dir = f.read().strip()
-                if run_dir:
-                    break
-            time.sleep(0.1)
+            # Register cleanup to remove the temp file on exit
+            def cleanup_run_dir_file():
+                if os.path.exists(run_dir_file):
+                    os.remove(run_dir_file)
+
+            atexit.register(cleanup_run_dir_file)
         else:
-            raise RuntimeError(
-                f"Rank {rank_zero_only.rank}: Timed out waiting for run_dir file "
-                f"({run_dir_file}). Make sure rank 0 can write to {args.outdir}."
-            )
-        run_name = os.path.basename(run_dir)
+            for _ in range(300):
+                if os.path.exists(run_dir_file):
+                    with open(run_dir_file, "r") as f:
+                        run_dir = f.read().strip()
+                    if run_dir:
+                        break
+                time.sleep(0.1)
+            else:
+                raise RuntimeError(
+                    f"Rank {rank_zero_only.rank}: Timed out waiting for run_dir file "
+                    f"({run_dir_file}). Make sure rank 0 can write to {args.outdir}."
+                )
+            run_name = os.path.basename(run_dir)
 
     print(f"Rank {rank_zero_only.rank}: Run directory is {run_dir}")
 
