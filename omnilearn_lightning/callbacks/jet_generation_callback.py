@@ -615,14 +615,21 @@ class JetGenerationCallback(Callback):
             )
 
             # Calculate and log metrics for jet-level features
-            jet_level_metrics = calc_metrics_for_dict(
+            jet_level_metrics_gen = calc_metrics_for_dict(
                 dict_reference=gen_output[mask_this_type].substructure.original,
                 dict_approx=gen_output[mask_this_type].substructure.generated,
                 names=list(names_substructure.keys()),
                 **metrics_calc_kwargs,
             )
+            # Calculate the maximum achievable metric values by comparing the original distribution to itself
+            jet_level_metrics_truth = calc_metrics_for_dict(
+                dict_reference=gen_output[mask_this_type].substructure.original,
+                dict_approx=gen_output[mask_this_type].substructure.original,
+                names=list(names_substructure.keys()),
+                **metrics_calc_kwargs,
+            )
             print(f"Jet-level metrics for {jet_type_label}:")
-            for metric_name, metric_values in jet_level_metrics.items():
+            for metric_name, metric_values in jet_level_metrics_gen.items():
                 for feature_name, (mean, std) in metric_values.items():
                     print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
                     pl_module.log(
@@ -636,24 +643,60 @@ class JetGenerationCallback(Callback):
                         # sync_dist=True,
                     )
 
+            # Log truth metrics for comparison
+            for metric_name, metric_values in jet_level_metrics_truth.items():
+                for feature_name, (mean, std) in metric_values.items():
+                    print(
+                        f"  [Truth] {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}"
+                    )
+                    pl_module.log(
+                        f"gen/{stage}/jet/{jet_type_label}/{feature_name}/{metric_name}_mean_truth",
+                        mean,
+                        # sync_dist=True,
+                    )
+                    pl_module.log(
+                        f"gen/{stage}/jet/{jet_type_label}/{feature_name}/{metric_name}_std_truth",
+                        std,
+                        # sync_dist=True,
+                    )
+
             # Calculate and log metrics for particle-level features
-            particle_level_metrics = calc_metrics_for_dict(
+            particle_level_metrics_gen = calc_metrics_for_dict(
                 dict_reference=gen_output[mask_this_type].x_ak.original,
                 dict_approx=gen_output[mask_this_type].x_ak.generated,
                 names=list(feature_names_x.keys()),
                 **metrics_calc_kwargs,
             )
+            # Calculate the maximum achievable metric values by comparing the original distribution to itself
+            particle_level_metrics_truth = calc_metrics_for_dict(
+                dict_reference=gen_output[mask_this_type].x_ak.original,
+                dict_approx=gen_output[mask_this_type].x_ak.original,
+                names=list(feature_names_x.keys()),
+                **metrics_calc_kwargs,
+            )
             print(f"Particle-level metrics for {jet_type_label}:")
-            for metric_name, metric_values in particle_level_metrics.items():
+            for metric_name, metric_values in particle_level_metrics_gen.items():
                 for feature_name, (mean, std) in metric_values.items():
                     print(f"  {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}")
                     pl_module.log(
                         f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_mean",
                         mean,
-                        # sync_dist=True,
                     )
                     pl_module.log(
                         f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_std",
                         std,
-                        # sync_dist=True,
+                    )
+            # Log truth metrics for comparison
+            for metric_name, metric_values in particle_level_metrics_truth.items():
+                for feature_name, (mean, std) in metric_values.items():
+                    print(
+                        f"  [Truth] {metric_name}_{feature_name}: {mean:.4f} ± {std:.4f}"
+                    )
+                    pl_module.log(
+                        f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_mean_truth",
+                        mean,
+                    )
+                    pl_module.log(
+                        f"gen/{stage}/particle/{jet_type_label}/{feature_name}/{metric_name}_std_truth",
+                        std,
                     )
