@@ -32,6 +32,8 @@ def distribution_metrics_batched(
         data1 (ak.Array): Reference data (e.g., real jets).
         data2 (ak.Array): Approximation data (e.g., generated jets).
         num_eval_samples (int): Number of samples to use for each metric calculation.
+            If set to `None`, uses all available samples (which will not allow
+            for mean/std estimation).
         num_batches (int): Number of batches for computing mean and std.
         n_bins (int): Number of bins for the quantiled KL divergence. Default is 30.
         replace (bool): Whether to sample with replacement. Default is True.
@@ -46,14 +48,25 @@ def distribution_metrics_batched(
 
     if data1.ndim != data2.ndim:
         raise ValueError(
-            f"data1 and data2 must have the same number of dimensions, got {data1.ndim} and {data2.ndim}"
+            "data1 and data2 must have the same number of dimensions, "
+            f"got {data1.ndim} and {data2.ndim}"
+        )
+
+    if num_eval_samples is None and num_batches > 1:
+        raise ValueError(
+            "num_eval_samples cannot be None when num_batches > 1, as this would "
+            "prevent mean/std estimation."
         )
 
     for _ in range(num_batches):
-        rand1 = rng.choice(len(data1), size=num_eval_samples, replace=replace)
-        rand2 = rng.choice(len(data2), size=num_eval_samples, replace=replace)
-        rand_sample1 = data1[rand1]
-        rand_sample2 = data2[rand2]
+        if num_eval_samples is None:
+            rand_sample1 = data1
+            rand_sample2 = data2
+        else:
+            rand1 = rng.choice(len(data1), size=num_eval_samples, replace=replace)
+            rand2 = rng.choice(len(data2), size=num_eval_samples, replace=replace)
+            rand_sample1 = data1[rand1]
+            rand_sample2 = data2[rand2]
 
         # flatten in case the data is not 1D
         if rand_sample1.ndim > 1:
