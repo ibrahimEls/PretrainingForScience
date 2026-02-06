@@ -8,7 +8,6 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.0
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0

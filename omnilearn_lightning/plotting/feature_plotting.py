@@ -4,11 +4,13 @@ import logging
 from typing import Union
 
 import awkward as ak
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import vector
+from cycler import cycler
 from matplotlib.lines import Line2D
 
 import omnilearn_lightning.plotting.utils as plot_utils
@@ -29,6 +31,56 @@ def binclip(x, bins, dropinf=False):
         x = x[~np.isinf(x)]
         print("len(x) after:", len(x))
     return np.clip(x, binfirst_center, binlast_center)
+
+
+DEFAULT_COLORS = [
+    # "steelblue",
+    # "orange",
+    # "forestgreen",
+    # "purple",
+    # "firebrick",
+    # "lightseagreen",
+    # "yellowgreen",
+    # "hotpink",
+    # "dimgrey",
+    # "olive",
+    # list of 10 colors based on table 1 in https://arxiv.org/pdf/2107.02270
+    "#3f90da",  # blue
+    "#bd1f01",  # red
+    "#ffa90e",  # orange (yellow-ish)
+    "#832db6",  # purple
+    "#b9ac70",  # olive
+    "#92dadd",  # light blue
+    "#817175",  # grey (darker)
+    "#a96b59",  # brown
+    "#E76300",  # orange (red-ish)
+    "#a4a294",  # grey
+]
+DEFAULT_ALPHA = 0.95
+rcParams = mpl.rcParams
+
+params_to_update = {
+    # --- axes ---
+    # https://matplotlib.org/stable/gallery/color/named_colors.html
+    "axes.prop_cycle": cycler(
+        "color",
+        [
+            mpl.colors.ColorConverter().to_rgba(col, DEFAULT_ALPHA)
+            for col in DEFAULT_COLORS
+        ],
+    ),
+}
+
+
+def reset_mpl_style():
+    """Reset matplotlib rcParams to default."""
+    rcParams.update(mpl.rcParamsDefault)
+
+
+def set_mpl_style(darkmode=False):
+    """Set matplotlib rcParams to custom configuration."""
+    reset_mpl_style()
+    rcParams.update(params_to_update)
 
 
 def get_bin_centers_and_bin_heights_from_hist(hist):
@@ -59,11 +111,14 @@ def plot_features(
     histkwargs: dict = None,
     legend_only_on: int = None,
     legend_kwargs: dict = {},
+    fig_legend_kwargs: dict = None,
+    ak_array_dict_labels: dict = None,
     ax_rows: int = 1,
     decorate_ax_kwargs: dict = {},
     bins_dict: dict = None,
     logscale_features: list[str] = None,
-    colors: list[str] = None,
+    colors: Union[list[str], dict[str, str]] = None,
+    linestyles: Union[list[str], dict[str, str]] = None,
     ax_size: tuple[int, int] = (3, 2),
     ylabel: str = None,
     ratio: bool = False,
@@ -71,6 +126,7 @@ def plot_features(
     normed: bool = True,
     gridspec_hspace: float = 0.0,
     gridspec_wspace: float = 0.4,
+    ratio_references: dict = None,
 ):
     """Plot the features of the constituents or jets.
 
@@ -89,8 +145,22 @@ def plot_features(
         Keyword arguments passed to plt.hist.
     legend_only_on : int, optional
         Plot the legend only on the i-th subplot. Default is None.
+        Ignored if fig_legend_kwargs is not None.
     legend_kwargs : dict, optional
         Keyword arguments passed to ax.legend.
+        Ignored if fig_legend_kwargs is not None.
+    fig_legend_kwargs : dict, optional
+        Keyword arguments passed to fig.legend to create a figure-level legend.
+        If not None, a single legend will be created for the entire figure instead
+        of per-axis legends. The function automatically provides 'handles' and 'labels',
+        so you can specify other kwargs like 'loc', 'ncol', 'bbox_to_anchor', 'title', etc.
+        Common placements:
+        - Top: {'loc': 'upper center', 'bbox_to_anchor': (0.5, 1.05), 'ncol': 3}
+        - Right: {'loc': 'center left', 'bbox_to_anchor': (1.02, 0.5), 'ncol': 1}
+        Default is None (use per-axis legends).
+    ak_array_dict_labels: dict=None,
+        Optional dict of {"array_name": "label", ...} to use custom labels for the arrays
+        in the legend. If None, the keys of ak_array_dict will be used.
     ax_rows : int, optional
         Number of rows of the subplot grid. Default is 1.
     decorate_ax_kwargs : dict, optional
@@ -99,9 +169,14 @@ def plot_features(
         Dict of {name: bins} for the histograms. `name` has to be the same as the keys in `names`.
     logscale_features : list, optional
         List of features to plot in log scale, of "all" to plot all features in log scale.
-    colors : list, optional
+    colors : list or dict, optional
         List of colors for the histograms. Has to have the same length as the number of arrays.
         If shorter, the colors will be repeated.
+        If a dict is given, it has to be of the form {"array_name": "color", ...}.
+    linestyles : list or dict, optional
+        List of linestyles for the histograms. Has to have the same length as the
+        number of arrays. If shorter, the linestyles will be repeated.
+        If a dict is given, it has to be of the form {"array_name": "linestyle", ...}.
     ax_size : tuple, optional
         Size of the axes. Default is (3, 2).
     ylabel : str, optional
@@ -116,6 +191,10 @@ def plot_features(
         Spacing between the rows of the subplot grid. Default is 0.3.
     gridspec_wspace : float, optional
         Spacing between the columns of the subplot grid. Default is 0.2.
+    ratio_references : dict, optional
+        Dict of {name: baseline_array} for the ratio plots. If given, the ratios will be
+        calculated with respect to the baseline arrays. This allows to have multiple
+        references in the ratio plot. Default is None.
     """
 
     default_hist_kwargs = {
@@ -124,6 +203,9 @@ def plot_features(
         "bins": 50,
         "linewidth": 1.5,
     }
+
+    if ak_array_dict_labels is None:
+        ak_array_dict_labels = {key: key for key in ak_array_dict.keys()}
 
     # setup colors
     if colors is not None:
@@ -152,6 +234,24 @@ def plot_features(
     for name in names:
         if name not in bins_dict:
             bins_dict[name] = histkwargs["bins"]
+
+    # if ratio_references is given, check that all labels are in the dict
+    if ratio and ratio_references is not None:
+        for i, label in enumerate(ak_array_dict.keys()):
+            if label not in ratio_references:
+                raise ValueError(
+                    f"Label '{label}' not found in ratio_references. "
+                    "Please provide a baseline for each label."
+                )
+
+        # check that no reference is called before it's plotted itself
+        for i, label in enumerate(ak_array_dict.keys()):
+            ref_label = ratio_references[label]
+            if ref_label not in list(ak_array_dict.keys())[: i + 1]:
+                raise ValueError(
+                    f"The array {ref_label} is used as ratio reference before "
+                    "it's plotted itself. Change the order."
+                )
 
     # remove default bins from histkwargs
     histkwargs.pop("bins")
@@ -185,8 +285,15 @@ def plot_features(
     legend_handles = []
     legend_labels = []
 
-    base_label, base_array = next(iter(ak_array_dict.items()))
-    base_values_dict = {}
+    if ratio_references is not None:
+        base_label = list(set(ratio_references.values())) if ratio else []
+    else:
+        base_label = next(iter(ak_array_dict.keys()))
+        base_label = [base_label] if ratio else []
+        if len(base_label) > 0:
+            ratio_references = {label: base_label[0] for label in ak_array_dict.keys()}
+
+    base_values_dict = {base_name: {} for base_name in base_label}
 
     # for features where no bins are specified, use the default number of bins but
     # the same range for all plotted histograms
@@ -221,9 +328,37 @@ def plot_features(
         bins_dict[feat] = np.linspace(min_val, max_val, n_bins + 1)
 
     for i_label, (label, ak_array) in enumerate(ak_array_dict.items()):
-        color = colors[i_label] if colors is not None else f"C{i_label}"
-        legend_labels.append(label)
+        if colors is not None:
+            color = colors[i_label] if isinstance(colors, list) else colors[label]
+        else:
+            color = f"C{i_label}"
+
+        if linestyles is not None:
+            linestyle = (
+                plot_utils.get_good_linestyles(linestyles[i_label])
+                if isinstance(linestyles, list)
+                else plot_utils.get_good_linestyles(linestyles[label])
+            )
+            if "linestyle" in histkwargs:
+                logger.warning(
+                    "The 'linestyle' keyword argument in histkwargs is being overridden "
+                    "by the linestyles argument."
+                )
+            histkwargs["linestyle"] = linestyle
+        else:
+            histkwargs["linestyle"] = "solid"
+
+        legend_labels.append(ak_array_dict_labels[label])
         for i, (feat, feat_label) in enumerate(names.items()):
+            # if multiple ratio references are use: draw horizontal line
+            if ratio and i_label == 0 and len(base_label) > 1:
+                axarr_ratio[i].axhline(
+                    1,
+                    ls="--",
+                    color="dimgray",
+                    linewidth=histkwargs.get("linewidth", 1),
+                )
+
             if not hasattr(ak_array, feat):
                 logger.info(f"Feature '{feat}' not found in array '{label}', skipping.")
                 continue
@@ -285,19 +420,23 @@ def plot_features(
                         [],
                         color=patches[0].get_edgecolor(),
                         lw=patches[0].get_linewidth(),
-                        label=label,
+                        label=ak_array_dict_labels[label],
                         linestyle=patches[0].get_linestyle(),
                     )
                 )
 
             if ratio:
-                if label == base_label:
-                    base_values_dict[feat] = hist
+                if label in base_label:
+                    base_values_dict[label][feat] = hist
+                    # if multiple baselines are given, don't plot the ratio for
+                    # the baselines, but a horizontal dashed line at 1
+                    if len(base_label) > 1:
+                        continue
 
                 # calculate the ratio of the histogram to the base histogram
                 ratio_values, ratio_unc = hist_ratio(
                     numerator=hist,
-                    denominator=base_values_dict[feat],
+                    denominator=base_values_dict[ratio_references[label]][feat],
                     numerator_unc=unc,
                     step=False,
                 )
@@ -310,6 +449,7 @@ def plot_features(
                     where="pre",
                     color=color,
                     linewidth=histkwargs.get("linewidth", 1),
+                    linestyle=histkwargs.get("linestyle", "solid"),
                 )
 
                 # calculate the uncertainty band for the ratio
@@ -363,18 +503,40 @@ def plot_features(
     legend_kwargs["handles"] = legend_handles
     legend_kwargs["labels"] = legend_labels
     legend_kwargs["frameon"] = False
-    for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
-        if legend_only_on is None:
-            _ax.legend(**legend_kwargs)
-        else:
-            if i == legend_only_on:
-                _ax.legend(**legend_kwargs)
 
+    # Create figure-level legend if fig_legend_kwargs is provided
+    if fig_legend_kwargs is not None:
+        # Merge handles and labels with user-provided kwargs
+        fig_legend_kwargs_merged = {
+            "handles": legend_handles,
+            "labels": legend_labels,
+            **fig_legend_kwargs,
+        }
+        fig.legend(**fig_legend_kwargs_merged)
+    else:
+        # Create per-axis legends (original behavior)
+        for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
+            if legend_only_on is None:
+                _ax.legend(**legend_kwargs)
+            else:
+                if i == legend_only_on:
+                    _ax.legend(**legend_kwargs)
+
+            if (logscale_features is not None and feat_name in logscale_features) or (
+                logscale_features == "all"
+            ):
+                _ax.set_yscale("log")
+            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+
+    # Apply log scale and decorations for all axes (in case fig_legend_kwargs was used)
+    for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
         if (logscale_features is not None and feat_name in logscale_features) or (
             logscale_features == "all"
         ):
             _ax.set_yscale("log")
-        plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+        if fig_legend_kwargs is not None:
+            # Only apply decorations if we didn't already do it above
+            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
 
     # make empty plots invisible
     for i in range(len(names), len(axarr_main)):

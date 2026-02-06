@@ -367,8 +367,11 @@ def run_single_finetune(
         f"[RUN] dataset={downstream_key}, model_size={model_size}, pre_training_mode={pre_training_mode}, "
         f"pretrain_label={pretrain_label}, seed={seed}, run_index={run_index}"
     )
+    print(
+        f"[PRETRAIN CKPT] {pretrain_ckpt if pretrain_ckpt else 'None (from_scratch)'}"
+    )
     print("[SHELL SNIPPET]")
-    # print(cmd_snippet)
+    print(cmd_snippet)
 
     if dry_run:
         print("[DRY-RUN] Not executing command; returning without paths.")
@@ -533,18 +536,55 @@ def main() -> None:
         h.strip() for h in args.pre_training_modes.split(",") if h.strip()
     ]
 
+    # Count pretrain labels per mode for the summary
+    pretrain_labels_per_mode = {}
+    for mode in pre_training_modes:
+        if mode == "from_scratch":
+            pretrain_labels_per_mode[mode] = ["from_scratch"]
+        else:
+            labels = []
+            for ms in model_sizes:
+                if ms in pretrain_cfg and mode in pretrain_cfg[ms]:
+                    labels = list(pretrain_cfg[ms][mode].keys())
+                    break
+            pretrain_labels_per_mode[mode] = labels if labels else ["(none found)"]
+
     print("=" * 80)
     print("[INFO] Starting finetuning orchestration.")
     print(f"[INFO] Downstream dataset: {args.dataset}")
-    print(f"[INFO] Downstream keys: {ds_keys}")
-    print(f"[INFO] Model sizes: {model_sizes}")
-    print(f"[INFO] Pre-Training Modes: {pre_training_modes}")
-    print(f"[INFO] Target runs per config: {args.n_runs}")
+    print(f"[INFO] Dry run: {args.dry_run}")
+    print("=" * 80)
+    print("[INFO] Parameter space:")
+    print(f"       - Downstream keys ({len(ds_keys)}): {ds_keys}")
+    print(f"       - Model sizes ({len(model_sizes)}): {model_sizes}")
+    print(
+        f"       - Pre-training modes ({len(pre_training_modes)}): {pre_training_modes}"
+    )
+    for mode, labels in pretrain_labels_per_mode.items():
+        print(f"         - {mode}: pretrain_labels ({len(labels)}): {labels}")
+    print(f"       - Runs per config: {args.n_runs}")
+    print("=" * 80)
+    print("[INFO] Max possible runs (before skipping already-completed):")
+    total_configs = 0
+    for mode in pre_training_modes:
+        n_labels = len(pretrain_labels_per_mode[mode])
+        configs_for_mode = len(ds_keys) * len(model_sizes) * n_labels
+        total_configs += configs_for_mode
+        print(
+            f"       - {mode}: {len(ds_keys)} ds_keys x {len(model_sizes)} model_sizes x {n_labels} pretrain_labels = {configs_for_mode} configs"
+        )
+    max_runs = total_configs * args.n_runs
+    print(
+        f"       Total: {total_configs} configs x {args.n_runs} runs/config = {max_runs} max runs"
+    )
+    print("=" * 80)
     print(f"[INFO] State JSON: {args.state_json}")
     print(f"[INFO] Command template file: {args.cmd_template_file}")
     print("=" * 80)
 
     global_run_counter = 0
+    total_runs_to_submit = 0
+    total_runs_skipped = 0
 
     for ds_key in ds_keys:
         downstream_short = derive_downstream_short(ds_key)
@@ -625,11 +665,14 @@ def main() -> None:
                             f"        [SKIP] Already have {existing_runs} runs for this config "
                             f"(target={args.n_runs})."
                         )
+                        total_runs_skipped += args.n_runs
                         continue
 
+                    runs_needed = args.n_runs - existing_runs
+                    total_runs_to_submit += runs_needed
                     print(
                         f"        [INFO] Have {existing_runs} runs, need {args.n_runs}. "
-                        f"Launching {args.n_runs - existing_runs} additional runs."
+                        f"Launching {runs_needed} additional runs."
                     )
 
                     for local_run_idx in range(existing_runs, args.n_runs):
@@ -683,9 +726,38 @@ def main() -> None:
                         if not args.dry_run:
                             safe_write_json(args.state_json, state_cfg)
 
+    # Print summary at the end (easier to see after all the output)
     print("\n" + "=" * 80)
-    print("[DONE] Orchestration complete.")
-    print(f"[INFO] Final state JSON at: {args.state_json}")
+    print("[SUMMARY] Orchestration complete.")
+    print("=" * 80)
+    print("[INFO] Parameter space:")
+    print(f"       - Downstream keys ({len(ds_keys)}): {ds_keys}")
+    print(f"       - Model sizes ({len(model_sizes)}): {model_sizes}")
+    print(
+        f"       - Pre-training modes ({len(pre_training_modes)}): {pre_training_modes}"
+    )
+    for mode, labels in pretrain_labels_per_mode.items():
+        print(f"         - {mode}: pretrain_labels ({len(labels)}): {labels}")
+    print(f"       - Runs per config: {args.n_runs}")
+    print("-" * 80)
+    print("[INFO] Run calculation:")
+    for mode in pre_training_modes:
+        n_labels = len(pretrain_labels_per_mode[mode])
+        configs_for_mode = len(ds_keys) * len(model_sizes) * n_labels
+        print(
+            f"       - {mode}: {len(ds_keys)} ds_keys x {len(model_sizes)} model_sizes x {n_labels} pretrain_labels = {configs_for_mode} configs"
+        )
+    print(
+        f"       Total: {total_configs} configs x {args.n_runs} runs/config = {max_runs} max runs"
+    )
+    print("-" * 80)
+    print(f"[INFO] Total runs submitted: {global_run_counter}")
+    print(f"[INFO] Total runs skipped (already completed): {total_runs_skipped}")
+    if args.dry_run:
+        print(f"[INFO] (Dry run - {total_runs_to_submit} runs would be submitted)")
+    print("-" * 80)
+    print(f"[INFO] State JSON: {args.state_json}")
+    print(f"[INFO] Command template: {args.cmd_template_file}")
     print("=" * 80)
 
 
