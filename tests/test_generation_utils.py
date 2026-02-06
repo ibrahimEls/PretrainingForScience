@@ -272,6 +272,103 @@ class TestDistributionMetricsBatched(unittest.TestCase):
         self.assertAlmostEqual(results1["w1"][0], results2["w1"][0], places=10)
         self.assertAlmostEqual(results1["kld"][0], results2["kld"][0], places=10)
 
+    def test_num_eval_samples_none_uses_all_data(self):
+        """Test that num_eval_samples=None uses all available samples."""
+        data1 = ak.Array([0.0] * 1000)
+        data2 = ak.Array([1.0] * 1000)
+        results = distribution_metrics_batched(
+            data1=data1,
+            data2=data2,
+            num_eval_samples=None,
+            num_batches=1,
+        )
+        w1_mean, w1_std = results["w1"]
+        kld_mean, kld_std = results["kld"]
+        # W1 distance should be exactly 1.0 for these constant distributions
+        self.assertAlmostEqual(w1_mean, 1.0, places=5)
+        # With single batch, std should be 0
+        self.assertAlmostEqual(w1_std, 0.0, places=5)
+        self.assertAlmostEqual(kld_std, 0.0, places=5)
+
+    def test_num_eval_samples_none_with_num_batches_greater_than_1_raises_error(self):
+        """Test that num_eval_samples=None with num_batches>1 raises ValueError."""
+        data1 = ak.Array([0.0] * 1000)
+        data2 = ak.Array([1.0] * 1000)
+        with self.assertRaises(ValueError) as context:
+            distribution_metrics_batched(
+                data1=data1,
+                data2=data2,
+                num_eval_samples=None,
+                num_batches=5,
+            )
+        self.assertIn(
+            "num_eval_samples cannot be None when num_batches > 1",
+            str(context.exception),
+        )
+
+    def test_num_eval_samples_none_identical_distributions(self):
+        """Test that num_eval_samples=None returns zero for identical distributions."""
+        np.random.seed(42)
+        data = ak.Array(np.random.normal(0, 1, 5000))
+        results = distribution_metrics_batched(
+            data1=data,
+            data2=data,
+            num_eval_samples=None,
+            num_batches=1,
+        )
+        w1_mean, _ = results["w1"]
+        kld_mean, _ = results["kld"]
+        self.assertAlmostEqual(w1_mean, 0.0, places=5)
+        self.assertAlmostEqual(kld_mean, 0.0, places=5)
+
+    def test_num_eval_samples_none_with_2d_arrays(self):
+        """Test that num_eval_samples=None works with 2D arrays that get flattened."""
+        data1 = ak.Array([[0.0, 0.0]] * 500)
+        data2 = ak.Array([[1.0, 1.0]] * 500)
+        results = distribution_metrics_batched(
+            data1=data1,
+            data2=data2,
+            num_eval_samples=None,
+            num_batches=1,
+        )
+        w1_mean, _ = results["w1"]
+        # After flattening, all values in data1 are 0.0 and all in data2 are 1.0
+        self.assertAlmostEqual(w1_mean, 1.0, places=5)
+
+    def test_num_eval_samples_none_different_sized_arrays(self):
+        """Test that num_eval_samples=None works with differently sized arrays."""
+        data1 = ak.Array([0.0] * 500)
+        data2 = ak.Array([1.0] * 1000)
+        results = distribution_metrics_batched(
+            data1=data1,
+            data2=data2,
+            num_eval_samples=None,
+            num_batches=1,
+        )
+        w1_mean, _ = results["w1"]
+        self.assertAlmostEqual(w1_mean, 1.0, places=5)
+
+    def test_num_eval_samples_none_gaussian_distributions(self):
+        """Test num_eval_samples=None with Gaussian distributions for realistic scenario."""
+        np.random.seed(42)
+        data1 = ak.Array(np.random.normal(0, 1, 10000))
+        data2 = ak.Array(np.random.normal(2, 1, 10000))
+        results = distribution_metrics_batched(
+            data1=data1,
+            data2=data2,
+            num_eval_samples=None,
+            num_batches=1,
+        )
+        w1_mean, _ = results["w1"]
+        kld_mean, _ = results["kld"]
+        # W1 distance between N(0,1) and N(2,1) should be close to 2
+        self.assertGreater(w1_mean, 1.8)
+        self.assertLess(w1_mean, 2.2)
+        # KLD should be positive and close to the analytical value
+        expected_kld = expected_kld_two_gaussians(0, 2, 1, 1)  # Should be 2.0
+        self.assertGreater(kld_mean, 0.5 * expected_kld)
+        self.assertLess(kld_mean, 1.5 * expected_kld)
+
 
 class TestQuantiledKLDivergence(unittest.TestCase):
     """Tests for the quantiled_kl_divergence function."""
