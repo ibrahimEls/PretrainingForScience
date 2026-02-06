@@ -44,6 +44,12 @@ def main():
         help="Output directory",
     )
     parser.add_argument(
+        "--run_dir",
+        type=str,
+        default=None,
+        help="Run directory. If provided, starts a new run (if directory doesn't exist) or continues from last checkpoint (if directory exists with checkpoints/last.ckpt)",
+    )
+    parser.add_argument(
         "--ckpt",
         type=str,
         default=None,
@@ -195,6 +201,27 @@ def main():
 
     args = parser.parse_args()
 
+    # Handle run_dir argument
+    if args.run_dir is not None:
+        provided_run_dir = args.run_dir
+
+        # Check if run_dir exists and contains a checkpoint
+        last_ckpt_path = os.path.join(provided_run_dir, "checkpoints", "last.ckpt")
+
+        if os.path.exists(last_ckpt_path):
+            # Continue from last checkpoint
+            print(f"Found existing checkpoint at {last_ckpt_path}")
+            print(f"Continuing training from checkpoint...")
+            args.resume = True
+            args.ckpt = last_ckpt_path
+        else:
+            # Start new run in this directory
+            print(f"Starting new run in directory: {provided_run_dir}")
+            if rank_zero_only.rank == 0:
+                os.makedirs(provided_run_dir, exist_ok=True)
+    else:
+        provided_run_dir = None
+
     if args.model_size == "micro":
         save_tag = f"_micro_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
         model_params = {}
@@ -311,14 +338,20 @@ def main():
 
     pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
 
-    out_dir_save_tag = os.path.join(args.outdir, save_tag)
+    # Use provided_run_dir if specified, otherwise create a new versioned run directory
+    if provided_run_dir is not None:
+        run_dir = provided_run_dir
+        # Extract run_name from the provided directory path for logging
+        run_name = os.path.basename(run_dir)
+    else:
+        out_dir_save_tag = os.path.join(args.outdir, save_tag)
+        version = get_version_number(out_dir_save_tag)
+        run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
+        run_dir = os.path.join(out_dir_save_tag, run_name)
+        if rank_zero_only.rank == 0:
+            os.makedirs(run_dir, exist_ok=True)
 
-    version = get_version_number(out_dir_save_tag)
-    run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
-
-    run_dir = os.path.join(out_dir_save_tag, run_name)
     if rank_zero_only.rank == 0:
-        os.makedirs(run_dir, exist_ok=True)
         print(f"Output directory of this run: {run_dir}")
 
     # Configure loggers
