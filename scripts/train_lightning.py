@@ -109,10 +109,10 @@ def main():
         help="Use generation callback or not",
     )
     parser.add_argument(
-        "--save_all_ckpts",
-        type=str2bool,
-        default=False,
-        help="Save all checkpoints (whenever val check runs) to checkpoints_all directory",
+        "--save_top_k",
+        type=int,
+        default=5,
+        help="Number of top checkpoints to save based on validation metric. Use -1 to save all checkpoints.",
     )
 
     # Model hyper-parameters
@@ -449,7 +449,7 @@ def main():
         filename=f"{save_tag}-{{epoch:06d}}-{{step:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
         monitor="val_loss",
         mode="min",
-        save_top_k=-1 if args.save_all_ckpts else 5,
+        save_top_k=args.save_top_k,
         save_last=True,
         # we want to save this checkpoint after each *validation* check
         save_on_train_epoch_end=False,
