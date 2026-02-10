@@ -69,6 +69,12 @@ def main():
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
     )
+    parser.add_argument(
+        "--max_training_steps",
+        type=int,
+        default=None,
+        help="Maximum number of training steps",
+    )
     parser.add_argument("--epoch", type=int, default=100, help="Number of epochs")
     parser.add_argument(
         "--dataset_size", type=int, default=100_000, help="dataset_size"
@@ -511,6 +517,7 @@ def main():
 
     trainer = Trainer(
         max_epochs=args.epoch,
+        max_steps=args.max_training_steps,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else 1,
         precision=16 if args.use_amp else 32,
