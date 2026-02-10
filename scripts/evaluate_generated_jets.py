@@ -199,6 +199,14 @@ def eval_jet_generation(
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
+        # Calculate the truth values (i.e. the KLD/W1 when sampling from the
+        # same distribution) for reference
+        particle_metrics_truth = calc_metrics_for_dict(
+            dict_reference=gen_output[mask_this_type].x_ak.original,
+            dict_approx=gen_output[mask_this_type].x_ak.original,
+            names=list(feature_names_x.keys()),
+            **metrics_calc_kwargs,
+        )
 
         print(f"Particle-level metrics for {jet_type_label}:")
         for metric_name, metric_values in particle_metrics.items():
@@ -218,10 +226,32 @@ def eval_jet_generation(
                     }
                 )
 
+        # Add truth metrics with prefix
+        for metric_name, metric_values in particle_metrics_truth.items():
+            for feature_name, (mean_val, std_val) in metric_values.items():
+                all_metrics.append(
+                    {
+                        "jet_type": jet_type_label,
+                        "jet_type_idx": jet_type_i,
+                        "level": "particle",
+                        "feature": feature_name,
+                        "metric": f"truth_{metric_name}",
+                        "mean": mean_val,
+                        "std": std_val,
+                    }
+                )
+
         # Calculate metrics for jet-level (substructure) features
         jet_metrics = calc_metrics_for_dict(
             dict_reference=gen_output[mask_this_type].substructure.original,
             dict_approx=gen_output[mask_this_type].substructure.generated,
+            names=list(names_substructure.keys()),
+            **metrics_calc_kwargs,
+        )
+        # Calculate truth metrics for jet-level features
+        jet_metrics_truth = calc_metrics_for_dict(
+            dict_reference=gen_output[mask_this_type].substructure.original,
+            dict_approx=gen_output[mask_this_type].substructure.original,
             names=list(names_substructure.keys()),
             **metrics_calc_kwargs,
         )
@@ -239,6 +269,20 @@ def eval_jet_generation(
                         "level": "jet",
                         "feature": feature_name,
                         "metric": metric_name,
+                        "mean": mean_val,
+                        "std": std_val,
+                    }
+                )
+        # Add truth metrics with prefix
+        for metric_name, metric_values in jet_metrics_truth.items():
+            for feature_name, (mean_val, std_val) in metric_values.items():
+                all_metrics.append(
+                    {
+                        "jet_type": jet_type_label,
+                        "jet_type_idx": jet_type_i,
+                        "level": "jet",
+                        "feature": feature_name,
+                        "metric": f"truth_{metric_name}",
                         "mean": mean_val,
                         "std": std_val,
                     }
