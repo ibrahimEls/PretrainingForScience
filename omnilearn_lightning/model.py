@@ -730,6 +730,10 @@ class PETLightning(LightningModule):
                     lookahead_alpha=0.5,
                     lookahead_steps=6,
                 )
+            else:
+                raise ValueError(
+                    f"Unsupported optimizer type: {self.hparams.optimizer_type}"
+                )
             print(f"Optimizer = {optimizer}")
 
             scheduler = get_cosine_schedule_with_warmup(
