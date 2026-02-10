@@ -18,7 +18,7 @@ def eval_jet_generation(
     batch_size: int = 200,
 ):
     print(f"Loading model from checkpoint: {ckpt_path}")
-    lightning_model = PETLightning.load_from_checkpoint(ckpt_path)
+    lightning_model = PETLightning.load_from_checkpoint(ckpt_path, fine_tune=False)
     print(lightning_model.model.generator)
 
     output_filename = Path(output_filename)
