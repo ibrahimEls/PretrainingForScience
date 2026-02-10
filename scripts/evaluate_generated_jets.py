@@ -36,6 +36,7 @@ jet_types_dict_jetnet = {
 
 def eval_jet_generation(
     gen_output_path,
+    results_output_path=None,
     dataset_type="jetnet150",
     num_eval_samples=10000,
     num_batches=10,
@@ -46,6 +47,9 @@ def eval_jet_generation(
     ----------
     gen_output_path : str
         Path to the parquet file containing generated jets.
+    results_output_path : str, optional
+        Path to save evaluation results (plots and metrics). If None, saves in
+        the same directory as gen_output_path with "_plots" suffix.
     dataset_type : str
         Dataset type, one of "jetnet30", "jetnet150", or "jetclass".
     num_eval_samples : int
@@ -56,7 +60,11 @@ def eval_jet_generation(
     print(f"Loading generated data from output path: {gen_output_path}")
     gen_output = ak.from_parquet(gen_output_path)
 
-    output_path = gen_output_path.replace(".parquet", "_plots")
+    if results_output_path is None:
+        output_path = gen_output_path.replace(".parquet", "_plots")
+    else:
+        output_path = results_output_path
+
     os.makedirs(output_path, exist_ok=True)
     print(f"Saving evaluation plots to: {output_path}")
 
@@ -257,6 +265,13 @@ if __name__ == "__main__":
         help="Path to the parquet file containing generated jets",
     )
     parser.add_argument(
+        "--results_output_path",
+        type=str,
+        default=None,
+        help="Path to save evaluation results (plots and metrics). If None,"
+        " saves in the same directory as gen_output_path with '_plots' suffix.",
+    )
+    parser.add_argument(
         "--dataset_type",
         type=str,
         default="jetnet150",
@@ -280,6 +295,7 @@ if __name__ == "__main__":
 
     eval_jet_generation(
         gen_output_path=args.gen_output_path,
+        results_output_path=args.results_output_path,
         dataset_type=args.dataset_type,
         num_eval_samples=args.num_eval_samples,
         num_batches=args.num_batches,
