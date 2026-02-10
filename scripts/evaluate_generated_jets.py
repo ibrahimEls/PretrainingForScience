@@ -325,14 +325,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--num_eval_samples",
         type=int,
-        default=10000,
-        help="Number of samples per batch for metric calculation (default: 10000)",
+        # default=10000,
+        help="Number of samples per batch for metric calculation",
     )
     parser.add_argument(
         "--num_batches",
         type=int,
-        default=10,
-        help="Number of batches for computing mean and std (default: 10)",
+        # default=10,
+        help="Number of batches for computing mean and std",
     )
 
     args = parser.parse_args()
