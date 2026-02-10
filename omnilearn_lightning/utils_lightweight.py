@@ -32,3 +32,30 @@ def get_all_gen_finetuned_ckpt_paths_from_json(
                         ckpt_paths.append(ckpt_path)
 
     return ckpt_paths
+
+
+def get_pretrained_ckpts(
+    pretrained_ckpts_json_path: str,
+    modes: list[str],
+    pretrain_datasetsize_ids: list[str],
+    model_sizes: list[str],
+):
+    """Extract all pretrained checkpoint paths from the pretrained ckpts JSON, filtered by the given criteria."""
+
+    with open(pretrained_ckpts_json_path, "r") as f:
+        pretrained_ckpts = json.load(f)
+
+    ckpt_paths = []
+    for model_size in pretrained_ckpts:
+        if model_size not in model_sizes:
+            continue
+        for mode in pretrained_ckpts[model_size]:
+            if mode not in modes:
+                continue
+            for pretrain_datasetsize_id in pretrained_ckpts[model_size][mode]:
+                if pretrain_datasetsize_id not in pretrain_datasetsize_ids:
+                    continue
+                ckpt_path = pretrained_ckpts[model_size][mode][pretrain_datasetsize_id]
+                ckpt_paths.append(ckpt_path)
+
+    return ckpt_paths
