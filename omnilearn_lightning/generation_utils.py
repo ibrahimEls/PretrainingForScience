@@ -87,7 +87,7 @@ def distribution_metrics_batched(
     """
     w1_values = []
     kl_values = []
-    rng = np.random.default_rng(seed=42)
+    rng = np.random.default_rng()
 
     if data1.ndim != data2.ndim:
         raise ValueError(
