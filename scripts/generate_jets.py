@@ -195,7 +195,7 @@ def generate_jets(
         devices=num_gpus if num_gpus > 0 else 1,
         strategy="ddp" if num_gpus > 1 else "auto",
         callbacks=[writer],
-        enable_progress_bar=True,
+        enable_progress_bar=False,
         logger=False,
         limit_test_batches=num_batches,
     )
