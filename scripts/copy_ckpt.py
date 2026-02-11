@@ -23,6 +23,11 @@ METHOD_PREFIX = {
     "generator+mpmregress": "gen_mpmregress",
     "pretrain": "pretrain",
     "pretrainregress": "pretrainregress",
+    # MPM with perturbation loss (when MPM and classification are used jointly)
+    "classifier+mpm_perturb": "class_mpm_perturb",
+    "classifier+mpmregress_perturb": "class_mpmregress_perturb",
+    "pretrain_perturb": "pretrain_perturb",
+    "pretrainregress_perturb": "pretrainregress_perturb",
 }
 TARGET_DIR = "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints"
 SHARED_GROUP_ID = "m3246"
@@ -84,6 +89,8 @@ def main():
                     hparams = yaml.safe_load(f)
                 if hparams.get("tokenizer_ckpt", None) is None:
                     method += "regress"
+                if hparams.get("use_perturbed_loss_terms", False):
+                    method += "_perturb"
 
             dataset_size = name_parts[5]
             step_part = [p for p in parts if p.startswith("step=")][0]
