@@ -1,6 +1,9 @@
 """Utils that should have as few dependencies as possible, to work in lightweight environments."""
 
 import json
+from pathlib import Path
+
+import yaml
 
 
 def get_all_gen_finetuned_ckpt_paths_from_json(
@@ -59,3 +62,28 @@ def get_pretrained_ckpts(
                 ckpt_paths.append(ckpt_path)
 
     return ckpt_paths
+
+
+def get_ckpts_vs_epoch(yaml_file_path: str, every_n_epochs: int = 50):
+    # read yaml file and extract run directories
+    with open(yaml_file_path, "r") as f:
+        run_dirs_list = yaml.safe_load(f)
+        # print(run_dirs_list)
+    ckpts_list = []
+    for run_dir in run_dirs_list:
+        print(run_dir)
+        run_dir = Path(run_dir)
+        ckpt_dir = run_dir / "checkpoints"
+        all_ckpt_files = sorted(ckpt_dir.glob("*.ckpt"))
+        for ckpt_file in all_ckpt_files:
+            if "epoch=" not in ckpt_file.stem:
+                continue
+            # extract epoch number from ckpt file name
+            # epoch is encoded in str as e.g. "...-epoch=001431-
+            epoch_str = ckpt_file.stem.split("-epoch=")[-1].split("-")[0]
+
+            epoch_num = int(epoch_str)
+            if epoch_num % every_n_epochs == 0:
+                print(ckpt_file)
+                ckpts_list.append({epoch_num: str(ckpt_file)})
+    return ckpts_list
