@@ -3,6 +3,7 @@
 Uses trainer.predict() with a minimal callback that reuses existing generation utilities.
 """
 
+import logging
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -19,6 +20,8 @@ from omnilearn_lightning.generation_utils import (
     save_gen_output,
 )
 from omnilearn_lightning.model import PETLightning
+
+logger = logging.getLogger(__name__)
 
 FEATURE_NAMES_X = {
     "eta": "Particle $\\Delta\\eta$",
@@ -56,7 +59,7 @@ class JetGenerationCallback(pl.Callback):
             y = ak.concatenate(y_values, axis=0)
             rank_file = self.output_path / f"_rank_{rank}.parquet"
             ak.to_parquet(ak.Array({"x_ak": x_ak, "y": y}), rank_file)
-            print(f"[Rank {rank}] Wrote {len(y)} jets to {rank_file}")
+            logger.info("[Rank %d] Wrote %d jets to %s", rank, len(y), rank_file)
 
         if world_size > 1:
             dist.barrier()
@@ -75,12 +78,16 @@ class JetGenerationCallback(pl.Callback):
                 all_y.append(partial["y"])
                 fpath.unlink()
                 # print average y to verify each rank has different jets
-                print(
-                    f"[Rank {rank}] Loaded {len(partial['y'])} jets from {fpath}, avg y={ak.mean(partial['y']):.4f}"
+                logger.info(
+                    "[Rank %d] Loaded %d jets from %s, avg y=%.4f",
+                    rank,
+                    len(partial["y"]),
+                    fpath,
+                    ak.mean(partial["y"]),
                 )
 
         if not all_orig:
-            print("No jets generated.")
+            logger.warning("No jets generated.")
             return
 
         x_ak = {
@@ -102,7 +109,7 @@ class JetGenerationCallback(pl.Callback):
         )
         p4s = {k: p4s_from_ptetaphimass(v, **p4_kwargs) for k, v in x_ak.items()}
 
-        print("Computing jet substructure...")
+        logger.info("Computing jet substructure...")
         self.gen_output = ak.Array(
             {
                 "x_ak": x_ak,
@@ -115,7 +122,7 @@ class JetGenerationCallback(pl.Callback):
                 "y": y,
             }
         )
-        print(f"Generated {len(y)} jets total from {world_size} GPU(s)")
+        logger.info("Generated %d jets total from %d GPU(s)", len(y), world_size)
 
 
 def generate_jets(
@@ -127,8 +134,8 @@ def generate_jets(
     n_sampling_steps: int = 128,
 ):
     num_gpus = torch.cuda.device_count()
-    print(f"Detected {num_gpus} GPU(s)")
-    print(f"Loading model from checkpoint: {ckpt_path}")
+    logger.info("Detected %d GPU(s)", num_gpus)
+    logger.info("Loading model from checkpoint: %s", ckpt_path)
     lightning_model = PETLightning.load_from_checkpoint(ckpt_path, fine_tune=False)
 
     output_path = Path(output_filename).parent
@@ -155,10 +162,9 @@ def generate_jets(
             self.results = []
 
         def test_step(self, batch, batch_idx):
-            # print every 10 batches to show in the logs that things are happening
-            if batch_idx % 10 == 0:
-                this_rank = dist.get_rank() if dist.is_initialized() else 0
-                print(f"[Rank {this_rank}] Processing batch {batch_idx}...")
+            # Log every 10 batches to show progress
+            this_rank = dist.get_rank() if dist.is_initialized() else 0
+            logger.info("[Rank %d] Processing batch %d...", this_rank, batch_idx)
             result = get_batch_and_generate(
                 batch=batch,
                 lightning_model=self._model,
@@ -175,9 +181,12 @@ def generate_jets(
         n_jets_to_generate + effective_batch_size - 1
     ) // effective_batch_size
 
-    print(
-        f"Generating {n_jets_to_generate} jets with effective batch size "
-        f"{effective_batch_size} across {num_gpus} GPU(s) => {num_batches} batches per GPU"
+    logger.info(
+        "Generating %d jets with effective batch size %d across %d GPU(s) => %d batches per GPU",
+        n_jets_to_generate,
+        effective_batch_size,
+        num_gpus,
+        num_batches,
     )
 
     writer = JetGenerationCallback(output_path)
@@ -201,6 +210,11 @@ def generate_jets(
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
     parser = ArgumentParser(description="Multi-GPU jet generation")
     parser.add_argument("--ckpt_path", type=str, required=True)
     parser.add_argument("--output_filename", type=str, required=True)
