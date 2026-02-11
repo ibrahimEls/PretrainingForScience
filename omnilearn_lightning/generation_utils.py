@@ -101,8 +101,21 @@ def distribution_metrics_batched(
             "prevent mean/std estimation."
         )
 
+    if num_eval_samples is not None and num_eval_samples > len(data1):
+        raise ValueError(
+            f"num_eval_samples ({num_eval_samples}) cannot be greater than the number "
+            f"of available samples in data1 ({len(data1)})."
+        )
+
+    # print the number of samples in data1 and data2
+    # print(f"Number of samples in data1: {len(data1)}")
+    # print(f"Number of samples in data2: {len(data2)}")
+
     for _ in range(num_batches):
         if num_eval_samples is None:
+            # print(
+            #     "Using all available samples for metric calculation (no bootstrapping)."
+            # )
             rand_sample1 = data1
             rand_sample2 = data2
         else:
@@ -110,6 +123,9 @@ def distribution_metrics_batched(
             rand2 = rng.choice(len(data2), size=num_eval_samples, replace=replace)
             rand_sample1 = data1[rand1]
             rand_sample2 = data2[rand2]
+            # print(
+            #     f"Batch {_ + 1}/{num_batches}: Sampled {num_eval_samples} points for metric calculation."
+            # )
 
         # flatten in case the data is not 1D
         if rand_sample1.ndim > 1:
@@ -870,11 +886,16 @@ def animate_metrics_vs_epoch(
         gen_jet_mass_data.append(gen_output_this_type.substructure.generated.jet_mass)
         gen_jet_pt_data.append(gen_output_this_type.substructure.generated.jet_pt)
 
-    # Get original data from first epoch
-    jet_type_mask = df_list_sorted[0]["gen_output"].y == jet_type_numerical_label
-    gen_output_first = df_list_sorted[0]["gen_output"][jet_type_mask]
-    original_jet_mass = gen_output_first.substructure.original.jet_mass
-    original_jet_pt = gen_output_first.substructure.original.jet_pt
+    # Get original data for each epoch (each epoch has different original samples)
+    original_jet_mass_data = []
+    original_jet_pt_data = []
+    for df_i in df_list_sorted:
+        jet_type_mask = df_i["gen_output"].y == jet_type_numerical_label
+        gen_output_this_type = df_i["gen_output"][jet_type_mask]
+        original_jet_mass_data.append(
+            gen_output_this_type.substructure.original.jet_mass
+        )
+        original_jet_pt_data.append(gen_output_this_type.substructure.original.jet_pt)
 
     # Create figure and camera
     fig, axarr = plt.subplots(3, 2, figsize=(12, 9))
@@ -1073,16 +1094,16 @@ def animate_metrics_vs_epoch(
             markersize=8,
         )
 
-        # Row 2: Original histograms (always shown)
+        # Row 2: Original histograms (use current epoch's original data)
         axarr[2][0].hist(
-            binclip(original_jet_mass, "jet_mass"),
+            binclip(original_jet_mass_data[frame], "jet_mass"),
             bins=bins_dict["jet_mass"],
             alpha=0.5,
             label="Original",
             color="k",
         )
         axarr[2][1].hist(
-            binclip(original_jet_pt, "jet_pt"),
+            binclip(original_jet_pt_data[frame], "jet_pt"),
             bins=bins_dict["jet_pt"],
             alpha=0.5,
             label="Original",
@@ -1127,6 +1148,9 @@ def animate_metrics_vs_epoch(
 
         fig.tight_layout()
         camera.snap()
+
+    # print(f"Truth KLD values: {truth_kld_jet_mass_values}")
+    # print(f"Truth KLD stds: {truth_kld_jet_mass_std}")
 
     anim = camera.animate(interval=1000 // fps)
 
