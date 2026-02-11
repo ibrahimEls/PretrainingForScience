@@ -5,33 +5,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from omnilearn_lightning.generation_utils import calc_metrics_for_dict
+from omnilearn_lightning.generation_utils import (
+    calc_metrics_for_dict,
+    jet_types_dict_jetclass,
+    jet_types_dict_jetnet,
+)
 from omnilearn_lightning.plotting.feature_plotting import (
     plot_features,
     set_mpl_style,
 )
-
-# Jet type definitions
-jet_types_dict_jetclass = {
-    0: {"label": "QCD", "tex_label": "$q/g$", "color": "C0"},
-    1: {"label": "Hbb", "tex_label": "$H\\rightarrow b\\bar{b}$", "color": "C1"},
-    2: {"label": "Hcc", "tex_label": "$H\\rightarrow c\\bar{c}$", "color": "C2"},
-    3: {"label": "Hgg", "tex_label": "$H\\rightarrow gg$", "color": "C3"},
-    4: {"label": "H4q", "tex_label": "$H\\rightarrow 4q$", "color": "C4"},
-    5: {"label": "Hlnuqq", "tex_label": "$H\\rightarrow \\ell\\nu qq'$", "color": "C5"},
-    6: {"label": "Zqq", "tex_label": "$Z\\rightarrow q\\bar{q}$", "color": "C6"},
-    7: {"label": "Wqq", "tex_label": "$W\\rightarrow qq'$", "color": "C7"},
-    8: {"label": "Tbqq", "tex_label": "$t\\rightarrow bqq'$", "color": "C8"},
-    9: {"label": "Tbl", "tex_label": "$t\\rightarrow b\\ell\\nu$", "color": "C9"},
-}
-
-jet_types_dict_jetnet = {
-    0: {"label": "gluon", "tex_label": "$g$", "color": "C0"},
-    1: {"label": "light_quark", "tex_label": "$q$", "color": "C1"},
-    2: {"label": "top", "tex_label": "$t$", "color": "C2"},
-    3: {"label": "W", "tex_label": "$W$", "color": "C3"},
-    4: {"label": "Z", "tex_label": "$Z$", "color": "C4"},
-}
 
 
 def eval_jet_generation(
