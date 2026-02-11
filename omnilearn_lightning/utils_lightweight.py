@@ -71,7 +71,7 @@ def get_ckpts_vs_epoch(yaml_file_path: str, every_n_epochs: int = 50):
         # print(run_dirs_list)
     ckpts_list = []
     for run_dir in run_dirs_list:
-        print(run_dir)
+        # print(run_dir)
         run_dir = Path(run_dir)
         ckpt_dir = run_dir / "checkpoints"
         all_ckpt_files = sorted(ckpt_dir.glob("*.ckpt"))
@@ -84,6 +84,6 @@ def get_ckpts_vs_epoch(yaml_file_path: str, every_n_epochs: int = 50):
 
             epoch_num = int(epoch_str)
             if epoch_num % every_n_epochs == 0:
-                print(ckpt_file)
+                # print(ckpt_file)
                 ckpts_list.append({epoch_num: str(ckpt_file)})
     return ckpts_list
