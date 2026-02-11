@@ -41,8 +41,9 @@ RUN conda install -y jupyter
 
 RUN git clone https://github.com/minyoungg/vqtorch && cd vqtorch && pip install -e .
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+ARG REQUIREMENTS_FILE=requirements.txt
+COPY ${REQUIREMENTS_FILE} requirements_temp.txt
+RUN pip install -r requirements_temp.txt
 
 
 SHELL ["/bin/bash", "--login", "-c"]
