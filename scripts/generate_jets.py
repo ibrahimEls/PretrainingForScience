@@ -155,6 +155,10 @@ def generate_jets(
             self.results = []
 
         def test_step(self, batch, batch_idx):
+            # print every 10 batches to show in the logs that things are happening
+            if batch_idx % 10 == 0:
+                this_rank = dist.get_rank() if dist.is_initialized() else 0
+                print(f"[Rank {this_rank}] Processing batch {batch_idx}...")
             result = get_batch_and_generate(
                 batch=batch,
                 lightning_model=self._model,
@@ -170,6 +174,11 @@ def generate_jets(
     num_batches = (
         n_jets_to_generate + effective_batch_size - 1
     ) // effective_batch_size
+
+    print(
+        f"Generating {n_jets_to_generate} jets with effective batch size "
+        f"{effective_batch_size} across {num_gpus} GPU(s) => {num_batches} batches per GPU"
+    )
 
     writer = JetGenerationCallback(output_path)
     trainer = pl.Trainer(
