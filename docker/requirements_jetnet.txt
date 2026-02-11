@@ -9,7 +9,8 @@ h5py==3.14.0
 jetnet==0.2.5
 lightning==2.5.5
 matplotlib==3.10.6
-omnilearned @ git+https://github.com/ViniciusMikuni/OmniLearned.git@922355db6269061af9e8a36a7c6a118e7c6609c4
+# omnilearned @ git+https://github.com/ViniciusMikuni/OmniLearned.git@922355db6269061af9e8a36a7c6a118e7c6609c4
+numpy<2.0.0
 pandas==2.3.3
 pre-commit
 pyarrow==21.0.0
