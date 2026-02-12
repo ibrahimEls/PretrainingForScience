@@ -217,7 +217,9 @@ def np_to_ak(x: np.ndarray, names: list, mask: np.ndarray = None, dtype="float32
     )
 
 
-def ak_to_np_stack(ak_array: ak.Array, names: list = None, axis: int = -1):
+def ak_to_np_stack(
+    ak_array: ak.Array, names: list = None, axis: int = -1, use_attrs: bool = False
+):
     """Function to convert an awkward array to a numpy array by stacking the values of the
     specified fields. This is much faster than ak.to_numpy(ak_array) for large arrays.
 
@@ -229,13 +231,22 @@ def ak_to_np_stack(ak_array: ak.Array, names: list = None, axis: int = -1):
         List of field names to convert. Default is None.
     axis : int, optional
         Axis along which to stack the values. Default is -1.
+    use_attrs : bool, optional
+        Whether to use the attributes of the awkward array. Default is False. If True, the
+        function will access the fields using getattr(ak_array, name) instead of
+        ak_array[name]. This useful for e.g. Momentum4D arrays.
     """
     if names is None:
         raise ValueError("names must be specified")
     return ak.to_numpy(
         np.stack(
             [
-                ak.to_numpy(ak.values_astype(ak_array[name], "float32"))
+                ak.to_numpy(
+                    ak.values_astype(
+                        getattr(ak_array, name) if use_attrs else ak_array[name],
+                        "float32",
+                    )
+                )
                 for name in names
             ],
             axis=axis,
@@ -496,3 +507,38 @@ def replace_masked_positions(
         raise ValueError("This should never happen.")
 
     return None
+
+
+def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=100, divide_pt_by_sum_pt=True):
+    """
+    Helper function to convert an awkward array of Momentum4D objects to a numpy
+    array with the format expected by the JetNet evaluation code. The output array
+    has shape (n_jets, maxlen, 4) and the features are ordered as (eta, phi, pt,
+    mass).
+
+    Parameters
+    ----------
+    p4s_ak : ak.Array
+        Awkward array of Momentum4D objects with fields eta, phi, pt, mass
+    maxlen : int, optional
+        Maximum number of particles per jet. If a jet has fewer particles, it will be padded with zeros. If a jet has more particles, it will be truncated. Default is 100.
+    divide_pt_by_sum_pt : bool, optional
+        Whether to divide the pt of each particle by the sum of pt of all particles in the jet. Default is True.
+    """
+    p4s_ak_sum = ak.sum(p4s_ak, axis=1)
+    return ak_to_np_stack(
+        ak_pad(
+            ak.Array(
+                {
+                    "eta": p4s_ak.eta,
+                    "phi": p4s_ak.phi,
+                    "pt": p4s_ak.pt / p4s_ak_sum.pt
+                    if divide_pt_by_sum_pt
+                    else p4s_ak.pt,
+                    "mass": ak.zeros_like(p4s_ak.pt),
+                }
+            ),
+            maxlen=maxlen,
+        ),
+        names=["eta", "phi", "pt", "mass"],
+    )

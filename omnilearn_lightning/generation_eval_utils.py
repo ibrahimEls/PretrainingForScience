@@ -2,9 +2,86 @@ import awkward as ak
 import numpy as np
 import scipy
 import vector
+from jetnet.evaluation import w1efp, w1m, w1p
 from scipy.stats import wasserstein_distance
 
+from omnilearn_lightning.array_utils import p4s_to_jetnet_eval_np_stack
+
 vector.register_awkward()
+
+
+def get_jetnet_default_metrics(
+    p4s_ref: ak.Array,
+    p4s_gen: ak.Array,
+    num_eval_samples: int,
+    num_batches: int,
+):
+    """Calculate default JetNet evaluation metrics for ref and generated jets.
+
+    Expects p4s_ref and p4s_gen to be awkward arrays containing the 4-momenta of
+    the jets, with fields corresponding to pt, eta, phi, and mass.
+
+    For the metrics calculation, the pT of the particles is divided by the jet pT
+    and the masses of the particles are set to zero, following the standard
+    JetNet evaluation procedure.
+
+    Parameters
+    ----------
+    p4s_ref : ak.Array
+        Reference jets (e.g., real jets) as an awkward array of 4-momenta.
+    p4s_gen : ak.Array
+        Generated jets (e.g., from a model) as an awkward array of 4-momenta.
+    num_eval_samples : int
+        Number of jets per batch in the batched evaluation.
+    num_batches : int
+        Number of batches for evaluation.
+
+    """
+    # Convert to numpy arrays for metric calculations
+    p4s_ref_np = p4s_to_jetnet_eval_np_stack(p4s_ref, divide_pt_by_sum_pt=True)
+    p4s_gen_np = p4s_to_jetnet_eval_np_stack(p4s_gen, divide_pt_by_sum_pt=True)
+
+    # w1p output is of shape [(num_features,), (num_features,)]
+    # with the first element being the mean and the second element being the std of
+    # the W1 distance across the features.
+    eval_kwargs = dict(num_eval_samples=num_eval_samples, num_batches=num_batches)
+    w1p_ref_ref = w1p(p4s_ref_np, p4s_ref_np, **eval_kwargs)
+    w1p_ref_gen = w1p(p4s_ref_np, p4s_gen_np, **eval_kwargs)
+
+    # only take the first 3 features (pt, eta, phi) as the mass is not used in our
+    # evaluation and would result misleadingly small values (due to perfect
+    # agreement in the mass dimension from setting all particle masses to zero)
+    w1p_mean_ref_ref = np.mean(w1p_ref_ref[0][:3])
+    w1p_mean_ref_gen = np.mean(w1p_ref_gen[0][:3])
+    w1p_std_ref_ref = np.mean(w1p_ref_ref[1][:3])
+    w1p_std_ref_gen = np.mean(w1p_ref_gen[1][:3])
+
+    # w1m returns tuple of (mean, std) for the jet mass
+    w1m_ref_ref = w1m(p4s_ref_np, p4s_ref_np, **eval_kwargs)
+    w1m_ref_gen = w1m(p4s_ref_np, p4s_gen_np, **eval_kwargs)
+
+    # w1efp returns [(num_efps,), (num_efps,)] with the mean and std of the W1
+    # distance across the EFPs
+    w1efp_ref_ref = w1efp(p4s_ref_np, p4s_ref_np, **eval_kwargs)
+    w1efp_ref_gen = w1efp(p4s_ref_np, p4s_gen_np, **eval_kwargs)
+
+    return {
+        "w1p_ref_ref": (
+            w1p_mean_ref_ref,
+            w1p_std_ref_ref,
+        ),
+        "w1p_ref_gen": (w1p_mean_ref_gen, w1p_std_ref_gen),
+        "w1m_ref_ref": w1m_ref_ref,
+        "w1m_ref_gen": w1m_ref_gen,
+        "w1efp_ref_ref": (
+            np.mean(w1efp_ref_ref[0]),
+            np.mean(w1efp_ref_ref[1]),
+        ),
+        "w1efp_ref_gen": (
+            np.mean(w1efp_ref_gen[0]),
+            np.mean(w1efp_ref_gen[1]),
+        ),
+    }
 
 
 def distribution_metrics_batched(
