@@ -1,18 +1,20 @@
 import os
 
 import awkward as ak
+
+# import jetnet
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from omnilearn_lightning.generation_utils import (
-    calc_metrics_for_dict,
-    jet_types_dict_jetclass,
-    jet_types_dict_jetnet,
-)
+from omnilearn_lightning.generation_eval_utils import calc_metrics_for_dict
 from omnilearn_lightning.plotting.feature_plotting import (
     plot_features,
     set_mpl_style,
+)
+from omnilearn_lightning.utils_lightweight import (
+    jet_types_dict_jetclass,
+    jet_types_dict_jetnet,
 )
 
 
