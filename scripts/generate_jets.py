@@ -156,15 +156,18 @@ def generate_jets(
 
     # Use the loaded model directly - just need to wrap test_step
     class GenModule(pl.LightningModule):
-        def __init__(self, model):
+        def __init__(self, model, n_batches_per_gpu: int):
             super().__init__()
             self._model = model
             self.results = []
+            self.n_batches_per_gpu = n_batches_per_gpu
 
         def test_step(self, batch, batch_idx):
             # Log every 10 batches to show progress
             this_rank = dist.get_rank() if dist.is_initialized() else 0
-            logger.info("[Rank %d] Processing batch %d...", this_rank, batch_idx)
+            logger.info(
+                "[Rank %d] Processing/generating batch %d...", this_rank, batch_idx
+            )
             result = get_batch_and_generate(
                 batch=batch,
                 lightning_model=self._model,
@@ -200,7 +203,7 @@ def generate_jets(
         limit_test_batches=num_batches,
     )
 
-    gen_module = GenModule(lightning_model)
+    gen_module = GenModule(lightning_model, n_batches_per_gpu=num_batches)
     trainer.test(gen_module, datamodule=datamodule)
 
     if trainer.global_rank == 0 and writer.gen_output is not None:
