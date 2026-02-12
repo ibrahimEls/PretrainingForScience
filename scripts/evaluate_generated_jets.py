@@ -7,7 +7,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from omnilearn_lightning.generation_eval_utils import calc_metrics_for_dict
+from omnilearn_lightning.generation_eval_utils import (
+    calc_metrics_for_dict,
+    get_jetnet_default_metrics,
+)
 from omnilearn_lightning.plotting.feature_plotting import (
     plot_features,
     set_mpl_style,
@@ -183,13 +186,21 @@ def eval_jet_generation(
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
-        # Calculate the truth values (i.e. the KLD/W1 when sampling from the
+        # Calculate the baseline values (i.e. the KLD/W1 when sampling from the
         # same distribution) for reference
-        particle_metrics_truth = calc_metrics_for_dict(
+        particle_metrics_baseline = calc_metrics_for_dict(
             dict_reference=gen_output[mask_this_type].x_ak.original,
             dict_approx=gen_output[mask_this_type].x_ak.original,
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
+        )
+
+        # Calculate the JetNet default metrics w1p, w1m, w1efp
+        jetnet_library_metrics = get_jetnet_default_metrics(
+            p4s_ref=gen_output[mask_this_type].p4s.original,
+            p4s_gen=gen_output[mask_this_type].p4s.generated,
+            num_eval_samples=num_eval_samples,
+            num_batches=num_batches,
         )
 
         print(f"Particle-level metrics for {jet_type_label}:")
@@ -210,8 +221,8 @@ def eval_jet_generation(
                     }
                 )
 
-        # Add truth metrics with prefix
-        for metric_name, metric_values in particle_metrics_truth.items():
+        # Add baseline metrics with prefix
+        for metric_name, metric_values in particle_metrics_baseline.items():
             for feature_name, (mean_val, std_val) in metric_values.items():
                 all_metrics.append(
                     {
@@ -219,11 +230,25 @@ def eval_jet_generation(
                         "jet_type_idx": jet_type_i,
                         "level": "particle",
                         "feature": feature_name,
-                        "metric": f"truth_{metric_name}",
+                        "metric": f"{metric_name}_baseline",
                         "mean": mean_val,
                         "std": std_val,
                     }
                 )
+        # Add JetNet library metrics
+        for metric_name, (mean_val, std_val) in jetnet_library_metrics.items():
+            print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
+            all_metrics.append(
+                {
+                    "jet_type": jet_type_label,
+                    "jet_type_idx": jet_type_i,
+                    "level": "particle",
+                    "feature": metric_name,  # use metric name as feature for these
+                    "metric": metric_name,
+                    "mean": mean_val,
+                    "std": std_val,
+                }
+            )
 
         # Calculate metrics for jet-level (substructure) features
         jet_metrics = calc_metrics_for_dict(
@@ -232,8 +257,8 @@ def eval_jet_generation(
             names=list(names_substructure.keys()),
             **metrics_calc_kwargs,
         )
-        # Calculate truth metrics for jet-level features
-        jet_metrics_truth = calc_metrics_for_dict(
+        # Calculate baseline metrics for jet-level features
+        jet_metrics_baseline = calc_metrics_for_dict(
             dict_reference=gen_output[mask_this_type].substructure.original,
             dict_approx=gen_output[mask_this_type].substructure.original,
             names=list(names_substructure.keys()),
@@ -257,8 +282,8 @@ def eval_jet_generation(
                         "std": std_val,
                     }
                 )
-        # Add truth metrics with prefix
-        for metric_name, metric_values in jet_metrics_truth.items():
+        # Add baseline metrics with prefix
+        for metric_name, metric_values in jet_metrics_baseline.items():
             for feature_name, (mean_val, std_val) in metric_values.items():
                 all_metrics.append(
                     {
@@ -266,7 +291,7 @@ def eval_jet_generation(
                         "jet_type_idx": jet_type_i,
                         "level": "jet",
                         "feature": feature_name,
-                        "metric": f"truth_{metric_name}",
+                        "metric": f"{metric_name}_baseline",
                         "mean": mean_val,
                         "std": std_val,
                     }

@@ -66,18 +66,18 @@ def get_jetnet_default_metrics(
     w1efp_ref_gen = w1efp(p4s_ref_np, p4s_gen_np, **eval_kwargs)
 
     return {
-        "w1p_ref_ref": (
+        "w1p_baseline": (
             w1p_mean_ref_ref,
             w1p_std_ref_ref,
         ),
-        "w1p_ref_gen": (w1p_mean_ref_gen, w1p_std_ref_gen),
-        "w1m_ref_ref": w1m_ref_ref,
-        "w1m_ref_gen": w1m_ref_gen,
-        "w1efp_ref_ref": (
+        "w1p": (w1p_mean_ref_gen, w1p_std_ref_gen),
+        "w1m_baseline": w1m_ref_ref,
+        "w1m": w1m_ref_gen,
+        "w1efp_baseline": (
             np.mean(w1efp_ref_ref[0]),
             np.mean(w1efp_ref_ref[1]),
         ),
-        "w1efp_ref_gen": (
+        "w1efp": (
             np.mean(w1efp_ref_gen[0]),
             np.mean(w1efp_ref_gen[1]),
         ),

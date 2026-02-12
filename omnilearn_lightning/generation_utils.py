@@ -372,14 +372,14 @@ def animate_metrics_vs_epoch(
     w1_jet_pt_values = []
     w1_jet_mass_std = []
     w1_jet_pt_std = []
-    truth_kld_jet_mass_values = []
-    truth_kld_jet_pt_values = []
-    truth_kld_jet_mass_std = []
-    truth_kld_jet_pt_std = []
-    truth_w1_jet_mass_values = []
-    truth_w1_jet_pt_values = []
-    truth_w1_jet_mass_std = []
-    truth_w1_jet_pt_std = []
+    kld_baseline_jet_mass_values = []
+    kld_baseline_jet_pt_values = []
+    kld_baseline_jet_mass_std = []
+    kld_baseline_jet_pt_std = []
+    w1_baseline_jet_mass_values = []
+    w1_baseline_jet_pt_values = []
+    w1_baseline_jet_mass_std = []
+    w1_baseline_jet_pt_std = []
     gen_jet_mass_data = []
     gen_jet_pt_data = []
 
@@ -406,26 +406,26 @@ def animate_metrics_vs_epoch(
         )
         w1_jet_pt_values.append(w1_jet_pt_row["mean"].values[0])
         w1_jet_pt_std.append(w1_jet_pt_row["std"].values[0])
-        truth_kld_jet_mass_row = metrics_df.query(
-            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "truth_kld" and feature == "jet_mass"'
+        kld_baseline_jet_mass_row = metrics_df.query(
+            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "kld_baseline" and feature == "jet_mass"'
         )
-        truth_kld_jet_mass_values.append(truth_kld_jet_mass_row["mean"].values[0])
-        truth_kld_jet_mass_std.append(truth_kld_jet_mass_row["std"].values[0])
-        truth_kld_jet_pt_row = metrics_df.query(
-            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "truth_kld" and feature == "jet_pt"'
+        kld_baseline_jet_mass_values.append(kld_baseline_jet_mass_row["mean"].values[0])
+        kld_baseline_jet_mass_std.append(kld_baseline_jet_mass_row["std"].values[0])
+        kld_baseline_jet_pt_row = metrics_df.query(
+            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "kld_baseline" and feature == "jet_pt"'
         )
-        truth_kld_jet_pt_values.append(truth_kld_jet_pt_row["mean"].values[0])
-        truth_kld_jet_pt_std.append(truth_kld_jet_pt_row["std"].values[0])
-        truth_w1_jet_mass_row = metrics_df.query(
-            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "truth_w1" and feature == "jet_mass"'
+        kld_baseline_jet_pt_values.append(kld_baseline_jet_pt_row["mean"].values[0])
+        kld_baseline_jet_pt_std.append(kld_baseline_jet_pt_row["std"].values[0])
+        w1_baseline_jet_mass_row = metrics_df.query(
+            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "w1_baseline" and feature == "jet_mass"'
         )
-        truth_w1_jet_mass_values.append(truth_w1_jet_mass_row["mean"].values[0])
-        truth_w1_jet_mass_std.append(truth_w1_jet_mass_row["std"].values[0])
-        truth_w1_jet_pt_row = metrics_df.query(
-            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "truth_w1" and feature == "jet_pt"'
+        w1_baseline_jet_mass_values.append(w1_baseline_jet_mass_row["mean"].values[0])
+        w1_baseline_jet_mass_std.append(w1_baseline_jet_mass_row["std"].values[0])
+        w1_baseline_jet_pt_row = metrics_df.query(
+            f'jet_type == "{jet_type_to_plot}" and level == "jet" and metric == "w1_baseline" and feature == "jet_pt"'
         )
-        truth_w1_jet_pt_values.append(truth_w1_jet_pt_row["mean"].values[0])
-        truth_w1_jet_pt_std.append(truth_w1_jet_pt_row["std"].values[0])
+        w1_baseline_jet_pt_values.append(w1_baseline_jet_pt_row["mean"].values[0])
+        w1_baseline_jet_pt_std.append(w1_baseline_jet_pt_row["std"].values[0])
 
         jet_type_mask = df_i["gen_output"].y == jet_type_numerical_label
         gen_output_this_type = df_i["gen_output"][jet_type_mask]
@@ -469,14 +469,14 @@ def animate_metrics_vs_epoch(
     w1_jet_pt_values = np.array(w1_jet_pt_values)
     w1_jet_mass_std = np.array(w1_jet_mass_std)
     w1_jet_pt_std = np.array(w1_jet_pt_std)
-    truth_kld_jet_mass_values = np.array(truth_kld_jet_mass_values)
-    truth_kld_jet_pt_values = np.array(truth_kld_jet_pt_values)
-    truth_kld_jet_mass_std = np.array(truth_kld_jet_mass_std)
-    truth_kld_jet_pt_std = np.array(truth_kld_jet_pt_std)
-    truth_w1_jet_mass_values = np.array(truth_w1_jet_mass_values)
-    truth_w1_jet_pt_values = np.array(truth_w1_jet_pt_values)
-    truth_w1_jet_mass_std = np.array(truth_w1_jet_mass_std)
-    truth_w1_jet_pt_std = np.array(truth_w1_jet_pt_std)
+    kld_baseline_jet_mass_values = np.array(kld_baseline_jet_mass_values)
+    kld_baseline_jet_pt_values = np.array(kld_baseline_jet_pt_values)
+    kld_baseline_jet_mass_std = np.array(kld_baseline_jet_mass_std)
+    kld_baseline_jet_pt_std = np.array(kld_baseline_jet_pt_std)
+    w1_baseline_jet_mass_values = np.array(w1_baseline_jet_mass_values)
+    w1_baseline_jet_pt_values = np.array(w1_baseline_jet_pt_values)
+    w1_baseline_jet_mass_std = np.array(w1_baseline_jet_mass_std)
+    w1_baseline_jet_pt_std = np.array(w1_baseline_jet_pt_std)
 
     # Animate: just loop and snap frames
     for frame in range(len(df_list_sorted)):
@@ -518,44 +518,46 @@ def animate_metrics_vs_epoch(
         # Row 0: Truth KLD (grey)
         axarr[0][0].plot(
             epochs[: frame + 1],
-            truth_kld_jet_mass_values[: frame + 1],
+            kld_baseline_jet_mass_values[: frame + 1],
             "--",
             color="grey",
             linewidth=1.5,
         )
         axarr[0][0].fill_between(
             epochs[: frame + 1],
-            truth_kld_jet_mass_values[: frame + 1]
-            - truth_kld_jet_mass_std[: frame + 1],
-            truth_kld_jet_mass_values[: frame + 1]
-            + truth_kld_jet_mass_std[: frame + 1],
+            kld_baseline_jet_mass_values[: frame + 1]
+            - kld_baseline_jet_mass_std[: frame + 1],
+            kld_baseline_jet_mass_values[: frame + 1]
+            + kld_baseline_jet_mass_std[: frame + 1],
             color="grey",
             alpha=0.3,
         )
         axarr[0][1].plot(
             epochs[: frame + 1],
-            truth_kld_jet_pt_values[: frame + 1],
+            kld_baseline_jet_pt_values[: frame + 1],
             "--",
             color="grey",
             linewidth=1.5,
         )
         axarr[0][1].fill_between(
             epochs[: frame + 1],
-            truth_kld_jet_pt_values[: frame + 1] - truth_kld_jet_pt_std[: frame + 1],
-            truth_kld_jet_pt_values[: frame + 1] + truth_kld_jet_pt_std[: frame + 1],
+            kld_baseline_jet_pt_values[: frame + 1]
+            - kld_baseline_jet_pt_std[: frame + 1],
+            kld_baseline_jet_pt_values[: frame + 1]
+            + kld_baseline_jet_pt_std[: frame + 1],
             color="grey",
             alpha=0.3,
         )
         axarr[0][0].plot(
             epochs[frame],
-            truth_kld_jet_mass_values[frame],
+            kld_baseline_jet_mass_values[frame],
             "o",
             color="grey",
             markersize=8,
         )
         axarr[0][1].plot(
             epochs[frame],
-            truth_kld_jet_pt_values[frame],
+            kld_baseline_jet_pt_values[frame],
             "o",
             color="grey",
             markersize=8,
@@ -599,42 +601,46 @@ def animate_metrics_vs_epoch(
         # Row 1: Truth W1 (grey)
         axarr[1][0].plot(
             epochs[: frame + 1],
-            truth_w1_jet_mass_values[: frame + 1],
+            w1_baseline_jet_mass_values[: frame + 1],
             "--",
             color="grey",
             linewidth=1.5,
         )
         axarr[1][0].fill_between(
             epochs[: frame + 1],
-            truth_w1_jet_mass_values[: frame + 1] - truth_w1_jet_mass_std[: frame + 1],
-            truth_w1_jet_mass_values[: frame + 1] + truth_w1_jet_mass_std[: frame + 1],
+            w1_baseline_jet_mass_values[: frame + 1]
+            - w1_baseline_jet_mass_std[: frame + 1],
+            w1_baseline_jet_mass_values[: frame + 1]
+            + w1_baseline_jet_mass_std[: frame + 1],
             color="grey",
             alpha=0.3,
         )
         axarr[1][1].plot(
             epochs[: frame + 1],
-            truth_w1_jet_pt_values[: frame + 1],
+            w1_baseline_jet_pt_values[: frame + 1],
             "--",
             color="grey",
             linewidth=1.5,
         )
         axarr[1][1].fill_between(
             epochs[: frame + 1],
-            truth_w1_jet_pt_values[: frame + 1] - truth_w1_jet_pt_std[: frame + 1],
-            truth_w1_jet_pt_values[: frame + 1] + truth_w1_jet_pt_std[: frame + 1],
+            w1_baseline_jet_pt_values[: frame + 1]
+            - w1_baseline_jet_pt_std[: frame + 1],
+            w1_baseline_jet_pt_values[: frame + 1]
+            + w1_baseline_jet_pt_std[: frame + 1],
             color="grey",
             alpha=0.3,
         )
         axarr[1][0].plot(
             epochs[frame],
-            truth_w1_jet_mass_values[frame],
+            w1_baseline_jet_mass_values[frame],
             "o",
             color="grey",
             markersize=8,
         )
         axarr[1][1].plot(
             epochs[frame],
-            truth_w1_jet_pt_values[frame],
+            w1_baseline_jet_pt_values[frame],
             "o",
             color="grey",
             markersize=8,
@@ -695,8 +701,8 @@ def animate_metrics_vs_epoch(
         fig.tight_layout()
         camera.snap()
 
-    # print(f"Truth KLD values: {truth_kld_jet_mass_values}")
-    # print(f"Truth KLD stds: {truth_kld_jet_mass_std}")
+    # print(f"Truth KLD values: {kld_baseline_jet_mass_values}")
+    # print(f"Truth KLD stds: {kld_baseline_jet_mass_std}")
 
     anim = camera.animate(interval=1000 // fps)
 
