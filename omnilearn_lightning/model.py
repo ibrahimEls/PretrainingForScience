@@ -753,7 +753,16 @@ class PETLightning(LightningModule):
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         # if fine_tuning a pretrained body, filter shapes
+        # NOTE: I actually think that this method is incompatible with the current
+        # repo, cause our models don't have the key `body` in the state dict.
+        # Instead, it should be `model.body`
         if self.fine_tune and self.ckpt_loaded:
+            print(
+                "[WARNING] both fine_tune and ckpt_loaded are set. This will "
+                "load the checkpoint with strict=False, which may lead to unexpected "
+                "behavior if the checkpoint is not compatible with the current model "
+                "architecture."
+            )
             ck = torch.load(self.ckpt_loaded, map_location="cpu")
             body_sd = ck["body"]
             self.model.body.load_state_dict(body_sd, strict=False)
