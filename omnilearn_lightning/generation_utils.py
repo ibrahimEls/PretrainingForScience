@@ -27,6 +27,9 @@ def get_batch_and_generate(
         batch["X"].float().to(lightning_model.device),
         batch["y"].to(lightning_model.device),
     )
+    # make sure the model is in eval mode and on the right device
+    lightning_model.eval()
+    lightning_model.to(X.device)
     model_kwargs = {
         k: (batch[k].to(lightning_model.device) if batch[k] is not None else None)
         for k in ("cond", "pid", "add_info")
