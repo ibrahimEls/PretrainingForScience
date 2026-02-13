@@ -191,6 +191,7 @@ def main():
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
+    parser.add_argument("--use_cond", type=str2bool, default=False)
     parser.add_argument("--test", type=str2bool, default=False)
     parser.add_argument("--fine_tune", type=str2bool, default=False)
     parser.add_argument("--use_one_cycle", type=str2bool, default=False)
@@ -300,7 +301,7 @@ def main():
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,
-        use_cond=False,
+        use_cond=args.use_cond,
     )
 
     print(f"Model mode: {args.mode}")
@@ -347,6 +348,7 @@ def main():
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
         optimizer_type=args.optimizer_type,
+        conditional=args.use_cond,
     )
     if rank_zero_only.rank == 0:
         print("Model initialized.")
