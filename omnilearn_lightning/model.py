@@ -357,6 +357,7 @@ class PETLightning(LightningModule):
         mpm_label_smoothing=0.0,
         optimizer_type="Lion",  # Lion or Ranger
         use_perturbed_loss_terms=True,
+        conditional=False,
         **kwargs,
     ):
         super().__init__()
@@ -433,6 +434,7 @@ class PETLightning(LightningModule):
             pos_encoding_type=pos_encoding_type,
             mpm_features=mpm_features,
             use_perturbed_loss_terms=use_perturbed_loss_terms,
+            conditional=conditional,
             **model_params,
         )
 
@@ -555,7 +557,7 @@ class PETLightning(LightningModule):
         y_masked = None
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
-            for k in ("pid", "add_info")
+            for k in ("pid", "add_info", "cond")
             if (k in batch)
         }
 
