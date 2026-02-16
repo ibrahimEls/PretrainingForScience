@@ -509,7 +509,7 @@ def replace_masked_positions(
     return None
 
 
-def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=100, divide_pt_by_sum_pt=True):
+def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=150, divide_pt_by_sum_pt=True):
     """
     Helper function to convert an awkward array of Momentum4D objects to a numpy
     array with the format expected by the JetNet evaluation code. The output array
