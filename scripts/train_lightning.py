@@ -72,7 +72,7 @@ def main():
     parser.add_argument(
         "--max_training_steps",
         type=int,
-        default=None,
+        default=-1,
         help="Maximum number of training steps",
     )
     parser.add_argument("--epoch", type=int, default=100, help="Number of epochs")
