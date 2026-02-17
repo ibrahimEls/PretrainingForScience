@@ -39,7 +39,9 @@ TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_ba
 ### Micro Model
 TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
 ### Small model
-# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
+# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
+# for generative fine-tuning
+# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=small --lr 1e-4 --weight_decay 0.01 --batch_size=128"
 ### Medium model
 # TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=medium --lr 5e-6 --weight_decay 0.1 --batch_size=32"
 
