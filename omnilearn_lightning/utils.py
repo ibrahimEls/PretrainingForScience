@@ -407,6 +407,20 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
         "/.../100k/class_only_val_loss=.5940.ckpt"       -> "100k_class_only"
         "/.../1M/gen_only_val_loss=2.6142.ckpt"         -> "1M_gen_only"
         "/.../10M/pretrainregress_val_loss=.123.ckpt"   -> "10M_pretrainregress"
+
+    The folder structure is like this:
+    /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/
+        ├─ Medium
+        │ ├─ class_gen_val_loss=3.2382.ckpt
+        │ ├─ class_only_val_loss=.4095.ckpt
+        │ └─ gen_only_val_loss=2.5089.ckpt
+        ├─ Small
+        │ ├─ class_gen_val_loss=3.2382.ckpt
+        ├─ Micro
+        │ ├─ 100M
+        │ │ ├─ class_gen_preturb_val_loss=3.3324.ckpt
+        │ │ ├─ class_gen_val_loss=3.0348.ck
+        ...
     """
     # ---- extract prefix from filename (longest match wins) ----
     filename = os.path.basename(path)
@@ -416,6 +430,17 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
     prefix = prefix_match.group(1)
 
     # ---- extract scale (parent directory: 100k, 1M, 10M, 100M) ----
+    # This only works for the "Micro" model which has the scale in the parent
+    # directory, but not for "Small" and "Medium" which don't have a scale
+    # folder. For those, we will just return the prefix without the scale.
+
+    # get the model size from the path (look for "Micro", "Small", or "Medium" in the path)
+    model_size_match = re.search(r"(Micro|Small|Medium)", path, re.IGNORECASE)
+    model_size = model_size_match.group(1) if model_size_match else None
+
+    if model_size and model_size.lower() in ["small", "medium"]:
+        return prefix
+
     parent_dir = os.path.basename(os.path.dirname(path.rstrip("/")))
     scale_match = re.fullmatch(r"(100k|1M|10M|100M)", parent_dir)
     if not scale_match:
