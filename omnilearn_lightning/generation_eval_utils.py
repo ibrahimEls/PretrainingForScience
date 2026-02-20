@@ -15,6 +15,7 @@ def get_jetnet_default_metrics(
     p4s_gen: ak.Array,
     num_eval_samples: int,
     num_batches: int,
+    use_mask: bool = True,
 ):
     """Calculate default JetNet evaluation metrics for ref and generated jets.
 
@@ -35,18 +36,38 @@ def get_jetnet_default_metrics(
         Number of jets per batch in the batched evaluation.
     num_batches : int
         Number of batches for evaluation.
+    use_mask : bool
+        Whether to use a mask for selecting specific jets. Default is True.
 
     """
     # Convert to numpy arrays for metric calculations
-    p4s_ref_np = p4s_to_jetnet_eval_np_stack(p4s_ref, divide_pt_by_sum_pt=True)
-    p4s_gen_np = p4s_to_jetnet_eval_np_stack(p4s_gen, divide_pt_by_sum_pt=True)
+    p4s_ref_np, mask_ref_np = p4s_to_jetnet_eval_np_stack(
+        p4s_ref, divide_pt_by_sum_pt=True
+    )
+    p4s_gen_np, mask_gen_np = p4s_to_jetnet_eval_np_stack(
+        p4s_gen, divide_pt_by_sum_pt=True
+    )
+    mask_ref_np = ak.values_astype(mask_ref_np, int).to_numpy()
+    mask_gen_np = ak.values_astype(mask_gen_np, int).to_numpy()
 
     # w1p output is of shape [(num_features,), (num_features,)]
     # with the first element being the mean and the second element being the std of
     # the W1 distance across the features.
     eval_kwargs = dict(num_eval_samples=num_eval_samples, num_batches=num_batches)
-    w1p_ref_ref = w1p(p4s_ref_np, p4s_ref_np, **eval_kwargs)
-    w1p_ref_gen = w1p(p4s_ref_np, p4s_gen_np, **eval_kwargs)
+    w1p_ref_ref = w1p(
+        jets1=p4s_ref_np,
+        jets2=p4s_ref_np,
+        mask1=mask_ref_np if use_mask else None,
+        mask2=mask_ref_np if use_mask else None,
+        **eval_kwargs,
+    )
+    w1p_ref_gen = w1p(
+        jets1=p4s_ref_np,
+        jets2=p4s_gen_np,
+        mask1=mask_ref_np if use_mask else None,
+        mask2=mask_gen_np if use_mask else None,
+        **eval_kwargs,
+    )
 
     # only take the first 3 features (pt, eta, phi) as the mass is not used in our
     # evaluation and would result misleadingly small values (due to perfect
