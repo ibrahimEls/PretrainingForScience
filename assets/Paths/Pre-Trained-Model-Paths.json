@@ -27,6 +27,12 @@
       "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/class_gen_val_loss=3.0015.ckpt",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/class_gen_val_loss=3.0348.ckpt"
     },
+    "classifier+generator-preturb": {
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_gen_preturb_val_loss=3.7218.ckpt",
+      "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_gen_preturb_val_loss=3.4257.ckpt",
+      "10000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/10M/class_gen_preturb_val_loss=3.296.ckpt",
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/class_gen_preturb_val_loss=3.3324.ckpt"
+    },
     "classifier+mpm": {
       "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_mpm_val_loss=8.0611.ckpt",
       "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_mpm_val_loss=7.0731.ckpt",
@@ -69,16 +75,16 @@
   },
   "small": {
     "classifier": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt"
     },
     "generator": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt"
     },
     "mpm": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
     },
     "classifier+generator": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt"
     },
     "classifier+mpm": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
@@ -92,16 +98,16 @@
   },
   "medium": {
     "classifier": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_only_val_loss=.4095.ckpt"
     },
     "generator": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5089.ckpt"
     },
     "mpm": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
     },
     "classifier+generator": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_gen_val_loss=3.2382.ckpt"
     },
     "classifier+mpm": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
