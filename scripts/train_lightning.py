@@ -192,6 +192,7 @@ def main():
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
     parser.add_argument("--use_cond", type=str2bool, default=False)
+    parser.add_argument("--use_int", type=str2bool, default=True)
     parser.add_argument("--test", type=str2bool, default=False)
     parser.add_argument("--fine_tune", type=str2bool, default=False)
     parser.add_argument("--use_one_cycle", type=str2bool, default=False)
@@ -349,6 +350,7 @@ def main():
         mpm_label_smoothing=args.mpm_label_smoothing,
         optimizer_type=args.optimizer_type,
         conditional=args.use_cond,
+        use_int=args.use_int,
     )
     if rank_zero_only.rank == 0:
         print("Model initialized.")
