@@ -142,12 +142,6 @@ def main():
 
     # Training hyperparams
     parser.add_argument("--lr_factor", type=float, default=0.1)
-    parser.add_argument(
-        "--all_head",
-        type=str2bool,
-        default=True,
-        help="Increase LR on whole head or only last layer",
-    )
     parser.add_argument("--lr", type=float, default=1e-3)
 
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
@@ -313,6 +307,51 @@ def main():
 
     print(f"Model mode: {args.mode}")
 
+    # figure out if the whole head should be increased in LR or only the last
+    # layer, based on the presence of certain keywords in the checkpoint tag
+    # (which is derived from the checkpoint path)
+    if args.fine_tune:
+        # use dataset name to determine task
+        if "top" in args.dataset.lower():
+            # --> top tagging fine-tuning
+            # if pre-training included classifier head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "class" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in "ckpt_tag"
+                    and args.fine_tune
+                )
+                else False
+            )
+        elif "jetnet" in args.dataset.lower():
+            # --> generative fine-tuning
+            # if pre-training included generator head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "gen" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in "ckpt_tag"
+                    and args.fine_tune
+                )
+                else False
+            )
+        else:
+            raise ValueError(
+                f"Don't know how to determine which layers to increase LR on for dataset {args.dataset}. "
+            )
+
+        if all_head:
+            print(
+                f"Will increase LR on whole head for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+        else:
+            print(
+                f"Will increase LR only on last layer for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+
     model = PETLightning(
         num_feat=args.input_dim,
         num_classes=args.num_classes,
@@ -343,14 +382,7 @@ def main():
         masking_fraction=args.masking_fraction,
         use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
-        all_head=args.all_head
-        if (
-            "class" not in ckpt_tag
-            and "pretrain" not in ckpt_tag
-            and "scratch" not in "ckpt_tag"
-            and args.fine_tune
-        )
-        else False,
+        all_head=all_head,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
