@@ -325,6 +325,12 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
             {"params": last_layer_no_decay, "weight_decay": 0.0, "lr": last_layer_lr}
         )
 
+    for i, pg in enumerate(param_groups):
+        print(f"Param group {i + 1}: ")
+        print(
+            f"-- weight_decay: {pg['weight_decay']} -- lr: {pg['lr']} -- n_param keys: {len(pg['params'])}"
+        )
+
     return param_groups
 
 
