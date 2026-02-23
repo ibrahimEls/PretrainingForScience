@@ -262,12 +262,14 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
     no_decay, decay = [], []
     last_layer_no_decay, last_layer_decay = [], []
 
+    if all_head:
+        print("INCREASING LR ON WHOLE HEAD")
+
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
 
         if all_head:
-            print("INCREASING LR ON WHOLE HEAD")
             is_last_layer = name.startswith("classifier") or name.startswith(
                 "generator"
             )
