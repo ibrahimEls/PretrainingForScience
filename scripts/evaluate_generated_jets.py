@@ -87,7 +87,7 @@ def eval_jet_generation(
         "tau32": np.linspace(0, 1.2, 60),
         "jet_mass": np.linspace(0, 250, 60),
         "jet_pt": np.linspace(400, 1400, 60),
-        "jet_n_constituents": np.linspace(-0.5, 100.5, 102),
+        "jet_n_constituents": np.linspace(-0.5, 150.5, 152),
         "d2": np.linspace(0, 12, 50),
     }
 

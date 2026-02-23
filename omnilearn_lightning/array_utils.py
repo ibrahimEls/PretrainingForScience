@@ -509,7 +509,7 @@ def replace_masked_positions(
     return None
 
 
-def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=100, divide_pt_by_sum_pt=True):
+def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=150, divide_pt_by_sum_pt=True):
     """
     Helper function to convert an awkward array of Momentum4D objects to a numpy
     array with the format expected by the JetNet evaluation code. The output array
@@ -521,24 +521,34 @@ def p4s_to_jetnet_eval_np_stack(p4s_ak, maxlen=100, divide_pt_by_sum_pt=True):
     p4s_ak : ak.Array
         Awkward array of Momentum4D objects with fields eta, phi, pt, mass
     maxlen : int, optional
-        Maximum number of particles per jet. If a jet has fewer particles, it will be padded with zeros. If a jet has more particles, it will be truncated. Default is 100.
+        Maximum number of particles per jet. If a jet has fewer particles, it
+        will be padded with zeros. If a jet has more particles, it will be
+        truncated. Default is 100.
     divide_pt_by_sum_pt : bool, optional
-        Whether to divide the pt of each particle by the sum of pt of all particles in the jet. Default is True.
+        Whether to divide the pt of each particle by the sum of pt of all
+        particles in the jet. Default is True.
+
+    Returns
+    -------
+    np.ndarray
+        Numpy array of shape (n_jets, maxlen, 4) with the features ordered as
+        (eta, phi, pt, mass).
+    np.ndarray
+        Mask array of shape (n_jets, maxlen) indicating which entries are valid
+        (1) and which are padded (0). Only returned if divide_pt_by_sum_pt is
+        True.
     """
     p4s_ak_sum = ak.sum(p4s_ak, axis=1)
-    return ak_to_np_stack(
-        ak_pad(
-            ak.Array(
-                {
-                    "eta": p4s_ak.eta,
-                    "phi": p4s_ak.phi,
-                    "pt": p4s_ak.pt / p4s_ak_sum.pt
-                    if divide_pt_by_sum_pt
-                    else p4s_ak.pt,
-                    "mass": ak.zeros_like(p4s_ak.pt),
-                }
-            ),
-            maxlen=maxlen,
+    p4s_ak_padded, mask = ak_pad(
+        ak.Array(
+            {
+                "eta": p4s_ak.eta,
+                "phi": p4s_ak.phi,
+                "pt": p4s_ak.pt / p4s_ak_sum.pt if divide_pt_by_sum_pt else p4s_ak.pt,
+                "mass": ak.zeros_like(p4s_ak.pt),
+            }
         ),
-        names=["eta", "phi", "pt", "mass"],
+        maxlen=maxlen,
+        return_mask=True,
     )
+    return ak_to_np_stack(p4s_ak_padded, names=["eta", "phi", "pt", "mass"]), mask

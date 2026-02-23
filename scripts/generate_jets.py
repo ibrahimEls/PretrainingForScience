@@ -44,11 +44,12 @@ class JetGenerationCallback(pl.Callback):
         rank, world_size = trainer.global_rank, trainer.world_size
 
         # Collect all batch results from this rank
-        originals, generateds, y_values = [], [], []
-        for orig, gen, y in pl_module.results:
+        originals, generateds, y_values, cond_values = [], [], [], []
+        for orig, gen, y, cond in pl_module.results:
             originals.append(orig)
             generateds.append(gen)
             y_values.append(y)
+            cond_values.append(cond)
 
         # Write this rank's results to temp file
         if originals:
@@ -57,8 +58,9 @@ class JetGenerationCallback(pl.Callback):
                 "generated": ak.concatenate(generateds, axis=0),
             }
             y = ak.concatenate(y_values, axis=0)
+            cond = ak.concatenate(cond_values, axis=0)
             rank_file = self.output_path / f"_rank_{rank}.parquet"
-            ak.to_parquet(ak.Array({"x_ak": x_ak, "y": y}), rank_file)
+            ak.to_parquet(ak.Array({"x_ak": x_ak, "y": y, "cond": cond}), rank_file)
             logger.info("[Rank %d] Wrote %d jets to %s", rank, len(y), rank_file)
 
         if world_size > 1:
@@ -68,7 +70,7 @@ class JetGenerationCallback(pl.Callback):
             return
 
         # Rank 0: merge all results
-        all_orig, all_gen, all_y = [], [], []
+        all_orig, all_gen, all_y, all_cond = [], [], [], []
         for r in range(world_size):
             fpath = self.output_path / f"_rank_{r}.parquet"
             if fpath.exists():
@@ -76,6 +78,7 @@ class JetGenerationCallback(pl.Callback):
                 all_orig.append(partial["x_ak"]["original"])
                 all_gen.append(partial["x_ak"]["generated"])
                 all_y.append(partial["y"])
+                all_cond.append(partial["cond"])
                 fpath.unlink()
                 # print average y to verify each rank has different jets
                 logger.info(
@@ -95,11 +98,13 @@ class JetGenerationCallback(pl.Callback):
             "generated": ak.concatenate(all_gen, axis=0),
         }
         y = ak.concatenate(all_y, axis=0)
+        cond = ak.concatenate(all_cond, axis=0)
 
         # Postprocess: filter, compute p4s and substructure
         mask = ak.num(x_ak["original"].eta) >= 3
         x_ak = {k: v[mask] for k, v in x_ak.items()}
         y = y[mask]
+        cond = cond[mask]
 
         p4_kwargs = dict(
             field_name_eta="eta",
@@ -120,6 +125,7 @@ class JetGenerationCallback(pl.Callback):
                     for k, v in p4s.items()
                 },
                 "y": y,
+                "cond": cond,
             }
         )
         logger.info("Generated %d jets total from %d GPU(s)", len(y), world_size)
@@ -174,7 +180,7 @@ def generate_jets(
                 feature_names_x=FEATURE_NAMES_X,
                 n_sampling_steps=n_sampling_steps,
                 verbose=False,
-            ) + (batch["y"].cpu().numpy(),)
+            ) + (batch["y"].cpu().numpy(), batch["cond"].cpu().numpy())
             self.results.append(result)
             return result
 

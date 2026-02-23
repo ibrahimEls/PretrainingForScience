@@ -358,6 +358,7 @@ class PETLightning(LightningModule):
         optimizer_type="Lion",  # Lion or Ranger
         use_perturbed_loss_terms=True,
         conditional=False,
+        use_int=True,
         **kwargs,
     ):
         super().__init__()
@@ -428,6 +429,7 @@ class PETLightning(LightningModule):
             mlp_drop=mlp_drop,
             attn_drop=attn_drop,
             feature_drop=feature_drop,
+            use_int=use_int,
             codebook_size=self.tokenizer.n_clusters
             if (self.use_mpm and self.tokenizer is not None)
             else number_continuous_features,
