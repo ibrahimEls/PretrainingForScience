@@ -314,7 +314,7 @@ def main():
                 if (
                     "class" not in ckpt_tag
                     and "pretrain" not in ckpt_tag
-                    and "scratch" not in "ckpt_tag"
+                    and "scratch" not in ckpt_tag
                     and args.fine_tune
                 )
                 else False
@@ -327,7 +327,7 @@ def main():
                 if (
                     "gen" not in ckpt_tag
                     and "pretrain" not in ckpt_tag
-                    and "scratch" not in "ckpt_tag"
+                    and "scratch" not in ckpt_tag
                     and args.fine_tune
                 )
                 else False
