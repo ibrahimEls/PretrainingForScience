@@ -142,6 +142,12 @@ def main():
 
     # Training hyperparams
     parser.add_argument("--lr_factor", type=float, default=0.1)
+    parser.add_argument(
+        "--all_head",
+        type=str2bool,
+        default=True,
+        help="Increase LR on whole head or only last layer",
+    )
     parser.add_argument("--lr", type=float, default=1e-3)
 
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
@@ -337,7 +343,7 @@ def main():
         masking_fraction=args.masking_fraction,
         use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
-        all_head=True
+        all_head=args.all_head
         if (
             "class" not in ckpt_tag
             and "pretrain" not in ckpt_tag
