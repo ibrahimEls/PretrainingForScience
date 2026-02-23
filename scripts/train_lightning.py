@@ -345,6 +345,8 @@ def main():
             print(
                 f"Will increase LR only on last layer for fine-tuning based on checkpoint tag: {ckpt_tag}"
             )
+    else:
+        all_head = False
 
     model = PETLightning(
         num_feat=args.input_dim,
