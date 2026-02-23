@@ -40,12 +40,21 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         model.load_state_dict(filtered_state, strict=False)
 
     elif "jetnet" in task.lower():
+        print(
+            f"Loading checkpoint from {ckpt_path} for task {task} with partial "
+            "loading (excluding pid_embed and out layers)"
+        )
+
         ckpt = torch.load(ckpt_path, map_location="cpu")
         ckpt_state_dict = ckpt["state_dict"]
         filtered_state = {
             key: value
             for key, value in ckpt_state_dict.items()
-            if ("generator.pid_embed" not in key and "classifier.out" not in key)
+            if (
+                "generator.pid_embed" not in key
+                and "generator.out" not in key
+                and "classifier.out" not in key
+            )
         }
         # print the keys that *won't* be loaded
         print(
@@ -262,15 +271,24 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
     no_decay, decay = [], []
     last_layer_no_decay, last_layer_decay = [], []
 
+    if all_head:
+        print("INCREASING LR ON WHOLE HEAD")
+
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
 
         if all_head:
-            print("INCREASING LR ON WHOLE HEAD")
-            is_last_layer = name.startswith("classifier")
+            is_last_layer = name.startswith("classifier") or name.startswith(
+                "generator"
+            )
         else:
-            is_last_layer = name.startswith("classifier.out")
+            is_last_layer = name.startswith("classifier.out") or name.startswith(
+                "generator.out"
+            )
+
+        if is_last_layer:
+            print(f"Identified last layer parameter: {name}")
 
         if any(keyword in name for keyword in model.no_weight_decay()):
             if is_last_layer:
@@ -290,8 +308,13 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
     ]
 
     # Adjust learning rate for last layer if fine-tuning
-    last_layer_lr = lr * lr_factor if fine_tune else lr
-    print(f"Setting Last Layer LR to: {last_layer_lr}")
+    if fine_tune:
+        last_layer_lr = lr * lr_factor
+        print(
+            f"Setting Last Layer LR to: {last_layer_lr} (= base LR {lr} * factor {lr_factor})"
+        )
+    else:
+        last_layer_lr = lr
 
     if last_layer_decay:
         param_groups.append(

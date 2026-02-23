@@ -109,12 +109,6 @@ def main():
         "--seed", type=int, default=None, help="Random seed for reproducibility"
     )
     parser.add_argument(
-        "--use_gen_callback",
-        type=str2bool,
-        default=False,
-        help="Use generation callback or not",
-    )
-    parser.add_argument(
         "--save_top_k",
         type=int,
         default=5,
@@ -307,6 +301,53 @@ def main():
 
     print(f"Model mode: {args.mode}")
 
+    # figure out if the whole head should be increased in LR or only the last
+    # layer, based on the presence of certain keywords in the checkpoint tag
+    # (which is derived from the checkpoint path)
+    if args.fine_tune:
+        # use dataset name to determine task
+        if "top" in args.dataset.lower():
+            # --> top tagging fine-tuning
+            # if pre-training included classifier head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "class" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in ckpt_tag
+                    and args.fine_tune
+                )
+                else False
+            )
+        elif "jetnet" in args.dataset.lower():
+            # --> generative fine-tuning
+            # if pre-training included generator head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "gen" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in ckpt_tag
+                    and args.fine_tune
+                )
+                else False
+            )
+        else:
+            raise ValueError(
+                f"Don't know how to determine which layers to increase LR on for dataset {args.dataset}. "
+            )
+
+        if all_head:
+            print(
+                f"Will increase LR on whole head for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+        else:
+            print(
+                f"Will increase LR only on last layer for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+    else:
+        all_head = False
+
     model = PETLightning(
         num_feat=args.input_dim,
         num_classes=args.num_classes,
@@ -337,14 +378,7 @@ def main():
         masking_fraction=args.masking_fraction,
         use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
-        all_head=True
-        if (
-            "class" not in ckpt_tag
-            and "pretrain" not in ckpt_tag
-            and "scratch" not in "ckpt_tag"
-            and args.fine_tune
-        )
-        else False,
+        all_head=all_head,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
@@ -484,18 +518,6 @@ def main():
         verbose=True,
     )
     callbacks.append(early_stop_callback)
-
-    if args.use_gen_callback:
-        from omnilearn_lightning.callbacks.jet_generation_callback import (
-            JetGenerationCallback,
-        )
-
-        gen_callback = JetGenerationCallback(
-            output_path=f"{run_dir}/callbacks",
-            dataset_type=args.dataset,
-            n_batches=-1,
-        )
-        callbacks.append(gen_callback)
 
     if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
