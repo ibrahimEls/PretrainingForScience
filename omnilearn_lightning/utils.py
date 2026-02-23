@@ -40,12 +40,21 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         model.load_state_dict(filtered_state, strict=False)
 
     elif "jetnet" in task.lower():
+        print(
+            f"Loading checkpoint from {ckpt_path} for task {task} with partial "
+            "loading (excluding pid_embed and out layers)"
+        )
+
         ckpt = torch.load(ckpt_path, map_location="cpu")
         ckpt_state_dict = ckpt["state_dict"]
         filtered_state = {
             key: value
             for key, value in ckpt_state_dict.items()
-            if ("generator.pid_embed" not in key and "classifier.out" not in key)
+            if (
+                "generator.pid_embed" not in key
+                and "generator.out" not in key
+                and "classifier.out" not in key
+            )
         }
         # print the keys that *won't* be loaded
         print(
