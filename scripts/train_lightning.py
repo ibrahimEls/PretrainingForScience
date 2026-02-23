@@ -109,12 +109,6 @@ def main():
         "--seed", type=int, default=None, help="Random seed for reproducibility"
     )
     parser.add_argument(
-        "--use_gen_callback",
-        type=str2bool,
-        default=False,
-        help="Use generation callback or not",
-    )
-    parser.add_argument(
         "--save_top_k",
         type=int,
         default=5,
@@ -522,18 +516,6 @@ def main():
         verbose=True,
     )
     callbacks.append(early_stop_callback)
-
-    if args.use_gen_callback:
-        from omnilearn_lightning.callbacks.jet_generation_callback import (
-            JetGenerationCallback,
-        )
-
-        gen_callback = JetGenerationCallback(
-            output_path=f"{run_dir}/callbacks",
-            dataset_type=args.dataset,
-            n_batches=-1,
-        )
-        callbacks.append(gen_callback)
 
     if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
