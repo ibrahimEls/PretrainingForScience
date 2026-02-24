@@ -98,6 +98,11 @@ def get_pretrained_ckpts(
                 if pretrain_datasetsize_id not in pretrain_datasetsize_ids:
                     continue
                 ckpt_path = pretrained_ckpts[model_size][mode][pretrain_datasetsize_id]
+                if not ckpt_path.endswith(".ckpt"):
+                    print(
+                        f"Warning: Skipping invalid checkpoint path '{ckpt_path}' for model_size='{model_size}', mode='{mode}', pretrain_datasetsize_id='{pretrain_datasetsize_id}'"
+                    )
+                    continue
                 ckpt_paths.append(ckpt_path)
 
     return ckpt_paths
