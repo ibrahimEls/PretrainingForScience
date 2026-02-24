@@ -227,7 +227,7 @@ def main():
         if os.path.exists(last_ckpt_path):
             # Continue from last checkpoint
             print(f"Found existing checkpoint at {last_ckpt_path}")
-            print(f"Continuing training from checkpoint...")
+            print("Continuing training from checkpoint...")
             args.resume = True
             args.ckpt = last_ckpt_path
         else:
@@ -569,6 +569,12 @@ def main():
         print(f"Using best model from {best_model_path} for testing")
         trainer.test(model=model, datamodule=data_module, ckpt_path=best_model_path)
         print("Testing is complete!")
+
+    # Create a file finished.sh in the run directory to indicate that the run has finished (can be used by other scripts to check if the run is done)
+    finished_file = os.path.join(run_dir, "finished.txt")
+    with open(finished_file, "w") as f:
+        f.write("Run finished successfully.")
+    print(f"Created finished file at {finished_file}")
 
 
 if __name__ == "__main__":
