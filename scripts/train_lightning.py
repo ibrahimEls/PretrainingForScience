@@ -125,7 +125,14 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=20)
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=20,
+        help="Number of validation checks with no improvement after which"
+        " training will be stopped. Set to 0 or negative to disable early"
+        " stopping.",
+    )
     parser.add_argument(
         "--mode",
         type=str,
@@ -558,13 +565,14 @@ def main():
     #     print("Using MaskedPredictionCallback for self-supervised learning")
     #     callbacks.append(masked_prediction_callback)
 
-    early_stop_callback = EarlyStopping(
-        monitor="val_loss",
-        patience=args.patience,
-        mode="min",
-        verbose=True,
-    )
-    callbacks.append(early_stop_callback)
+    if args.patience > 0:
+        early_stop_callback = EarlyStopping(
+            monitor="val_loss",
+            patience=args.patience,
+            mode="min",
+            verbose=True,
+        )
+        callbacks.append(early_stop_callback)
 
     if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
