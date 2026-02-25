@@ -43,6 +43,31 @@ class PETDataModule(LightningDataModule):
         self.load_val = load_val
         self.use_cond = use_cond
 
+    def state_dict(self):
+        """Save dataset configuration that must be consistent across resumes."""
+        return {
+            "seed_for_initial_shuffling": self.seed_for_initial_shuffling,
+            "num_samples": self.num_samples,
+        }
+
+    def load_state_dict(self, state_dict):
+        """Verify dataset configuration matches the checkpoint's configuration."""
+        saved_seed = state_dict.get("seed_for_initial_shuffling")
+        saved_num_samples = state_dict.get("num_samples")
+
+        if saved_seed != self.seed_for_initial_shuffling:
+            raise ValueError(
+                f"seed_for_initial_shuffling mismatch: checkpoint has {saved_seed}, "
+                f"but current run uses {self.seed_for_initial_shuffling}. "
+                "This would result in a different dataset subset."
+            )
+        if saved_num_samples != self.num_samples:
+            raise ValueError(
+                f"num_samples mismatch: checkpoint has {saved_num_samples}, "
+                f"but current run uses {self.num_samples}. "
+                "This would result in a different dataset subset."
+            )
+
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
 
