@@ -307,6 +307,9 @@ def load_data(
                 rng = np.random.default_rng(seed=seed_for_shuffling)
                 perm = rng.permutation(len(indices))
                 indices = indices[perm]
+                print(
+                    f"Shuffled indices for dataset {names[iname]} with seed {seed_for_shuffling}."
+                )
             file_indices.extend(
                 (file_idx + index_shift, sample_idx) for file_idx, sample_idx in indices
             )
@@ -335,6 +338,9 @@ def load_data(
                 rng = np.random.default_rng(seed=seed_for_shuffling)
                 perm = rng.permutation(len(file_indices))
                 file_indices = file_indices[perm]
+                print(
+                    f"Shuffled indices for dataset {names[iname]} with seed {seed_for_shuffling}."
+                )
 
     # Shift labels if they are not used for pretrain
     label_shift = {"jetclass": 2, "aspen": 12, "jetclass2": 13}
