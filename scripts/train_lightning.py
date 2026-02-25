@@ -1,5 +1,6 @@
 import argparse
 import atexit
+import json
 import os
 import time
 
@@ -218,6 +219,7 @@ def main():
     args = parser.parse_args()
 
     # Handle run_dir argument
+    run_metadata = {}  # Will be populated from run_metadata.json on resume
     if args.run_dir is not None:
         provided_run_dir = args.run_dir
 
@@ -230,6 +232,16 @@ def main():
             print("Continuing training from checkpoint...")
             args.resume = True
             args.ckpt = last_ckpt_path
+            print(f"The ckpt used is: {args.ckpt}")
+
+            # Load run metadata from previous run (save_tag, wandb_run_id)
+            metadata_path = os.path.join(provided_run_dir, "run_metadata.json")
+            if os.path.exists(metadata_path):
+                with open(metadata_path, "r") as f:
+                    run_metadata = json.load(f)
+                print(f"Loaded run metadata from {metadata_path}: {run_metadata}")
+            else:
+                raise ValueError(f"No run_metadata.json found at {metadata_path}")
         else:
             # Start new run in this directory
             print(f"Starting new run in directory: {provided_run_dir}")
@@ -261,12 +273,21 @@ def main():
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
     ckpt_tag = ""
-    if args.dataset != "jetclass":
-        if args.fine_tune:
-            ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
+
+    # Override save_tag from metadata when resuming via run_dir
+    if provided_run_dir is not None and args.resume:
+        if run_metadata.get("save_tag"):
+            print(f"Overriding save_tag from run_metadata: {run_metadata['save_tag']}")
+            save_tag = run_metadata["save_tag"]
         else:
-            ckpt_tag = "from_scratch"
-        save_tag = save_tag + "_ckpt_" + ckpt_tag
+            raise ValueError("'save_tag' not found in metadata!")
+    else:
+        if args.dataset != "jetclass":
+            if args.fine_tune:
+                ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
+            else:
+                ckpt_tag = "from_scratch"
+            save_tag = save_tag + "_ckpt_" + ckpt_tag
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
@@ -466,16 +487,41 @@ def main():
         if "SLURM_JOB_ID" in os.environ:
             hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
 
-        wandb_logger = WandbLogger(
-            project=args.wandb_project,
-            name=run_name,
-            tags=args.wandb_tag,
-            save_dir=args.outdir,
-            entity=args.wandb_entity,
-        )
+        # Resume existing wandb run if we have a saved run ID, otherwise start new
+        prev_wandb_id = run_metadata.get("wandb_run_id")
+        if prev_wandb_id:
+            print(f"Resuming wandb run with id: {prev_wandb_id}")
+            wandb_logger = WandbLogger(
+                project=args.wandb_project,
+                name=run_name,
+                tags=args.wandb_tag,
+                save_dir=args.outdir,
+                entity=args.wandb_entity,
+                id=prev_wandb_id,
+                resume="must",
+            )
+        else:
+            wandb_logger = WandbLogger(
+                project=args.wandb_project,
+                name=run_name,
+                tags=args.wandb_tag,
+                save_dir=args.outdir,
+                entity=args.wandb_entity,
+            )
 
         wandb_logger.log_hyperparams(hparams)
         loggers.append(wandb_logger)
+
+        # Save run metadata (save_tag + wandb run ID) for future resumption
+        if rank_zero_only.rank == 0:
+            metadata_to_save = {
+                "save_tag": save_tag,
+                "wandb_run_id": wandb_logger.experiment.id,
+            }
+            metadata_path = os.path.join(run_dir, "run_metadata.json")
+            with open(metadata_path, "w") as f:
+                json.dump(metadata_to_save, f, indent=2)
+            print(f"Saved run metadata to {metadata_path}")
 
     checkpoint_step = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
