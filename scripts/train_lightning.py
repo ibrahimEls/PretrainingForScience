@@ -495,7 +495,7 @@ def main():
                 project=args.wandb_project,
                 name=run_name,
                 tags=args.wandb_tag,
-                save_dir=args.outdir,
+                save_dir=run_dir,
                 entity=args.wandb_entity,
                 id=prev_wandb_id,
                 resume="must",
@@ -505,7 +505,7 @@ def main():
                 project=args.wandb_project,
                 name=run_name,
                 tags=args.wandb_tag,
-                save_dir=args.outdir,
+                save_dir=run_dir,
                 entity=args.wandb_entity,
             )
 
@@ -514,9 +514,12 @@ def main():
 
         # Save run metadata (save_tag + wandb run ID) for future resumption
         if rank_zero_only.rank == 0:
+            run_attempt = run_metadata.get("run_attempt", 0) + 1
             metadata_to_save = {
                 "save_tag": save_tag,
                 "wandb_run_id": wandb_logger.experiment.id,
+                "seed_for_initial_shuffling": args.seed_for_initial_shuffling,
+                "run_attempt": run_attempt,
             }
             metadata_path = os.path.join(run_dir, "run_metadata.json")
             with open(metadata_path, "w") as f:
