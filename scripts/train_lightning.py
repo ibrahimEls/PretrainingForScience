@@ -493,6 +493,8 @@ def main():
         # add SLURM job id if it exists
         if "SLURM_JOB_ID" in os.environ:
             hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
+        else:
+            hparams["slurm_job_id"] = None
 
         # Resume existing wandb run if we have a saved run ID, otherwise start new
         prev_wandb_id = run_metadata.get("wandb_run_id")
@@ -524,9 +526,13 @@ def main():
             run_attempt = run_metadata.get("run_attempt", 0) + 1
             metadata_to_save = {
                 "save_tag": save_tag,
+                "run_name": run_name,
                 "wandb_run_id": wandb_logger.experiment.id,
                 "seed_for_initial_shuffling": args.seed_for_initial_shuffling,
                 "run_attempt": run_attempt,
+                # list of job IDs
+                "slurm_job_ids": run_metadata.get("slurm_job_ids", [])
+                + [os.environ.get("SLURM_JOB_ID")],
             }
             metadata_path = os.path.join(run_dir, "run_metadata.json")
             with open(metadata_path, "w") as f:
