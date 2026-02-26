@@ -341,7 +341,7 @@ def main():
     # figure out if the whole head should be increased in LR or only the last
     # layer, based on the presence of certain keywords in the checkpoint tag
     # (which is derived from the checkpoint path)
-    if args.fine_tune:
+    if args.fine_tune and not args.resume:
         # use dataset name to determine task
         if "top" in args.dataset.lower():
             # --> top tagging fine-tuning
