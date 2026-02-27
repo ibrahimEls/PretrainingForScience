@@ -95,7 +95,7 @@ def main():
     parser.add_argument(
         "--check_val_every_n_epoch",
         type=int,
-        default=None,
+        default=1,
         help="Number of training epochs between each validation check. If set, this "
         "overrides val_check_interval for epoch-based validation checking "
         "(i.e., validation will be checked every N epochs regardless of the "
@@ -628,9 +628,7 @@ def main():
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
         val_check_interval=args.val_check_interval,
-        check_val_every_n_epoch=args.check_val_every_n_epoch
-        if args.val_check_interval is None
-        else None,
+        check_val_every_n_epoch=args.check_val_every_n_epoch,
     )
 
     # Training
