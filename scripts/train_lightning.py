@@ -124,6 +124,12 @@ def main():
         default=5,
         help="Number of top checkpoints to save based on validation metric. Use -1 to save all checkpoints.",
     )
+    parser.add_argument(
+        "--accumulate_grad_batches",
+        type=int,
+        default=2,
+        help="Number of gradient accumulation steps",
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -623,7 +629,7 @@ def main():
         strategy=strategy,
         gradient_clip_val=1,
         gradient_clip_algorithm="norm",
-        accumulate_grad_batches=2,
+        accumulate_grad_batches=args.accumulate_grad_batches,
         num_nodes=args.num_nodes,
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
