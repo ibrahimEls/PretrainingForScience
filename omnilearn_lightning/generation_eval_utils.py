@@ -113,6 +113,7 @@ def distribution_metrics_batched(
     n_bins: int = 30,
     replace: bool = True,
     return_zero_if_nan_or_inf: bool = False,
+    seed: int = None,
 ):
     """Calculate W1 distance and KL divergence between two datasets with batched sampling.
 
@@ -128,13 +129,14 @@ def distribution_metrics_batched(
         n_bins (int): Number of bins for the quantiled KL divergence. Default is 30.
         replace (bool): Whether to sample with replacement. Default is True.
         return_zero_if_nan_or_inf (bool): If True, return 0 for NaN or inf KL values.
+        seed (int): Random seed for reproducibility. Default is None.
 
     Returns:
         dict: Dictionary with keys "w1" and "kld", each containing a tuple (mean, std).
     """
     w1_values = []
     kl_values = []
-    rng = np.random.default_rng(seed=42)
+    rng = np.random.default_rng(seed=seed)
 
     if data1.ndim != data2.ndim:
         raise ValueError(
