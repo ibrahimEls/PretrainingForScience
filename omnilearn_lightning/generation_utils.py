@@ -284,6 +284,7 @@ def get_metrics_and_gen_jets_vs_epoch(
                     "trainer/global_step",
                     "epoch",
                     "train_loss_gen_epoch",
+                    "train_loss_gen_step",
                     "val_loss_gen",
                 ]
                 logs_df = logs_df[columns_to_keep]
