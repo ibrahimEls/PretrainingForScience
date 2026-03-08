@@ -61,6 +61,7 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_mpm_val_loss=9.0693.ckpt"
     },
     "generator+mpmregress": {
+      "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/gen_mpmregress_val_loss=3.0483.ckpt",
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/gen_mpmregress_val_loss=2.7837.ckpt"
     },
     "pretrain": {
