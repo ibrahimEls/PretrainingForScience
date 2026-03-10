@@ -614,7 +614,7 @@ class PETLightning(LightningModule):
                         self.loss_gen,
                         self.use_event_loss,
                         self.use_clip,
-                        CLIPLoss(),
+                        self.clip_loss,
                         logs,
                         data_pid=data_pid,
                     )
@@ -647,7 +647,7 @@ class PETLightning(LightningModule):
                         self.loss_gen,
                         self.use_event_loss,
                         self.use_clip,
-                        CLIPLoss(),
+                        self.clip_loss,
                         logs,
                         data_pid=data_pid,
                     )
@@ -670,7 +670,7 @@ class PETLightning(LightningModule):
                 continue
             self.log(
                 f"{stage}_{k}",
-                v,
+                v.detach() if isinstance(v, torch.Tensor) else v,
                 prog_bar=True,
                 on_step=on_step,
                 on_epoch=True,
