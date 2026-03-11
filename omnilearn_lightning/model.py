@@ -220,8 +220,8 @@ class PET2(nn.Module):
         if "classifier" in self.mode or self.mode == "pretrain":
             x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
             y_pred = self.classifier(x_body)
-            # if self.mode == "pretrain":
-            #     y_perturb = self.classifier(z_body)
+            if self.mode == "pretrain" or self.mode == "classifier+generator":
+                y_perturb = self.classifier(z_body)
 
         # MPM forward pass
         if "mpm" in self.mode or self.mode == "pretrain":
@@ -338,7 +338,8 @@ class PETLightning(LightningModule):
         use_weights_in_mpm=False,
         mpm_features="kin",
         mpm_label_smoothing=0.0,
-        optimizer_type="Lion",  # Lion or Ranger
+        optimizer_type="Lion",  # Lion or Ranger,
+        dataset_type="jetclass",
         **kwargs,
     ):
         super().__init__()
@@ -347,6 +348,7 @@ class PETLightning(LightningModule):
         self.tokenizer = None
         self.use_mpm = "mpm" in mode or mode == "pretrain"
         self.mpm_features = mpm_features
+        self.dataset_type = dataset_type
 
         if self.use_mpm:
             # verify that mpm_features is valid
@@ -667,7 +669,9 @@ class PETLightning(LightningModule):
             scheduler = get_cosine_schedule_with_warmup(
                 optimizer,
                 num_warmup_steps=self.hparams.warmup_steps,
-                num_training_steps=self.hparams.total_steps,
+                num_training_steps=self.hparams.total_steps
+                if self.dataset_type == "jetclass"
+                else self.trainer.estimated_stepping_batches,
             )
             return {
                 "optimizer": optimizer,

@@ -2,8 +2,8 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 36:00:00
-#SBATCH -N 4
+#SBATCH -t 48:00:00
+#SBATCH -N 8
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
@@ -37,18 +37,18 @@ RESUME=n
 TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=250 --val_check_interval=$VAL_CHECK --dataset_size=$DATASET_SIZE --use_pid y --use_add y --epoch=500  --outdir=$OUTPUT_DIR --path=$DATASET_PATH --shuffle_val_test_indices y --seed_for_initial_shuffling=1603 --patience=$PATIENCE  --pos_encoding_type=$POS_ENCODING_TYPE --masking_fraction=$MASKING_FRACTION --resume=$RESUME --ckpt=$PRETRAINED_CKPT"
 
 ### Micro Model
-TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
+#TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=4 --model_size=micro --lr 1e-3 --weight_decay 0.01 --batch_size=256"
 ### Small model
-# TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
+TRAINING_CFG_SIZE_SPECIFIC="--num_workers=2 --num_nodes=8 --model_size=small --lr 5e-4 --weight_decay 0.3 --batch_size=128"
 ### Medium model
 # TRAINING_CFG_SIZE_SPECIFIC="--num_workers=32 --num_nodes=4 --model_size=medium --lr 5e-6 --weight_decay 0.1 --batch_size=32"
 
 TRAINING_CFG="$TRAINING_CFG_ALL_SIZES $TRAINING_CFG_SIZE_SPECIFIC"
 
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier"
-export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
-# export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier+generator"
+#export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier"
+#export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator"
+#export cmd="python3 train_lightning.py $TRAINING_CFG --mode=mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
+export cmd="python3 train_lightning.py $TRAINING_CFG --mode=classifier+generator"
 # export cmd="python train_lightning.py $TRAINING_CFG --mode=classifier+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=generator+mpm --tokenizer_ckpt=$TOKENIZER_CKPT"
 # export cmd="python3 train_lightning.py $TRAINING_CFG --mode=pretrain --tokenizer_ckpt=$TOKENIZER_CKPT"

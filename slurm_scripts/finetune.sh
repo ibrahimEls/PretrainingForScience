@@ -2,7 +2,7 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 24:00:00
+#SBATCH -t 4:00:00
 #SBATCH -N 4
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
@@ -11,7 +11,7 @@
 #SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
-at $0
+cat $0
 
 # ------- User-specific paths --------
 REPO_DIR="/global/homes/i/ibrahime/temp/OmniLearnLightining/"
@@ -28,9 +28,11 @@ LAYOUT_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-
 STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States.json"
 
 DOWNSTREAM_DATASETS="all"
-MODEL_SIZES="micro"
+MODEL_SIZES="medium"
 #PRE_TRAINING_MODES="classifier,generator,mpm,classifier+generator,classifier+mpm,generator+mpm,from_scratch"
-PRE_TRAINING_MODES="generator+mpmregress,pretrainregress,classifier+mpmregress" #classifier+generator,from_scratch"
+PRE_TRAINING_MODES="classifier,generator,classifier+generator"
+#"from_scratch,pretrainregress,classifier+generator,from_scratch,mpmregress,generator+mpmregress,classifier+mpmregress,classifier+mpm,generator+mpm,generator,classifier,mpm"  #classifier+mpmregress" #"classifier+mpm,generator+mpm" #classifier+generator,from_scratch"
+#classifier+generator,from_scratch,mpmregress,generator+mpmregress,pretrainregress"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
@@ -57,7 +59,7 @@ export cmd="python3 finetune_lightning.py \
   --repo_dir=$REPO_DIR\
   --output_dir=$OUTPUT_DIR\
   --dataset_dir=$DATASET_PATH"
-  # --dry-run" # <---- Turn on to see what will be run without running it
+  # --dry-run" <---- Turn on to see what will be run without running it
 
 module load conda
 conda activate torchvenv

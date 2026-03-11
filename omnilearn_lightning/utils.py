@@ -411,8 +411,12 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
     # ---- extract scale (parent directory: 100k, 1M, 10M, 100M) ----
     parent_dir = os.path.basename(os.path.dirname(path.rstrip("/")))
     scale_match = re.fullmatch(r"(100k|1M|10M|100M)", parent_dir)
-    if not scale_match:
+
+    if parent_dir == "Small" or parent_dir == "Medium":
+        scale = "100M"
+    elif not scale_match:
         raise ValueError(f"No known scale folder found above file: {parent_dir}")
-    scale = scale_match.group(1)
+    else:
+        scale = scale_match.group(1)
 
     return f"{scale}_{prefix}"
