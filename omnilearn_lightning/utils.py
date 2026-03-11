@@ -40,19 +40,35 @@ def load_partial_checkpoint(model, ckpt_path, task="top"):
         model.load_state_dict(filtered_state, strict=False)
 
     elif "jetnet" in task.lower():
+        print(
+            f"Loading checkpoint from {ckpt_path} for task {task} with partial "
+            "loading (excluding pid_embed and out layers)"
+        )
+
         ckpt = torch.load(ckpt_path, map_location="cpu")
         ckpt_state_dict = ckpt["state_dict"]
         filtered_state = {
             key: value
             for key, value in ckpt_state_dict.items()
             if (
-                "generator.pid_embed.0.weight" not in key
+                "generator.pid_embed" not in key
+                and "generator.out" not in key
                 and "classifier.out" not in key
             )
         }
+        # print the keys that *won't* be loaded
+        print(
+            "Keys dropped from checkpoint (i.e. available in checkpoint, but not loaded):"
+        )
+        for key in ckpt_state_dict.keys():
+            if key not in filtered_state:
+                print(f"Not Loaded: {key}")
         model.load_state_dict(filtered_state, strict=False)
         # print matching and non-matching keys
         model_state_dict = model.state_dict()
+        print(
+            "\nCheckpoint keys loaded into model (if model has matching key and shape):"
+        )
         for key in filtered_state.keys():
             if key in model_state_dict:
                 print(f"Loaded: {key}")
@@ -255,15 +271,24 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
     no_decay, decay = [], []
     last_layer_no_decay, last_layer_decay = [], []
 
+    if all_head:
+        print("INCREASING LR ON WHOLE HEAD")
+
     for name, param in model.named_parameters():
         if not param.requires_grad:
             continue
 
         if all_head:
-            print("INCREASING LR ON WHOLE HEAD")
-            is_last_layer = name.startswith("classifier")
+            is_last_layer = name.startswith("classifier") or name.startswith(
+                "generator"
+            )
         else:
-            is_last_layer = name.startswith("classifier.out")
+            is_last_layer = name.startswith("classifier.out") or name.startswith(
+                "generator.out"
+            )
+
+        if is_last_layer:
+            print(f"Identified last layer parameter: {name}")
 
         if any(keyword in name for keyword in model.no_weight_decay()):
             if is_last_layer:
@@ -283,8 +308,13 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
     ]
 
     # Adjust learning rate for last layer if fine-tuning
-    last_layer_lr = lr * lr_factor if fine_tune else lr
-    print(f"Setting Last Layer LR to: {last_layer_lr}")
+    if fine_tune:
+        last_layer_lr = lr * lr_factor
+        print(
+            f"Setting Last Layer LR to: {last_layer_lr} (= base LR {lr} * factor {lr_factor})"
+        )
+    else:
+        last_layer_lr = lr
 
     if last_layer_decay:
         param_groups.append(
@@ -400,6 +430,20 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
         "/.../100k/class_only_val_loss=.5940.ckpt"       -> "100k_class_only"
         "/.../1M/gen_only_val_loss=2.6142.ckpt"         -> "1M_gen_only"
         "/.../10M/pretrainregress_val_loss=.123.ckpt"   -> "10M_pretrainregress"
+
+    The folder structure is like this:
+    /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/
+        ├─ Medium
+        │ ├─ class_gen_val_loss=3.2382.ckpt
+        │ ├─ class_only_val_loss=.4095.ckpt
+        │ └─ gen_only_val_loss=2.5089.ckpt
+        ├─ Small
+        │ ├─ class_gen_val_loss=3.2382.ckpt
+        ├─ Micro
+        │ ├─ 100M
+        │ │ ├─ class_gen_preturb_val_loss=3.3324.ckpt
+        │ │ ├─ class_gen_val_loss=3.0348.ck
+        ...
     """
     # ---- extract prefix from filename (longest match wins) ----
     filename = os.path.basename(path)
@@ -409,6 +453,17 @@ def extract_pretrained_ckpt_prefix(path: str) -> str:
     prefix = prefix_match.group(1)
 
     # ---- extract scale (parent directory: 100k, 1M, 10M, 100M) ----
+    # This only works for the "Micro" model which has the scale in the parent
+    # directory, but not for "Small" and "Medium" which don't have a scale
+    # folder. For those, we will just return the prefix without the scale.
+
+    # get the model size from the path (look for "Micro", "Small", or "Medium" in the path)
+    model_size_match = re.search(r"(Micro|Small|Medium)", path, re.IGNORECASE)
+    model_size = model_size_match.group(1) if model_size_match else None
+
+    if model_size and model_size.lower() in ["small", "medium"]:
+        return prefix
+
     parent_dir = os.path.basename(os.path.dirname(path.rstrip("/")))
     scale_match = re.fullmatch(r"(100k|1M|10M|100M)", parent_dir)
 

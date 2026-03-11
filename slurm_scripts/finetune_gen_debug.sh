@@ -8,13 +8,12 @@
 #SBATCH -c 32
 #SBATCH --gpus-per-task=1
 #SBATCH --gpu-bind=none
-#SBATCH --image=docker:jobirk/omnilearn-lightning:v1.0.3
 
 # print this file content (so we have the job configuration saved in the logs)
 cat $0
 
 # ------- User-specific paths --------
-REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning_dev"
+REPO_DIR="/global/homes/j/jobirk/repositories/OmniLearnLightning"
 OUTPUT_DIR=/pscratch/sd/j/jobirk/omnilearned_output/omnilearn_output
 DATASET_PATH=/pscratch/sd/j/jobirk/omnilearn_datasets_dev/
 # ------------------------------------
@@ -38,10 +37,10 @@ fi
 PRETRAIN_JSON="${REPO_DIR}/assets/Paths/Pre-Trained-Model-Paths.json"
 
 # DOWNSTREAM_DATASETS="all"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150,100k-JetNet150"
-DOWNSTREAM_DATASETS="100k-JetNet150"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150,100k-JetNet150"
+DOWNSTREAM_DATASETS="10k-JetNet150"  # can also be e.g. "10k-JetNet150" or "1k-JetNet150,10k-JetNet150,100k-JetNet150"
 MODEL_SIZES="micro"
 # PRE_TRAINING_MODES="from_scratch,classifier,classifier+generator"  # comma-separated list list "from_scratch,classifier,classifier+generator"
-PRE_TRAINING_MODES="from_scratch"  # comma-separated list list "from_scratch,classifier,classifier+generator"
+PRE_TRAINING_MODES="from_scratch,generator"  # comma-separated list list "from_scratch,classifier,classifier+generator"
 MODE="generator"
 
 N_RUNS=1
@@ -66,8 +65,7 @@ export cmd="python3 finetune_lightning.py \
   --num_nodes=$NODES \
   --repo_dir=$REPO_DIR \
   --output_dir=$OUTPUT_DIR \
-  --dataset_dir=$DATASET_PATH \
-  --dry-run" # <---- Turn on to see what will be run without running it
+  --dataset_dir=$DATASET_PATH " #   --dry-run" # <---- Turn on to see what will be run without running it
 
 module load conda
 conda activate torchvenv

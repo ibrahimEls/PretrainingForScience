@@ -1,5 +1,7 @@
 import argparse
+import atexit
 import os
+import time
 
 import torch
 from omnilearned.utils import get_model_parameters
@@ -44,6 +46,12 @@ def main():
         help="Output directory",
     )
     parser.add_argument(
+        "--run_dir",
+        type=str,
+        default=None,
+        help="Run directory. If provided, starts a new run (if directory doesn't exist) or continues from last checkpoint (if directory exists with checkpoints/last.ckpt)",
+    )
+    parser.add_argument(
         "--ckpt",
         type=str,
         default=None,
@@ -60,6 +68,12 @@ def main():
     parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=4, help="Number of DataLoader workers"
+    )
+    parser.add_argument(
+        "--max_training_steps",
+        type=int,
+        default=-1,
+        help="Maximum number of training steps",
     )
     parser.add_argument("--epoch", type=int, default=100, help="Number of epochs")
     parser.add_argument(
@@ -94,6 +108,18 @@ def main():
     parser.add_argument(
         "--seed", type=int, default=None, help="Random seed for reproducibility"
     )
+    parser.add_argument(
+        "--save_top_k",
+        type=int,
+        default=5,
+        help="Number of top checkpoints to save based on validation metric. Use -1 to save all checkpoints.",
+    )
+    parser.add_argument(
+        "--accumulate_grad_batches",
+        type=int,
+        default=2,
+        help="Number of gradient accumulation steps",
+    )
 
     # Model hyper-parameters
     parser.add_argument("--input_dim", type=int, default=4)
@@ -111,6 +137,7 @@ def main():
         default="pretrain",
         help="Training mode (classifier/generator/other)",
     )
+    parser.add_argument("--use_perturbed_loss_terms", type=str2bool, default=False)
     parser.add_argument("--resume", type=str2bool, default=False)
 
     # Training hyperparams
@@ -165,6 +192,8 @@ def main():
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
+    parser.add_argument("--use_cond", type=str2bool, default=False)
+    parser.add_argument("--use_int", type=str2bool, default=True)
     parser.add_argument("--test", type=str2bool, default=False)
     parser.add_argument("--fine_tune", type=str2bool, default=False)
     parser.add_argument("--use_one_cycle", type=str2bool, default=False)
@@ -194,6 +223,27 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Handle run_dir argument
+    if args.run_dir is not None:
+        provided_run_dir = args.run_dir
+
+        # Check if run_dir exists and contains a checkpoint
+        last_ckpt_path = os.path.join(provided_run_dir, "checkpoints", "last.ckpt")
+
+        if os.path.exists(last_ckpt_path):
+            # Continue from last checkpoint
+            print(f"Found existing checkpoint at {last_ckpt_path}")
+            print(f"Continuing training from checkpoint...")
+            args.resume = True
+            args.ckpt = last_ckpt_path
+        else:
+            # Start new run in this directory
+            print(f"Starting new run in directory: {provided_run_dir}")
+            if rank_zero_only.rank == 0:
+                os.makedirs(provided_run_dir, exist_ok=True)
+    else:
+        provided_run_dir = None
 
     if args.model_size == "micro":
         save_tag = f"_micro_{args.mode}_{args.dataset}_dataset_{args.dataset_size}"
@@ -252,10 +302,55 @@ def main():
         shuffle_val_test_indices=args.shuffle_val_test_indices,
         seed_for_initial_shuffling=args.seed_for_initial_shuffling,
         load_val=True,
-        use_cond=False,
+        use_cond=args.use_cond,
     )
 
     print(f"Model mode: {args.mode}")
+
+    # figure out if the whole head should be increased in LR or only the last
+    # layer, based on the presence of certain keywords in the checkpoint tag
+    # (which is derived from the checkpoint path)
+    if args.fine_tune:
+        # use dataset name to determine task
+        if "top" in args.dataset.lower():
+            # --> top tagging fine-tuning
+            # if pre-training included classifier head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "class" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in ckpt_tag
+                )
+                else False
+            )
+        elif "jetnet" in args.dataset.lower():
+            # --> generative fine-tuning
+            # if pre-training included generator head, then increase LR on only last layer
+            all_head = (
+                True
+                if (
+                    "gen" not in ckpt_tag
+                    and "pretrain" not in ckpt_tag
+                    and "scratch" not in ckpt_tag
+                )
+                else False
+            )
+        else:
+            raise ValueError(
+                f"Don't know how to determine which layers to increase LR on for dataset {args.dataset}. "
+            )
+
+        if all_head:
+            print(
+                f"Will increase LR on whole head for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+        else:
+            print(
+                f"Will increase LR only on last layer for fine-tuning based on checkpoint tag: {ckpt_tag}"
+            )
+    else:
+        all_head = False
 
     model = PETLightning(
         num_feat=args.input_dim,
@@ -285,22 +380,16 @@ def main():
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
         masking_fraction=args.masking_fraction,
+        use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
-        all_head=True
-        if (
-            "class" not in ckpt_tag
-            and "pretrain" not in ckpt_tag
-            and "scratch" not in "ckpt_tag"
-            and args.fine_tune
-        )
-        else False,
+        all_head=all_head,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
         optimizer_type=args.optimizer_type,
-        dataset_type=args.dataset,
+        conditional=args.use_cond,
+        use_int=args.use_int,
     )
-
     if rank_zero_only.rank == 0:
         print("Model initialized.")
         print(model)
@@ -310,15 +399,60 @@ def main():
 
     pseudo_epoch_len = int(1_000_000 / (args.batch_size * 4 * 10)) // 10
 
-    out_dir_save_tag = os.path.join(args.outdir, save_tag)
+    # Use provided_run_dir if specified, otherwise create a new versioned run directory
+    if provided_run_dir is not None:
+        run_dir = provided_run_dir
+        # Extract run_name from the provided directory path for logging
+        run_name = os.path.basename(run_dir)
+    else:
+        out_dir_save_tag = os.path.join(args.outdir, save_tag)
+        version = get_version_number(out_dir_save_tag)
+        run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
+        run_dir = os.path.join(out_dir_save_tag, run_name)
+        if rank_zero_only.rank == 0:
+            os.makedirs(run_dir, exist_ok=True)
 
-    version = get_version_number(out_dir_save_tag)
-    run_name = f"v{version}{save_tag}"  # _{get_bigram(add_timestamp=True)}"
+    # Share run_dir across ranks via file on shared filesystem
+    # (torch.distributed not yet initialized, and tempfile.gettempdir() is node-local)
+    run_dir_meta_folder = os.path.join(args.outdir, ".run_dirs_meta")
+    os.makedirs(run_dir_meta_folder, exist_ok=True)
+    run_dir_file = os.path.join(
+        run_dir_meta_folder, f"run_dir_{os.environ.get('SLURM_JOB_ID', 'local')}.txt"
+    )
+    print(f"Rank {rank_zero_only.rank}: run_dir_file = {run_dir_file}")
 
-    run_dir = os.path.join(out_dir_save_tag, run_name)
-    if rank_zero_only.rank == 0:
-        os.makedirs(run_dir, exist_ok=True)
-        print(f"Output directory of this run: {run_dir}")
+    if args.run_dir is None:
+        if rank_zero_only.rank == 0:
+            version = get_version_number(out_dir_save_tag)
+            run_name = f"v{version}{save_tag}"
+            run_dir = os.path.join(out_dir_save_tag, run_name)
+            os.makedirs(run_dir, exist_ok=True)
+            print(f"Output directory of this run: {run_dir}")
+            with open(run_dir_file, "w") as f:
+                f.write(run_dir)
+
+            # Register cleanup to remove the temp file on exit
+            def cleanup_run_dir_file():
+                if os.path.exists(run_dir_file):
+                    os.remove(run_dir_file)
+
+            atexit.register(cleanup_run_dir_file)
+        else:
+            for _ in range(300):
+                if os.path.exists(run_dir_file):
+                    with open(run_dir_file, "r") as f:
+                        run_dir = f.read().strip()
+                    if run_dir:
+                        break
+                time.sleep(0.1)
+            else:
+                raise RuntimeError(
+                    f"Rank {rank_zero_only.rank}: Timed out waiting for run_dir file "
+                    f"({run_dir_file}). Make sure rank 0 can write to {args.outdir}."
+                )
+            run_name = os.path.basename(run_dir)
+
+    print(f"Rank {rank_zero_only.rank}: Run directory is {run_dir}")
 
     # Configure loggers
     loggers = []
@@ -363,7 +497,7 @@ def main():
         filename=f"{save_tag}-{{epoch:06d}}-{{step:06d}}-{{val_loss:.4f}}-{{train_loss_step:.4f}}",
         monitor="val_loss",
         mode="min",
-        save_top_k=5,
+        save_top_k=args.save_top_k,
         save_last=True,
         # we want to save this checkpoint after each *validation* check
         save_on_train_epoch_end=False,
@@ -407,8 +541,13 @@ def main():
         else:
             args.val_check_interval = int(args.val_check_interval)
 
+    print("Using the following callbacks:")
+    for cb in callbacks:
+        print(f" - {cb}")
+
     trainer = Trainer(
         max_epochs=args.epoch,
+        max_steps=args.max_training_steps,
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
         devices=4 if torch.cuda.is_available() else 1,
         precision=16 if args.use_amp else 32,

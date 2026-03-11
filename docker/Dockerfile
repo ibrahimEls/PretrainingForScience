@@ -35,19 +35,15 @@ RUN /sbin/ldconfig
 ARG mpi4py=4.0.3
 RUN python3 -m pip install mpi4py==$mpi4py
 
+RUN conda init bash
+
 RUN conda install -y jupyter
 
-SHELL ["/bin/bash", "--login", "-c"]
-
-# install vqtorch
 RUN git clone https://github.com/minyoungg/vqtorch && cd vqtorch && pip install -e .
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+ARG REQUIREMENTS_FILE=requirements.txt
+COPY ${REQUIREMENTS_FILE} requirements_temp.txt
+RUN pip install -r requirements_temp.txt
 
-# move anaconda binary path to the end, otherwise the "clear" command in the
-# terminal is broken
-ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/anaconda/bin:/opt/conda/bin
 
-# activate conda environment by default
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "base", "/bin/bash", "-c"]
+SHELL ["/bin/bash", "--login", "-c"]

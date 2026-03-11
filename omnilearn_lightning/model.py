@@ -17,13 +17,14 @@ from .utils import get_param_groups
 
 
 def get_logs(device):
-    logs_buff = torch.zeros((5), dtype=torch.float32, device=device)
+    logs_buff = torch.zeros((6), dtype=torch.float32, device=device)
     logs = {}
     logs["loss"] = logs_buff[0].view(-1)
     logs["loss_class"] = logs_buff[1].view(-1)
     logs["loss_gen"] = logs_buff[2].view(-1)
     logs["loss_clip"] = logs_buff[3].view(-1)
     logs["loss_class_event"] = logs_buff[4].view(-1)
+    logs["loss_class_masked_input"] = logs_buff[5].view(-1)
 
     return logs
 
@@ -59,10 +60,12 @@ class PET2(nn.Module):
         skip=False,
         num_gen_classes=1,
         mpm_features="kin",
+        use_perturbed_loss_terms=True,
     ):
         super().__init__()
         self.mode = mode
         self.mpm_features = mpm_features
+        self.use_perturbed_loss_terms = use_perturbed_loss_terms
 
         if self.mode not in [
             "classifier",
@@ -185,6 +188,7 @@ class PET2(nn.Module):
         (
             y_pred,
             y_perturb,
+            y_masked_input,
             z_pred,
             v,
             x_body,
@@ -195,6 +199,7 @@ class PET2(nn.Module):
             mask_valid_particle,
             mask_valid_particle_but_masked,
         ) = (
+            None,
             None,
             None,
             None,
@@ -220,7 +225,12 @@ class PET2(nn.Module):
         if "classifier" in self.mode or self.mode == "pretrain":
             x_body = self.body(x, cond, pid, add_info, torch.zeros_like(time))
             y_pred = self.classifier(x_body)
-            if self.mode == "pretrain" or self.mode == "classifier+generator":
+
+            # Perturbed loss term: classification on noised input
+            if self.use_perturbed_loss_terms and (
+                "generator" in self.mode or self.mode == "pretrain"
+            ):
+                # z_body was already computed in the generator forward pass
                 y_perturb = self.classifier(z_body)
 
         # MPM forward pass
@@ -237,23 +247,29 @@ class PET2(nn.Module):
             pos_encoding_feature = x[:, :, 2].clone()
             # multiply x by mask_after_masking as the padding mask in the body
             # is calculated from the input x (assuming 0-padded points)
-            x = x * mask_after_masking.unsqueeze(-1)
+            x_masked = x * mask_after_masking.unsqueeze(-1)
 
             mask_valid_particle_but_masked = (
                 (mask_before_masking - mask_after_masking).bool().unsqueeze(-1)
             )
 
-            x_body = self.body(
+            x_body_from_masked = self.body(
                 # Important: x needs to be multiplied with mask earlier in
                 # forward pass, cause that's used for padding
-                x,
+                x_masked,
                 cond,
                 pid,
                 add_info,
                 torch.zeros_like(time),
             )
 
-            x_body_masked = x_body.clone()
+            # Perturbed loss term: classification on masked input
+            if self.use_perturbed_loss_terms and (
+                "classifier" in self.mode or self.mode == "pretrain"
+            ):
+                y_masked_input = self.classifier(x_body_from_masked)
+
+            x_body_masked = x_body_from_masked.clone()
             replace_masked_positions(
                 x_body_masked[:, self.body.num_tokens + self.body.num_add :],
                 mask_is_valid=mask_before_masking.int(),
@@ -283,6 +299,7 @@ class PET2(nn.Module):
         return {
             "y_pred": y_pred,
             "y_perturb": y_perturb,
+            "y_masked_input": y_masked_input,
             "z_pred": z_pred,
             "v": v,
             "v_weight": v_weight,
@@ -338,8 +355,10 @@ class PETLightning(LightningModule):
         use_weights_in_mpm=False,
         mpm_features="kin",
         mpm_label_smoothing=0.0,
-        optimizer_type="Lion",  # Lion or Ranger,
-        dataset_type="jetclass",
+        optimizer_type="Lion",  # Lion or Ranger
+        use_perturbed_loss_terms=True,
+        conditional=False,
+        use_int=True,
         **kwargs,
     ):
         super().__init__()
@@ -348,7 +367,7 @@ class PETLightning(LightningModule):
         self.tokenizer = None
         self.use_mpm = "mpm" in mode or mode == "pretrain"
         self.mpm_features = mpm_features
-        self.dataset_type = dataset_type
+        number_continuous_features = num_feat
 
         if self.use_mpm:
             # verify that mpm_features is valid
@@ -360,6 +379,12 @@ class PETLightning(LightningModule):
                 raise ValueError(
                     f"mpm_features '{mpm_features}' not supported. Supported: {supported_mpm_features}"
                 )
+            if mpm_features == "kin_add":
+                if not use_add:
+                    raise ValueError(
+                        f"mpm_features '{mpm_features}' requires use_add=True."
+                    )
+                number_continuous_features += add_dim
             # if no tokenizer checkpoint is provided, use regression loss
             if tokenizer_ckpt is None:
                 print(
@@ -390,10 +415,6 @@ class PETLightning(LightningModule):
                             "without those additional features."
                         )
 
-        number_continuous_features = num_feat
-        if use_add:
-            number_continuous_features += add_dim
-
         # --- model ---
         self.model = PET2(
             input_dim=num_feat,
@@ -408,11 +429,14 @@ class PETLightning(LightningModule):
             mlp_drop=mlp_drop,
             attn_drop=attn_drop,
             feature_drop=feature_drop,
+            use_int=use_int,
             codebook_size=self.tokenizer.n_clusters
             if (self.use_mpm and self.tokenizer is not None)
             else number_continuous_features,
             pos_encoding_type=pos_encoding_type,
             mpm_features=mpm_features,
+            use_perturbed_loss_terms=use_perturbed_loss_terms,
+            conditional=conditional,
             **model_params,
         )
 
@@ -455,6 +479,31 @@ class PETLightning(LightningModule):
     def forward(self, x, y=None, **kwargs):
         return self.model(x, y, **kwargs)
 
+    def _compute_masked_input_class_loss(self, outputs, y):
+        """
+        Compute classification loss on masked input (perturbed by removing points).
+        """
+        loss = torch.tensor(0.0, device=self.device)
+        logs = {}
+
+        if outputs["y_masked_input"] is not None:
+            # Compute class weights (same as in get_loss)
+            counts = torch.bincount(y, minlength=outputs["y_pred"].shape[-1]).float()
+            class_weights = 1.0 / (counts + 1e-6)
+            weights = class_weights[y]
+            weights = weights / weights.mean()
+
+            # Compute cross-entropy loss on the masked input predictions
+            loss_masked_input = torch.mean(
+                weights * self.loss_class(outputs["y_masked_input"], y)
+            )
+            logs["loss_class_masked_input"] = loss_masked_input.detach()
+            # masked classification loss scaled by (1 - masking_fraction)
+            # as we want it to have less weight than the full input classification loss
+            loss = loss + (1 - self.hparams.masking_fraction + 1e-6) * loss_masked_input
+
+        return logs, loss
+
     def _compute_MPM_loss(self, outputs, y, y_masked=None):
         """
         outputs is a dict with keys: y_pred, z_pred, v, y_perturb, alpha, x_body, z_body
@@ -467,7 +516,7 @@ class PETLightning(LightningModule):
             # remove tokens and time from masked_pred
             masked_pred = outputs["masked_pred"]
             mask_for_targets = outputs["mask_valid_particle_but_masked"][:, :, 0]
-            # set the targets to -1 where the mask is 0
+            # set the targets to -1 where the mask is 0/False
             y_masked[mask_for_targets == 0] = -1
 
             B, T, C = masked_pred.shape
@@ -510,7 +559,7 @@ class PETLightning(LightningModule):
         y_masked = None
         model_kwargs = {
             k: (batch[k].to(self.device) if batch[k] is not None else None)
-            for k in ("pid", "add_info")
+            for k in ("pid", "add_info", "cond")
             if (k in batch)
         }
 
@@ -531,11 +580,18 @@ class PETLightning(LightningModule):
                 y_masked = self.tokenizer.predict(X, add_info=model_kwargs["add_info"])
             else:
                 # regression loss on the continuous features
-                y_masked = (
-                    torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
-                    if self.use_add
-                    else X.clone()
-                )
+                if self.mpm_features == "kin":
+                    y_masked = X.clone()
+                elif self.mpm_features == "kin_add":
+                    y_masked = (
+                        torch.cat([X.clone(), batch["add_info"].to(X.device)], dim=-1)
+                        if self.use_add
+                        else X.clone()
+                    )
+                else:
+                    raise ValueError(
+                        f"mpm_features '{self.mpm_features}' not supported."
+                    )
 
         logs = get_logs(device=X.device)
         if stage == "train":
@@ -558,14 +614,21 @@ class PETLightning(LightningModule):
                         self.loss_gen,
                         self.use_event_loss,
                         self.use_clip,
-                        CLIPLoss(),
+                        self.clip_loss,
                         logs,
                         data_pid=data_pid,
                     )
 
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
-                logs["loss"] = loss + mpm_loss
+
+                # Compute masked input perturbation loss
+                masked_input_logs, masked_input_loss = (
+                    self._compute_masked_input_class_loss(out, y)
+                )
+                logs.update(masked_input_logs)
+
+                logs["loss"] = loss + mpm_loss + masked_input_loss
 
         else:
             with (
@@ -584,14 +647,21 @@ class PETLightning(LightningModule):
                         self.loss_gen,
                         self.use_event_loss,
                         self.use_clip,
-                        CLIPLoss(),
+                        self.clip_loss,
                         logs,
                         data_pid=data_pid,
                     )
 
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
-                logs["loss"] = loss + mpm_loss
+
+                # Compute masked input perturbation loss
+                masked_input_logs, masked_input_loss = (
+                    self._compute_masked_input_class_loss(out, y)
+                )
+                logs.update(masked_input_logs)
+
+                logs["loss"] = loss + mpm_loss + masked_input_loss
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
@@ -600,7 +670,7 @@ class PETLightning(LightningModule):
                 continue
             self.log(
                 f"{stage}_{k}",
-                v,
+                v.detach() if isinstance(v, torch.Tensor) else v,
                 prog_bar=True,
                 on_step=on_step,
                 on_epoch=True,
@@ -664,6 +734,10 @@ class PETLightning(LightningModule):
                     lookahead_alpha=0.5,
                     lookahead_steps=6,
                 )
+            else:
+                raise ValueError(
+                    f"Unsupported optimizer type: {self.hparams.optimizer_type}"
+                )
             print(f"Optimizer = {optimizer}")
 
             scheduler = get_cosine_schedule_with_warmup(
@@ -685,7 +759,16 @@ class PETLightning(LightningModule):
 
     def on_load_checkpoint(self, checkpoint: dict) -> None:
         # if fine_tuning a pretrained body, filter shapes
+        # NOTE: I actually think that this method is incompatible with the current
+        # repo, cause our models don't have the key `body` in the state dict.
+        # Instead, it should be `model.body`
         if self.fine_tune and self.ckpt_loaded:
+            print(
+                "[WARNING] both fine_tune and ckpt_loaded are set. This will "
+                "load the checkpoint with strict=False, which may lead to unexpected "
+                "behavior if the checkpoint is not compatible with the current model "
+                "architecture."
+            )
             ck = torch.load(self.ckpt_loaded, map_location="cpu")
             body_sd = ck["body"]
             self.model.body.load_state_dict(body_sd, strict=False)
