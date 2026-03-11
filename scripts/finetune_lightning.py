@@ -13,21 +13,42 @@ from typing import Any, Dict, List, Optional, Tuple
 MODEL_HPARAMS = {
     "micro": {
         "num_workers": 2,
-        "lr": 1e-3,
-        "weight_decay": 0.01,
-        "batch_size": 256,
+        "lr": 5e-5,
+        "lr_fs": 1e-4,
+        "weight_decay": 0.1,
+        "weight_decay_fs": 0.5,
+        "batch_size": 64,
+        "lr_factor": 5,
+        "epoch": 30,
+        "epoch_fs": 30,
+        "scheduler_warmup_steps": 1028,
+        "scheduler_warmup_steps_fs": 0,
     },
     "small": {
-        "num_workers": 32,
-        "lr": 5e-4,
-        "weight_decay": 0.3,
-        "batch_size": 128,
+        "num_workers": 2,
+        "lr": 5e-6,
+        "lr_fs": 5e-4,
+        "weight_decay": 0.1,
+        "weight_decay_fs": 0.5,
+        "batch_size": 64,
+        "lr_factor": 5,
+        "epoch": 30,
+        "epoch_fs": 15,
+        "scheduler_warmup_steps": 1028,
+        "scheduler_warmup_steps_fs": 0,
     },
     "medium": {
         "num_workers": 32,
-        "lr": 5e-6,
-        "weight_decay": 0.1,
-        "batch_size": 32,
+        "lr": 1e-6,
+        "lr_fs": 5e-5,
+        "weight_decay": 10,
+        "weight_decay_fs": 0.5,
+        "batch_size": 64,
+        "lr_factor": 1,
+        "epoch": 10,
+        "epoch_fs": 30,
+        "scheduler_warmup_steps": 1028,
+        "scheduler_warmup_steps_fs": 0,
     },
 }
 
@@ -307,13 +328,20 @@ def build_cmd_snippet(
         "mode": mode,
         "num_workers": hparams["num_workers"],
         "num_nodes": num_nodes,
-        "lr": hparams["lr"],
-        "weight_decay": hparams["weight_decay"],
+        "lr": hparams["lr"] if pretrain_ckpt else hparams["lr_fs"],
+        "weight_decay": hparams["weight_decay"]
+        if pretrain_ckpt
+        else hparams["weight_decay_fs"],
         "batch_size": hparams["batch_size"] if shots > 1000 or shots == -1 else 32,
         "dataset": dataset,
         "repo_dir": repo_dir,
         "output_dir": output_dir,
         "dataset_dir": dataset_dir,
+        "lr_factor": hparams["lr_factor"] if pretrain_ckpt else 1,
+        "epoch": hparams["epoch"] if pretrain_ckpt else hparams["epoch_fs"],
+        "scheduler_warmup_steps": hparams["scheduler_warmup_steps"]
+        if pretrain_ckpt
+        else hparams["scheduler_warmup_steps_fs"],
     }
 
     return cmd_template.format(**fmt_kwargs)

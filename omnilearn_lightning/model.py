@@ -743,7 +743,9 @@ class PETLightning(LightningModule):
             scheduler = get_cosine_schedule_with_warmup(
                 optimizer,
                 num_warmup_steps=self.hparams.warmup_steps,
-                num_training_steps=self.hparams.total_steps,
+                num_training_steps=self.hparams.total_steps
+                if self.dataset_type == "jetclass"
+                else self.trainer.estimated_stepping_batches,
             )
             return {
                 "optimizer": optimizer,

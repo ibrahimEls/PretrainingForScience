@@ -144,6 +144,7 @@ def main():
     parser.add_argument("--lr_factor", type=float, default=0.1)
     parser.add_argument("--lr", type=float, default=1e-3)
 
+    parser.add_argument("--accumulate_grad_batches", type=int, default=2)
     parser.add_argument("--b1", type=float, default=0.95, help="Beta1 for optimizer")
     parser.add_argument("--b2", type=float, default=0.99, help="Beta2 for optimizer")
     parser.add_argument(
@@ -251,7 +252,6 @@ def main():
         model_params["num_transformers_head"] = 2
         model_params["num_tokens"] = 4
         model_params["num_heads"] = 4
-        model_params["K"] = 10
         model_params["base_dim"] = 32
         model_params["mlp_ratio"] = 2
 
