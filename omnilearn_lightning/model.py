@@ -337,6 +337,7 @@ class PETLightning(LightningModule):
         weight_decay: float = 0.3,
         warmup_steps: int = 1000,
         total_steps: int = 10000,
+        adjust_scheduler_steps_to_trainer_estimated_steps: bool = False,
         # training options
         use_clip: bool = False,
         use_event_loss: bool = False,
@@ -740,10 +741,15 @@ class PETLightning(LightningModule):
                 )
             print(f"Optimizer = {optimizer}")
 
+            if self.hparams.adjust_scheduler_steps_to_trainer_estimated_steps:
+                total_steps = self.trainer.estimated_stepping_batches
+            else:
+                total_steps = self.hparams.total_steps
+
             scheduler = get_cosine_schedule_with_warmup(
                 optimizer,
                 num_warmup_steps=self.hparams.warmup_steps,
-                num_training_steps=self.hparams.total_steps,
+                num_training_steps=total_steps,
             )
             return {
                 "optimizer": optimizer,

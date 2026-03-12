@@ -3,8 +3,11 @@ import argparse
 import json
 import math
 import os
+from typing import Any, Dict, List, Optional, Tuple
 
 from omnilearn_lightning.eval_tasks import eval_top_tagging
+
+METRIC_KEYS = ("avg_loss", "auc", "inv_bkg_eff")
 
 
 def load_json_or_empty(path):
@@ -22,11 +25,10 @@ def load_json_or_empty(path):
 def parse_downstream_shots(dataset_key: str):
     """
     Parse something like '1k-Top', '10k-Top', '100k-Top', '1M-Top' -> integer shots.
-
     If parsing fails, return None and let caller decide what to do.
     """
     try:
-        prefix = dataset_key.split("-", 1)[0]  # e.g. "1k", "10k", "100k", "1M"
+        prefix = dataset_key.split("-", 1)[0]
     except Exception:
         return None
 
@@ -54,6 +56,81 @@ def mean_and_std(vals):
     return m, math.sqrt(var)
 
 
+def _norm_path(p: Optional[str]) -> Optional[str]:
+    """Normalize paths for robust equality comparisons."""
+    if not p or not isinstance(p, str):
+        return None
+    try:
+        # expanduser + abspath, then resolve symlinks
+        return os.path.realpath(os.path.abspath(os.path.expanduser(p)))
+    except Exception:
+        return p
+
+
+def _group_match_key(g: Dict[str, Any], fallback_idx: int) -> Tuple[str, int]:
+    """
+    Stable key for matching groups across runs.
+    Primary: pretrain_ckpt (stringified), fallback: index.
+    """
+    pre = g.get("pretrain_ckpt")
+    if isinstance(pre, str) and pre.strip():
+        return (pre.strip(), -1)  # -1 means "do not use index"
+    return ("__no_pretrain_ckpt__", fallback_idx)
+
+
+def _build_prev_group_index(
+    prev_group_list: Any,
+) -> Dict[Tuple[str, int], Dict[str, Any]]:
+    """
+    Map group_key -> prev_group dict.
+    If duplicates exist, last one wins (rare; acceptable).
+    """
+    out: Dict[Tuple[str, int], Dict[str, Any]] = {}
+    if not isinstance(prev_group_list, list):
+        return out
+    for i, g in enumerate(prev_group_list):
+        if isinstance(g, dict):
+            out[_group_match_key(g, i)] = g
+    return out
+
+
+def _find_prev_run(
+    prev_runs: Any, run_index: Any, ckpt_path: Optional[str]
+) -> Optional[Dict[str, Any]]:
+    """
+    Find matching previous run.
+    Priority:
+      1) normalized ckpt path match
+      2) run_index match
+    """
+    if not isinstance(prev_runs, list):
+        return None
+
+    ckpt_norm = _norm_path(ckpt_path)
+
+    # 1) match by checkpoint path (robust)
+    if ckpt_norm:
+        for r_prev in prev_runs:
+            if not isinstance(r_prev, dict):
+                continue
+            prev_ckpt_norm = _norm_path(r_prev.get("best_ckpt_dest"))
+            if prev_ckpt_norm and prev_ckpt_norm == ckpt_norm:
+                return r_prev
+
+    # 2) fallback: match by run_index
+    for r_prev in prev_runs:
+        if not isinstance(r_prev, dict):
+            continue
+        if r_prev.get("run_index") == run_index:
+            return r_prev
+
+    return None
+
+
+def _has_complete_metrics(r: Dict[str, Any]) -> bool:
+    return all((k in r) and (r.get(k) is not None) for k in METRIC_KEYS)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Evaluate top-tagging ckpts for each run in a States JSON (multi-run structure)."
@@ -73,7 +150,13 @@ def main():
         help="Eval JSON to write (same structure as states_json, plus metrics).",
     )
 
-    # ------- basic eval args (same as your example, for eval_top_tagging) -------
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print what would be evaluated, but do not run evals and do not write eval_json.",
+    )
+
+    # ------- basic eval args -------
     parser.add_argument(
         "--outdir",
         type=str,
@@ -98,7 +181,7 @@ def main():
     parser.add_argument(
         "--num_nodes", type=int, default=1, help="Number of nodes (passed through)"
     )
-    parser.add_argument("--batch_size", type=int, default=256, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=128, help="Batch size")
     parser.add_argument(
         "--num_workers", type=int, default=32, help="Number of DataLoader workers"
     )
@@ -140,44 +223,47 @@ def main():
 
     args = parser.parse_args()
 
-    # --------- load JSONs ----------
     with open(args.states_json, "r") as f:
         states = json.load(f)
 
-    # previous eval JSON, if any
     prev_eval = load_json_or_empty(args.eval_json)
 
-    # Build a fresh eval structure that mirrors `states`,
-    # but reuses metrics from `prev_eval` when possible.
-    eval_out = {}
+    eval_out: Dict[str, Any] = {}
 
     if args.task != "top_tagging":
         raise ValueError("This script currently only supports --task top_tagging.")
+
+    # dryrun stats
+    n_skip = 0
+    n_run = 0
+    n_missing_ckpt = 0
+    n_bad_ckpt_path = 0
 
     for setup_name, setup_dict in states.items():  # e.g. "100k-Top"
         eval_out.setdefault(setup_name, {})
         prev_setup = prev_eval.get(setup_name, {})
 
-        # Use dataset name to infer dataset_size (e.g. "100k-Top" -> 100000)
         inferred_ds_size = parse_downstream_shots(setup_name)
-        if inferred_ds_size is not None:
-            setup_dataset_size = inferred_ds_size
-        else:
-            setup_dataset_size = args.dataset_size  # fallback
+        setup_dataset_size = (
+            inferred_ds_size if inferred_ds_size is not None else args.dataset_size
+        )
 
         for model_size, size_dict in setup_dict.items():  # e.g. "micro"
             eval_out[setup_name].setdefault(model_size, {})
             prev_size = prev_setup.get(model_size, {})
 
-            # set model size for this branch
             args.model_size = model_size
+
+            if (
+                model_size != "micro"
+            ):  # model_size == "medium" or model_size == "small":
+                continue
 
             for head, head_dict in size_dict.items():  # e.g. "classifier"
                 eval_out[setup_name][model_size].setdefault(head, {})
                 prev_head = prev_size.get(head, {})
 
                 for pretrain_label, group_list in head_dict.items():
-                    # group_list is a list of groups
                     if not isinstance(group_list, list):
                         print(
                             f"[WARN] Expected a list of groups at "
@@ -186,6 +272,8 @@ def main():
                         continue
 
                     prev_group_list = prev_head.get(pretrain_label, [])
+                    prev_group_index = _build_prev_group_index(prev_group_list)
+
                     new_group_list = []
 
                     for g_idx, group in enumerate(group_list):
@@ -196,22 +284,15 @@ def main():
                             )
                             continue
 
-                        # Start from current group data so we preserve all original fields
                         new_group = dict(group)
-                        # We'll overwrite runs and metrics_summary
-                        new_group_runs = []
+                        new_group_runs: List[Dict[str, Any]] = []
                         new_group["runs"] = new_group_runs
 
                         pretrain_ckpt = group.get("pretrain_ckpt")
                         states_runs = group.get("runs", [])
 
-                        prev_group = (
-                            prev_group_list[g_idx]
-                            if isinstance(prev_group_list, list)
-                            and g_idx < len(prev_group_list)
-                            and isinstance(prev_group_list[g_idx], dict)
-                            else {}
-                        )
+                        group_key = _group_match_key(group, g_idx)
+                        prev_group = prev_group_index.get(group_key, {})
                         prev_runs = prev_group.get("runs", [])
 
                         print(
@@ -219,10 +300,7 @@ def main():
                             f"group_index={g_idx}, pretrain_ckpt={pretrain_ckpt}"
                         )
 
-                        # Collect metrics for summary
-                        losses = []
-                        aucs = []
-                        invs = []
+                        losses, aucs, invs = [], [], []
 
                         for run in states_runs:
                             if not isinstance(run, dict):
@@ -231,75 +309,71 @@ def main():
                             ckpt_path = run.get("best_ckpt_dest")
                             run_index = run.get("run_index")
 
-                            new_run = dict(run)  # start from original run info
+                            new_run = dict(run)
                             status = None
 
-                            # Find matching previous run (by run_index and ckpt path)
-                            matched_prev = None
-                            for r_prev in prev_runs:
-                                if (
-                                    isinstance(r_prev, dict)
-                                    and r_prev.get("run_index") == run_index
-                                    and r_prev.get("best_ckpt_dest") == ckpt_path
-                                ):
-                                    matched_prev = r_prev
-                                    break
+                            matched_prev = _find_prev_run(
+                                prev_runs, run_index, ckpt_path
+                            )
 
-                            # Reuse metrics if present and ckpt matches
-                            if matched_prev is not None and all(
-                                k in matched_prev
-                                for k in ("avg_loss", "auc", "inv_bkg_eff")
+                            if (
+                                matched_prev is not None
+                                and _has_complete_metrics(matched_prev)
+                                and matched_prev.get("status", "ok") == "ok"
                             ):
-                                new_run["avg_loss"] = matched_prev["avg_loss"]
-                                new_run["auc"] = matched_prev["auc"]
-                                new_run["inv_bkg_eff"] = matched_prev["inv_bkg_eff"]
-                                status = matched_prev.get("status", "ok")
-
+                                for k in METRIC_KEYS:
+                                    new_run[k] = matched_prev[k]
+                                status = "ok"
+                                n_skip += 1
                                 print(
                                     f"[SKIP EVAL] {setup_name}/{model_size}/{head}/"
                                     f"{pretrain_label}/group{g_idx}/run{run_index} "
                                     f"-> already evaluated."
                                 )
-
                             else:
-                                # Need to evaluate (if ckpt exists)
                                 if not ckpt_path or not isinstance(ckpt_path, str):
                                     print(
-                                        f"[WARN] Missing best_ckpt_dest for "
+                                        f"[WARN] Missing/invalid best_ckpt_dest for "
                                         f"{setup_name}/{model_size}/{head}/"
                                         f"{pretrain_label}/group{g_idx}/run{run_index}."
                                     )
                                     status = "no_ckpt_path"
+                                    n_bad_ckpt_path += 1
                                 elif not os.path.exists(ckpt_path):
                                     print(
                                         f"[WARN] Checkpoint does not exist on disk: {ckpt_path}"
                                     )
                                     status = "missing_file"
+                                    n_missing_ckpt += 1
                                 else:
-                                    # Set dataset_size for this setup
                                     args.dataset_size = setup_dataset_size
-                                    print(
-                                        f"[EVAL] {setup_name}/{model_size}/{head}/"
-                                        f"{pretrain_label}/group{g_idx}/run{run_index}\n"
-                                        f"       ckpt: {ckpt_path}, dataset_size={args.dataset_size}"
-                                    )
-
-                                    avg_loss, auc, inv_bkg_eff = eval_top_tagging(
-                                        args, ckpt_path, gpuID=args.gpuID
-                                    )
-                                    new_run["avg_loss"] = float(avg_loss)
-                                    new_run["auc"] = float(auc)
-                                    new_run["inv_bkg_eff"] = float(inv_bkg_eff)
-                                    status = "ok"
+                                    if args.dry_run:
+                                        print(
+                                            f"[DRYRUN EVAL] {setup_name}/{model_size}/{head}/"
+                                            f"{pretrain_label}/group{g_idx}/run{run_index}\n"
+                                            f"              ckpt: {ckpt_path}, dataset_size={args.dataset_size}"
+                                        )
+                                        status = "dryrun_pending"
+                                        n_run += 1
+                                    else:
+                                        print(
+                                            f"[EVAL] {setup_name}/{model_size}/{head}/"
+                                            f"{pretrain_label}/group{g_idx}/run{run_index}\n"
+                                            f"       ckpt: {ckpt_path}, dataset_size={args.dataset_size}"
+                                        )
+                                        avg_loss, auc, inv_bkg_eff = eval_top_tagging(
+                                            args, ckpt_path, gpuID=args.gpuID
+                                        )
+                                        new_run["avg_loss"] = float(avg_loss)
+                                        new_run["auc"] = float(auc)
+                                        new_run["inv_bkg_eff"] = float(inv_bkg_eff)
+                                        status = "ok"
+                                        n_run += 1
 
                             new_run["status"] = status
 
-                            # accumulate metrics for summary if they exist and status is ok
-                            if (
-                                status == "ok"
-                                and "avg_loss" in new_run
-                                and "auc" in new_run
-                                and "inv_bkg_eff" in new_run
+                            if status == "ok" and all(
+                                k in new_run for k in METRIC_KEYS
                             ):
                                 losses.append(float(new_run["avg_loss"]))
                                 aucs.append(float(new_run["auc"]))
@@ -307,29 +381,18 @@ def main():
 
                             new_group_runs.append(new_run)
 
-                        # Build per-group summary over runs
                         summary = {
                             "num_runs": len(new_group_runs),
                             "num_evaluated": len(losses),
                         }
-
                         if len(losses) > 0:
                             m_loss, s_loss = mean_and_std(losses)
                             m_auc, s_auc = mean_and_std(aucs)
                             m_inv, s_inv = mean_and_std(invs)
 
-                            summary["avg_loss"] = {
-                                "mean": m_loss,
-                                "std": s_loss,
-                            }
-                            summary["auc"] = {
-                                "mean": m_auc,
-                                "std": s_auc,
-                            }
-                            summary["inv_bkg_eff"] = {
-                                "mean": m_inv,
-                                "std": s_inv,
-                            }
+                            summary["avg_loss"] = {"mean": m_loss, "std": s_loss}
+                            summary["auc"] = {"mean": m_auc, "std": s_auc}
+                            summary["inv_bkg_eff"] = {"mean": m_inv, "std": s_inv}
 
                         new_group["metrics_summary"] = summary
                         new_group_list.append(new_group)
@@ -338,11 +401,18 @@ def main():
                         new_group_list
                     )
 
-                    # --------- write eval JSON ----------
-                    with open(args.eval_json, "w") as f:
-                        json.dump(eval_out, f, indent=2, sort_keys=True)
+                    if not args.dry_run:
+                        with open(args.eval_json, "w") as f:
+                            json.dump(eval_out, f, indent=2, sort_keys=True)
+                        print(f"\n[DONE] Eval metrics written to {args.eval_json}")
 
-                    print(f"\n[DONE] Eval metrics written to {args.eval_json}")
+    if args.dry_run:
+        print("\n[DRYRUN SUMMARY]")
+        print(f"  would_run:        {n_run}")
+        print(f"  would_skip:       {n_skip}")
+        print(f"  missing_ckpt:     {n_missing_ckpt}")
+        print(f"  bad_ckpt_path:    {n_bad_ckpt_path}")
+        print("  (dryrun does not write eval_json)")
 
 
 if __name__ == "__main__":
