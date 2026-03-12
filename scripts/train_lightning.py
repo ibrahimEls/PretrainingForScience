@@ -106,6 +106,12 @@ def main():
         help="Number of steps after which the learning rate scheduler reaches minimum LR. Will go back up afterwards.",
     )
     parser.add_argument(
+        "--adjust_scheduler_steps_to_trainer_estimated_steps",
+        type=str2bool,
+        default=False,
+        help="If true, the scheduler_total_steps will be ignored and instead set to the trainer's estimated_stepping_batches.",
+    )
+    parser.add_argument(
         "--seed", type=int, default=None, help="Random seed for reproducibility"
     )
     parser.add_argument(
@@ -376,6 +382,7 @@ def main():
         if args.pos_encoding_type != "None"
         else None,
         total_steps=args.scheduler_total_steps,
+        adjust_scheduler_steps_to_trainer_estimated_steps=args.adjust_scheduler_steps_to_trainer_estimated_steps,
         warmup_steps=args.scheduler_warmup_steps,
         use_one_cycle=args.use_one_cycle,
         model_params=model_params,
