@@ -92,20 +92,20 @@
     "generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt"
     },
-    "mpm": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+    "mpmregress": {
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/100M/mpmregress_only_val_loss=0.2251.ckpt"
     },
     "classifier+generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt"
     },
-    "classifier+mpm": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+    "classifier+mpmregress_perturb": {
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/100M/class_mpmregress_perturb_val_loss=1.1840.ckpt"
     },
-    "generator+mpm": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+    "generator+mpmregress": {
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/100M/gen_mpmregress_val_loss=2.7715.ckpt"
     },
-    "pretrain": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/"
+    "pretrainregress_perturb": {
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/100M/pretrainregress_perturb_val_loss=4.0803.ckpt"
     }
   },
   "medium": {
@@ -115,19 +115,19 @@
     "generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5089.ckpt"
     },
-    "mpm": {
+    "mpmregress": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
     },
     "classifier+generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_gen_val_loss=3.2382.ckpt"
     },
-    "classifier+mpm": {
+    "classifier+mpmregress_perturb": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
     },
-    "generator+mpm": {
+    "generator+mpmregress": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
     },
-    "pretrain": {
+    "pretrainregress_perturb": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/"
     }
   }
