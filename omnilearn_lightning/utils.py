@@ -288,6 +288,8 @@ def get_param_groups(
         if not param.requires_grad:
             continue
 
+        print(f"Processing parameter: {name} (shape: {param.shape})")
+
         if all_head:
             is_last_layer = name.startswith("classifier") or name.startswith(
                 "generator"
