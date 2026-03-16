@@ -353,6 +353,7 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
+        treat_gen_pidembed_and_condembed_as_last_layer=False,
         use_weights_in_mpm=False,
         mpm_features="kin",
         mpm_label_smoothing=0.0,
@@ -467,6 +468,9 @@ class PETLightning(LightningModule):
         self.use_amp = use_amp
         self.fine_tune = fine_tune
         self.all_head = all_head
+        self.treat_gen_pidembed_and_condembed_as_last_layer = (
+            treat_gen_pidembed_and_condembed_as_last_layer
+        )
         self.ckpt_loaded = ckpt_loaded
         self.use_pid = use_pid
         self.use_add = use_add
@@ -698,6 +702,7 @@ class PETLightning(LightningModule):
             lr_factor=self.lr_factor,
             fine_tune=self.fine_tune,
             all_head=self.all_head,
+            treat_gen_pidembed_and_condembed_as_last_layer=self.treat_gen_pidembed_and_condembed_as_last_layer,
         )
 
         if self.use_one_cycle:

@@ -267,12 +267,22 @@ def sum_reduce(num, device):
     return rt
 
 
-def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=False):
+def get_param_groups(
+    model,
+    wd,
+    lr,
+    lr_factor=1.0,
+    fine_tune=False,
+    all_head=False,
+    treat_gen_pidembed_and_condembed_as_last_layer=False,
+):
     no_decay, decay = [], []
     last_layer_no_decay, last_layer_decay = [], []
 
     if all_head:
         print("INCREASING LR ON WHOLE HEAD")
+    if treat_gen_pidembed_and_condembed_as_last_layer:
+        print("TREATING generator.pid_embed and body.cond_embed AS LAST LAYER")
 
     for name, param in model.named_parameters():
         if not param.requires_grad:
@@ -286,6 +296,11 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
             is_last_layer = name.startswith("classifier.out") or name.startswith(
                 "generator.out"
             )
+
+        if treat_gen_pidembed_and_condembed_as_last_layer and (
+            name.startswith("generator.pid_embed") or name.startswith("body.cond_embed")
+        ):
+            is_last_layer = True
 
         if is_last_layer:
             print(f"Identified last layer parameter: {name}")

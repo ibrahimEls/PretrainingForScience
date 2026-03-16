@@ -218,6 +218,12 @@ def main():
     parser.add_argument("--use_int", type=str2bool, default=True)
     parser.add_argument("--test", type=str2bool, default=False)
     parser.add_argument("--fine_tune", type=str2bool, default=False)
+    parser.add_argument(
+        "--treat_gen_pidembed_and_condembed_as_last_layer",
+        type=str2bool,
+        default=False,
+        help="Treat generator.pid_embed and body.cond_embed parameters as last-layer (i.e. apply lr_factor when fine-tuning)",
+    )
     parser.add_argument("--use_one_cycle", type=str2bool, default=False)
 
     # Logging
@@ -426,6 +432,7 @@ def main():
         use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
         all_head=all_head,
+        treat_gen_pidembed_and_condembed_as_last_layer=args.treat_gen_pidembed_and_condembed_as_last_layer,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
