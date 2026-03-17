@@ -4,6 +4,7 @@ Uses trainer.predict() with a minimal callback that reuses existing generation u
 """
 
 import logging
+import time
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -167,13 +168,14 @@ def generate_jets(
             self._model = model
             self.results = []
             self.n_batches_per_gpu = n_batches_per_gpu
+            self._start_time = None
+            self._jets_generated = 0
 
         def test_step(self, batch, batch_idx):
-            # Log every 10 batches to show progress
             this_rank = dist.get_rank() if dist.is_initialized() else 0
-            logger.info(
-                "[Rank %d] Processing/generating batch %d...", this_rank, batch_idx
-            )
+            if self._start_time is None:
+                self._start_time = time.time()
+
             result = get_batch_and_generate(
                 batch=batch,
                 lightning_model=self._model,
@@ -182,6 +184,44 @@ def generate_jets(
                 verbose=False,
             ) + (batch["y"].cpu().numpy(), batch["cond"].cpu().numpy())
             self.results.append(result)
+
+            # --- Progress logging ---
+            n_jets_this_batch = len(batch["y"])
+            self._jets_generated += n_jets_this_batch
+            elapsed = time.time() - self._start_time
+            jets_per_sec = self._jets_generated / elapsed if elapsed > 0 else 0
+            jets_per_hour = jets_per_sec * 3600
+
+            # Total jets across all GPUs
+            total_jets_so_far = self._jets_generated * max(1, num_gpus)
+            remaining_jets = max(0, n_jets_to_generate - total_jets_so_far)
+            eta_seconds = (
+                remaining_jets / (jets_per_sec * max(1, num_gpus))
+                if jets_per_sec > 0
+                else float("inf")
+            )
+
+            def _fmt_time(seconds):
+                if seconds == float("inf"):
+                    return "unknown"
+                h, remainder = divmod(int(seconds), 3600)
+                m, s = divmod(remainder, 60)
+                if h > 0:
+                    return f"{h}h {m:02d}m {s:02d}s"
+                return f"{m}m {s:02d}s"
+
+            logger.info(
+                "[Rank %d] Batch %d/%d | %d/%d jets generated | %.0f jets/hour (this GPU) | Elapsed: %s | ETA: %s",
+                this_rank,
+                batch_idx + 1,
+                self.n_batches_per_gpu,
+                total_jets_so_far,
+                n_jets_to_generate,
+                jets_per_hour,
+                _fmt_time(elapsed),
+                _fmt_time(eta_seconds),
+            )
+
             return result
 
     # Calculate number of batches needed (each GPU processes batches in parallel)
