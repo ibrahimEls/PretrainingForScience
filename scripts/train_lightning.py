@@ -260,6 +260,12 @@ def main():
         # Check if run_dir exists and contains a checkpoint
         last_ckpt_path = os.path.join(provided_run_dir, "checkpoints", "last.ckpt")
 
+        # Check if run already finished (e.g. manually placed finished.txt to prevent restart)
+        finished_file_path = os.path.join(provided_run_dir, "finished.txt")
+        if os.path.exists(finished_file_path):
+            print(f"Found finished.txt in {provided_run_dir}. Skipping run.")
+            return
+
         if os.path.exists(last_ckpt_path):
             # Continue from last checkpoint
             print(f"Found existing checkpoint at {last_ckpt_path}")
