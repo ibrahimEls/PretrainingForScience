@@ -254,6 +254,9 @@ def main():
 
     # Handle run_dir argument
     run_metadata = {}  # Will be populated from run_metadata.json on resume
+    pretrained_ckpt = (
+        args.ckpt
+    )  # Save original pretrained ckpt path before it may be overwritten on resume
     if args.run_dir is not None:
         provided_run_dir = args.run_dir
 
@@ -313,6 +316,13 @@ def main():
 
     ckpt_tag = ""
 
+    # Compute ckpt_tag from the original pretrained checkpoint (needed for all_head logic below)
+    if args.dataset != "jetclass":
+        if args.fine_tune:
+            ckpt_tag = extract_pretrained_ckpt_prefix(pretrained_ckpt)
+        else:
+            ckpt_tag = "from_scratch"
+
     # Override save_tag from metadata when resuming via run_dir
     if provided_run_dir is not None and args.resume:
         if run_metadata.get("save_tag"):
@@ -322,10 +332,6 @@ def main():
             raise ValueError("'save_tag' not found in metadata!")
     else:
         if args.dataset != "jetclass":
-            if args.fine_tune:
-                ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
-            else:
-                ckpt_tag = "from_scratch"
             save_tag = save_tag + "_ckpt_" + ckpt_tag
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
@@ -364,7 +370,7 @@ def main():
     # figure out if the whole head should be increased in LR or only the last
     # layer, based on the presence of certain keywords in the checkpoint tag
     # (which is derived from the checkpoint path)
-    if args.fine_tune and not args.resume:
+    if args.fine_tune:
         # use dataset name to determine task
         if "top" in args.dataset.lower():
             # --> top tagging fine-tuning
