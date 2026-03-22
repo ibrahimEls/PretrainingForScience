@@ -235,6 +235,7 @@ def get_metrics_and_gen_jets_vs_epoch(
     n_jets: int,
     skip_epoch_zero: bool = False,
     return_logs_df: bool = False,
+    wandb_entity: str = "joschka-birk",
 ):
     """
     Parameters
@@ -277,7 +278,7 @@ def get_metrics_and_gen_jets_vs_epoch(
             if wandb_run_id is not None:
                 print(f"Found wandb_run_id: {wandb_run_id} in metadata")
                 api = wandb.Api()
-                run = api.run(f"joschka-birk/omnilearned/{wandb_run_id}")
+                run = api.run(f"{wandb_entity}/omnilearned/{wandb_run_id}")
                 logs_df = run.history(samples=10_000)
                 # only keep certain columns
                 columns_to_keep = [
