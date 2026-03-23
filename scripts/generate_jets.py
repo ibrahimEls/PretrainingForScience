@@ -139,9 +139,10 @@ def generate_jets(
     n_jets_to_generate: int = 1000,
     batch_size: int = 200,
     n_sampling_steps: int = 128,
+    num_nodes: int = 1,
 ):
     num_gpus = torch.cuda.device_count()
-    logger.info("Detected %d GPU(s)", num_gpus)
+    logger.info("Detected %d GPU(s) on %d node(s)", num_gpus, num_nodes)
     logger.info("Loading model from checkpoint: %s", ckpt_path)
     lightning_model = PETLightning.load_from_checkpoint(ckpt_path, fine_tune=False)
 
@@ -192,11 +193,12 @@ def generate_jets(
             jets_per_sec = self._jets_generated / elapsed if elapsed > 0 else 0
             jets_per_hour = jets_per_sec * 3600
 
-            # Total jets across all GPUs
-            total_jets_so_far = self._jets_generated * max(1, num_gpus)
+            # Total jets across all devices (GPUs * nodes)
+            total_devices = max(1, num_gpus) * num_nodes
+            total_jets_so_far = self._jets_generated * total_devices
             remaining_jets = max(0, n_jets_to_generate - total_jets_so_far)
             eta_seconds = (
-                remaining_jets / (jets_per_sec * max(1, num_gpus))
+                remaining_jets / (jets_per_sec * total_devices)
                 if jets_per_sec > 0
                 else float("inf")
             )
@@ -224,25 +226,30 @@ def generate_jets(
 
             return result
 
-    # Calculate number of batches needed (each GPU processes batches in parallel)
-    effective_batch_size = batch_size * max(1, num_gpus)
+    # Calculate number of batches needed (each device processes batches in parallel)
+    total_devices = max(1, num_gpus) * num_nodes
+    effective_batch_size = batch_size * total_devices
     num_batches = (
         n_jets_to_generate + effective_batch_size - 1
     ) // effective_batch_size
 
     logger.info(
-        "Generating %d jets with effective batch size %d across %d GPU(s) => %d batches per GPU",
+        "Generating %d jets with effective batch size %d across %d device(s) (%d GPU(s) x %d node(s)) => %d batches per device",
         n_jets_to_generate,
         effective_batch_size,
+        total_devices,
         num_gpus,
+        num_nodes,
         num_batches,
     )
 
+    use_ddp = total_devices > 1
     writer = JetGenerationCallback(output_path)
     trainer = pl.Trainer(
         accelerator="gpu" if num_gpus > 0 else "cpu",
         devices=num_gpus if num_gpus > 0 else 1,
-        strategy="ddp" if num_gpus > 1 else "auto",
+        num_nodes=num_nodes,
+        strategy="ddp" if use_ddp else "auto",
         callbacks=[writer],
         enable_progress_bar=False,
         logger=False,
@@ -271,6 +278,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_jets_to_generate", type=int, default=1000)
     parser.add_argument("--batch_size", type=int, default=200)
     parser.add_argument("--n_sampling_steps", type=int, default=128)
+    parser.add_argument("--num_nodes", type=int, default=1)
 
     args = parser.parse_args()
     generate_jets(**vars(args))
