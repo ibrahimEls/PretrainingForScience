@@ -255,7 +255,7 @@ def main():
             args.model_size = model_size
 
             if (
-                model_size != "micro"
+                model_size != "small"
             ):  # model_size == "medium" or model_size == "small":
                 continue
 
