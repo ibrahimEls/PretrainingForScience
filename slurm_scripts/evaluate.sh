@@ -24,7 +24,7 @@ DATASET_PATH="/pscratch/sd/i/ibrahime/datasets/"
 
 # --------- Config variables ---------
 STATES_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States.json"
-EVAL_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Results/Top-Class-Finetuned-Model-Paths-Eval-micro-new.json"
+EVAL_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Results/Top-Class-Finetuned-Model-Paths-Eval.json"
 
 DATASET="top"
 GPU_ID=0
