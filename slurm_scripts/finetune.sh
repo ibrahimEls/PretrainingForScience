@@ -2,7 +2,7 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 12:00:00
+#SBATCH -t 6:00:00
 #SBATCH -N 4
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
@@ -27,13 +27,15 @@ LAYOUT_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-
 STATE_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Paths/Top-Class-Finetuned-Model-Paths-States.json"
 
 DOWNSTREAM_DATASETS="all"
-MODEL_SIZES="medium"
+MODEL_SIZES="micro"
 PRE_TRAINING_MODES="classifier,generator,classifier+generator"
 #PRE_TRAINING_MODES="mpmregress,classifier+mpmregress_perturb,generator+mpmregress"
 #PRE_TRAINING_MODES="pretrainregress_perturb,from_scratch"
+
 #PRE_TRAINING_MODES="classifier+generator"
-PRE_TRAINING_MODES="mpmregress"
+#PRE_TRAINING_MODES="mpmregress"
 #PRE_TRAINING_MODES="from_scratch"
+PRE_TRAINING_MODES="point_lejepa"
 MODE="classifier"
 
 FINETUNING_DATASET="top"
@@ -60,7 +62,7 @@ export cmd="python3 finetune_lightning.py \
   --repo_dir=$REPO_DIR\
   --output_dir=$OUTPUT_DIR\
   --dataset_dir=$DATASET_PATH"
-  # --dry-run" # <---- Turn on to see what will be run without running it
+  #--dry-run" # <---- Turn on to see what will be run without running it
 
 module load conda
 conda activate torchvenv

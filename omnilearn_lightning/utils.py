@@ -257,6 +257,27 @@ class CLIPLoss(nn.Module):
         return {"contrastive_loss": total_loss} if output_dict else total_loss
 
 
+class SIGReg(nn.Module):
+    def __init__(self, n_directions=1024, n_quad=17):
+        super().__init__()
+        self.n_directions = n_directions
+        t = torch.linspace(-5, 5, n_quad)
+        w = torch.exp(-(t**2))
+        self.register_buffer("t", t)
+        self.register_buffer("w", w)
+        self.register_buffer("phi_target", torch.exp(-(t**2) / 2))
+
+    def forward(self, z):
+        z = (z - z.mean(0)) / (z.std(0) + 1e-5)
+        A = torch.randn(self.n_directions, z.shape[1], device=z.device)
+        A = A / A.norm(dim=1, keepdim=True)
+        proj = z @ A.T
+        phi_emp = torch.exp(1j * proj.unsqueeze(-1) * self.t).mean(dim=0).abs()
+        diff_sq = (phi_emp - self.phi_target) ** 2
+        ep = (diff_sq * self.w).sum(dim=-1) * z.shape[0]
+        return ep.mean()
+
+
 def sum_reduce(num, device):
     r"""Sum the tensor across the devices."""
     if not torch.is_tensor(num):
@@ -403,6 +424,7 @@ def get_version_number(out_dir_save_tag):
 
 
 _PREFIXES = [
+    "point_lejepa",
     "mpmregress_only",
     "gen_mpmregress",
     "class_mpmregress",

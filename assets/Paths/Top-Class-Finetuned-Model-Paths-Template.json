@@ -46,7 +46,10 @@
       "pretrain_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
-      "pretrainregress_perturb": {
+      "point_lejepa": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
+      },
+        "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "from_scratch": {

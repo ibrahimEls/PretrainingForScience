@@ -48,6 +48,9 @@
     "classifier+mpmregress": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/class_mpmregress_val_loss=0.6788.ckpt"
     },
+    "point_lejepa": {
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100M/point_lejepa_test-4.ckpt"
+    },
     "classifier+mpmregress_perturb": {
       "100000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/100k/class_mpmregress_perturb_val_loss=1.5682.ckpt",
       "1000000": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Micro/1M/class_mpmregress_perturb_val_loss=1.2664.ckpt",
