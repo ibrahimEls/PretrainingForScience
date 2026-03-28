@@ -9,6 +9,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 import awkward as ak
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.distributed as dist
@@ -80,7 +81,7 @@ class JetGenerationCallback(pl.Callback):
                 all_gen.append(partial["x_ak"]["generated"])
                 all_y.append(partial["y"])
                 all_cond.append(partial["cond"])
-                fpath.unlink()
+                # fpath.unlink()
                 # print average y to verify each rank has different jets
                 logger.info(
                     "[Rank %d] Loaded %d jets from %s, avg y=%.4f",
@@ -106,6 +107,43 @@ class JetGenerationCallback(pl.Callback):
         x_ak = {k: v[mask] for k, v in x_ak.items()}
         y = y[mask]
         cond = cond[mask]
+
+        # Remove jets where the generated counterpart has NaN or inf values
+        nan_inf_mask = np.zeros(len(y), dtype=bool)
+        for field in x_ak["generated"].fields:
+            # check for each field if there are any NaN or inf values, and mark
+            # the entire jet as bad if so
+            n_bad = ak.sum(
+                np.isnan(x_ak["generated"][field]) | np.isinf(x_ak["generated"][field]),
+                axis=1,
+            )
+            nan_inf_mask = nan_inf_mask | (n_bad > 0)
+        # calculate total number of bad jets and log
+        n_bad_jets = int(np.sum(nan_inf_mask))
+        if n_bad_jets > 0:
+            logger.warning(
+                "Found %d jets with NaN/inf values (%.2f%%). Saving to x_ak_nan.parquet and removing.",
+                n_bad_jets,
+                100.0 * n_bad_jets / len(y),
+            )
+            nan_file = self.output_path / "x_ak_nan.parquet"
+            ak.to_parquet(
+                ak.Array(
+                    {
+                        "x_ak": {k: v[nan_inf_mask] for k, v in x_ak.items()},
+                        "y": y[nan_inf_mask],
+                        "cond": cond[nan_inf_mask],
+                    }
+                ),
+                nan_file,
+            )
+            logger.info("Saved %d bad jets to %s", n_bad_jets, nan_file)
+            good_mask = ~nan_inf_mask
+            x_ak = {k: v[good_mask] for k, v in x_ak.items()}
+            y = y[good_mask]
+            cond = cond[good_mask]
+        else:
+            logger.info("No jets with NaN/inf values found.")
 
         p4_kwargs = dict(
             field_name_eta="eta",
