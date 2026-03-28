@@ -2,6 +2,128 @@
   "100k-Top": {
     "micro": {},
     "small": {
+      "classifier": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9867366306812806,
+                "std": 3.4540429410344594e-05
+              },
+              "avg_loss": {
+                "mean": 0.5401933335482344,
+                "std": 0.0002804188070289942
+              },
+              "inv_bkg_eff": {
+                "mean": 2210.3609932079103,
+                "std": 226.6937106847341
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt",
+            "runs": [
+              {
+                "auc": 0.9867076178637402,
+                "avg_loss": 0.5405171259916629,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_000_seed_10/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000017-step=001746-val_loss=0.1474-train_loss_step=0.1488.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/v1_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000017-step=001746-val_loss=0.1474-train_loss_step=0.1488.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=10 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 2218.835164835165,
+                "run_index": 0,
+                "seed": 10,
+                "status": "ok",
+                "timestamp": "2026-03-24T17:48:51"
+              },
+              {
+                "auc": 0.9867748380093921,
+                "avg_loss": 0.5400333208125203,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_001_seed_11/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000017-step=001746-val_loss=0.1475-train_loss_step=0.1203.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/v3_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000017-step=001746-val_loss=0.1475-train_loss_step=0.1203.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=11 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 1979.549019607843,
+                "run_index": 1,
+                "seed": 11,
+                "status": "ok",
+                "timestamp": "2026-03-24T17:58:32"
+              },
+              {
+                "auc": 0.9867274361707093,
+                "avg_loss": 0.54002955384052,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_002_seed_12/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000016-step=001649-val_loss=0.1473-train_loss_step=0.1297.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/v5_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_only-epoch=000016-step=001649-val_loss=0.1473-train_loss_step=0.1297.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=12 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 2432.6987951807228,
+                "run_index": 2,
+                "seed": 12,
+                "status": "ok",
+                "timestamp": "2026-03-24T18:07:53"
+              }
+            ]
+          }
+        ]
+      },
+      "classifier+generator": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9860393165124788,
+                "std": 0.0007889879442621255
+              },
+              "avg_loss": {
+                "mean": 0.5409364253943562,
+                "std": 0.000788663089585099
+              },
+              "inv_bkg_eff": {
+                "mean": 1765.725581544841,
+                "std": 497.2060594910672
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt",
+            "runs": [
+              {
+                "auc": 0.985136205982453,
+                "avg_loss": 0.5418380827693734,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_000_seed_3/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000026-step=002619-val_loss=0.1552-train_loss_step=0.1401.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/v1_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000026-step=002619-val_loss=0.1552-train_loss_step=0.1401.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=3 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 1194.7573964497042,
+                "run_index": 0,
+                "seed": 3,
+                "status": "ok",
+                "timestamp": "2026-03-25T21:17:32"
+              },
+              {
+                "auc": 0.9863869703621584,
+                "avg_loss": 0.5403749172036336,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_001_seed_4/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000021-step=002134-val_loss=0.1496-train_loss_step=0.1408.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/v3_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000021-step=002134-val_loss=0.1496-train_loss_step=0.1408.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=4 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 2103.2708333333335,
+                "run_index": 1,
+                "seed": 4,
+                "status": "ok",
+                "timestamp": "2026-03-25T21:28:35"
+              },
+              {
+                "auc": 0.9865947731928252,
+                "avg_loss": 0.5405962762100615,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_002_seed_5/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000022-step=002231-val_loss=0.1480-train_loss_step=0.1600.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/v5_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_class_gen-epoch=000022-step=002231-val_loss=0.1480-train_loss_step=0.1600.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=5 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 1999.1485148514853,
+                "run_index": 2,
+                "seed": 5,
+                "status": "ok",
+                "timestamp": "2026-03-25T21:39:56"
+              }
+            ]
+          }
+        ]
+      },
       "classifier+mpmregress_perturb": {
         "-1": [
           {
@@ -119,6 +241,67 @@
                 "seed": 15,
                 "status": "ok",
                 "timestamp": "2026-03-17T23:41:03"
+              }
+            ]
+          }
+        ]
+      },
+      "generator": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9813923042170781,
+                "std": 8.902349824979471e-05
+              },
+              "avg_loss": {
+                "mean": 0.5455679655654248,
+                "std": 0.00042205980504546775
+              },
+              "inv_bkg_eff": {
+                "mean": 738.9981517331626,
+                "std": 17.758633918349002
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt",
+            "runs": [
+              {
+                "auc": 0.9814755565623494,
+                "avg_loss": 0.5450943276682734,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_000_seed_0/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000049-step=004850-val_loss=0.1728-train_loss_step=0.1451.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/v1_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000049-step=004850-val_loss=0.1728-train_loss_step=0.1451.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 718.5551601423488,
+                "run_index": 0,
+                "seed": 0,
+                "status": "ok",
+                "timestamp": "2026-03-25T20:25:40"
+              },
+              {
+                "auc": 0.9814028984283528,
+                "avg_loss": 0.545705362002357,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_001_seed_1/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000046-step=004559-val_loss=0.1724-train_loss_step=0.1480.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/v3_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000046-step=004559-val_loss=0.1724-train_loss_step=0.1480.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=1 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 747.8296296296296,
+                "run_index": 1,
+                "seed": 1,
+                "status": "ok",
+                "timestamp": "2026-03-25T20:45:00"
+              },
+              {
+                "auc": 0.981298457660532,
+                "avg_loss": 0.545904207025644,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/run_002_seed_2/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000048-step=004753-val_loss=0.1736-train_loss_step=0.1513.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/v5_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_100000_ibrahime_ckpt_gen_only-epoch=000048-step=004753-val_loss=0.1736-train_loss_step=0.1513.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"100000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=2 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 750.6096654275093,
+                "run_index": 2,
+                "seed": 2,
+                "status": "ok",
+                "timestamp": "2026-03-25T21:04:51"
               }
             ]
           }
@@ -312,6 +495,128 @@
   "10k-Top": {
     "micro": {},
     "small": {
+      "classifier": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9832429811205691,
+                "std": 0.0008268482608894918
+              },
+              "avg_loss": {
+                "mean": 0.5429508701080152,
+                "std": 6.23643318510303e-05
+              },
+              "inv_bkg_eff": {
+                "mean": 850.0156051779085,
+                "std": 565.3800814485885
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt",
+            "runs": [
+              {
+                "auc": 0.9827352472051862,
+                "avg_loss": 0.5429915423270112,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_000_seed_1/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000137-step=001242-val_loss=0.1664-train_loss_step=0.1353.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/v1_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000137-step=001242-val_loss=0.1664-train_loss_step=0.1353.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=1 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 315.98435054773086,
+                "run_index": 0,
+                "seed": 1,
+                "status": "ok",
+                "timestamp": "2026-03-24T13:27:53"
+              },
+              {
+                "auc": 0.984197085716433,
+                "avg_loss": 0.5428790690799932,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_001_seed_2/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000133-step=001206-val_loss=0.1629-train_loss_step=0.1496.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/v3_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000133-step=001206-val_loss=0.1629-train_loss_step=0.1496.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=2 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 1442.2428571428572,
+                "run_index": 1,
+                "seed": 2,
+                "status": "ok",
+                "timestamp": "2026-03-24T13:54:58"
+              },
+              {
+                "auc": 0.9827966104400879,
+                "avg_loss": 0.5429819989170411,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_002_seed_3/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000129-step=001170-val_loss=0.1689-train_loss_step=0.1421.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/v5_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_only-epoch=000129-step=001170-val_loss=0.1689-train_loss_step=0.1421.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_only_val_loss=.4026.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=3 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 791.8196078431372,
+                "run_index": 2,
+                "seed": 3,
+                "status": "ok",
+                "timestamp": "2026-03-24T14:21:29"
+              }
+            ]
+          }
+        ]
+      },
+      "classifier+generator": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9829264933518854,
+                "std": 0.0007163004950916413
+              },
+              "avg_loss": {
+                "mean": 0.54357577775053,
+                "std": 0.0008483689947190166
+              },
+              "inv_bkg_eff": {
+                "mean": 936.9710982674128,
+                "std": 118.69441738251133
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt",
+            "runs": [
+              {
+                "auc": 0.9827758760482782,
+                "avg_loss": 0.5442165964211045,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_000_seed_7/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000181-step=001638-val_loss=0.1671-train_loss_step=0.1485.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/v1_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000181-step=001638-val_loss=0.1671-train_loss_step=0.1485.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=7 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 870.3189655172414,
+                "run_index": 0,
+                "seed": 7,
+                "status": "ok",
+                "timestamp": "2026-03-24T16:26:12"
+              },
+              {
+                "auc": 0.9822974780582212,
+                "avg_loss": 0.5438970408587703,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_001_seed_8/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000190-step=001719-val_loss=0.1710-train_loss_step=0.1458.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/v3_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000190-step=001719-val_loss=0.1710-train_loss_step=0.1458.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=8 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 866.5836909871244,
+                "run_index": 1,
+                "seed": 8,
+                "status": "ok",
+                "timestamp": "2026-03-24T17:03:59"
+              },
+              {
+                "auc": 0.9837061259491565,
+                "avg_loss": 0.5426136959717149,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_002_seed_9/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000175-step=001584-val_loss=0.1643-train_loss_step=0.1228.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/v5_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_class_gen-epoch=000175-step=001584-val_loss=0.1643-train_loss_step=0.1228.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=9 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 1074.0106382978724,
+                "run_index": 2,
+                "seed": 9,
+                "status": "ok",
+                "timestamp": "2026-03-24T17:38:59"
+              }
+            ]
+          }
+        ]
+      },
       "classifier+mpmregress_perturb": {
         "-1": [
           {
@@ -429,6 +734,67 @@
                 "seed": 9,
                 "status": "ok",
                 "timestamp": "2026-03-17T22:45:21"
+              }
+            ]
+          }
+        ]
+      },
+      "generator": {
+        "-1": [
+          {
+            "metrics_summary": {
+              "auc": {
+                "mean": 0.9599701399802184,
+                "std": 0.007370904547503458
+              },
+              "avg_loss": {
+                "mean": 0.5638607540209182,
+                "std": 0.004860485886524015
+              },
+              "inv_bkg_eff": {
+                "mean": 132.48046829216995,
+                "std": 54.67771524427383
+              },
+              "num_evaluated": 3,
+              "num_runs": 3
+            },
+            "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt",
+            "runs": [
+              {
+                "auc": 0.9653890252898273,
+                "avg_loss": 0.559185732604584,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_000_seed_4/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000175-step=001584-val_loss=0.2395-train_loss_step=0.1806.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/v1_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000175-step=001584-val_loss=0.2395-train_loss_step=0.1806.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=4 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 182.39747064137308,
+                "run_index": 0,
+                "seed": 4,
+                "status": "ok",
+                "timestamp": "2026-03-24T14:56:16"
+              },
+              {
+                "auc": 0.9515767730341003,
+                "avg_loss": 0.568887586970973,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_001_seed_5/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000105-step=000954-val_loss=0.2680-train_loss_step=0.2798.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/v3_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000105-step=000954-val_loss=0.2680-train_loss_step=0.2798.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=5 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 74.04253758709204,
+                "run_index": 1,
+                "seed": 5,
+                "status": "ok",
+                "timestamp": "2026-03-24T15:18:13"
+              },
+              {
+                "auc": 0.9629446216167277,
+                "avg_loss": 0.5635089424871975,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/run_002_seed_6/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000158-step=001431-val_loss=0.2496-train_loss_step=0.2344.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/v5_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only/checkpoints/_small_classifier_top_dataset_10000_ibrahime_ckpt_gen_only-epoch=000158-step=001431-val_loss=0.2496-train_loss_step=0.2344.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"10000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/gen_only_val_loss=2.538.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=6 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 141.0013966480447,
+                "run_index": 2,
+                "seed": 6,
+                "status": "ok",
+                "timestamp": "2026-03-24T15:49:51"
               }
             ]
           }
@@ -620,6 +986,7 @@
     }
   },
   "1M-Top": {
+    "medium": {},
     "micro": {},
     "small": {
       "classifier": {
@@ -1193,19 +1560,19 @@
           {
             "metrics_summary": {
               "auc": {
-                "mean": 0.9237349970124502,
-                "std": 0.06911091729029623
+                "mean": 0.942132136858992,
+                "std": 0.05833972667019206
               },
               "avg_loss": {
-                "mean": 0.6247122120985664,
-                "std": 0.08936906872926814
+                "mean": 0.6016460864961676,
+                "std": 0.07476331770116443
               },
               "inv_bkg_eff": {
-                "mean": 124.2075941001613,
-                "std": 140.91768003457457
+                "mean": 247.76748103409446,
+                "std": 236.07209333282577
               },
-              "num_evaluated": 2,
-              "num_runs": 2
+              "num_evaluated": 3,
+              "num_runs": 3
             },
             "pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt",
             "runs": [
@@ -1232,6 +1599,18 @@
                 "seed": 1,
                 "status": "ok",
                 "timestamp": "2026-03-23T00:58:37"
+              },
+              {
+                "auc": 0.9789264165520752,
+                "avg_loss": 0.5555138352913699,
+                "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/run_002_seed_0/_small_classifier_top_dataset_1000_ibrahime_ckpt_class_gen-epoch=001217-step=001218-val_loss=0.1973-train_loss_step=0.1801.ckpt",
+                "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_small_classifier_top_dataset_1000_ibrahime_ckpt_class_gen/v9_small_classifier_top_dataset_1000_ibrahime_ckpt_class_gen/checkpoints/_small_classifier_top_dataset_1000_ibrahime_ckpt_class_gen-epoch=001217-step=001218-val_loss=0.1973-train_loss_step=0.1801.ckpt",
+                "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"1000\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1\nPATIENCE=10\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Small/class_gen_val_loss=3.260.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=small --lr 5e-06 --weight_decay 0.1 --batch_size=32 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=1028\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+                "inv_bkg_eff": 494.8872549019608,
+                "run_index": 2,
+                "seed": 0,
+                "status": "ok",
+                "timestamp": "2026-03-24T12:59:52"
               }
             ]
           }
