@@ -1,5 +1,6 @@
 import argparse
 import atexit
+import json
 import os
 import time
 
@@ -91,6 +92,15 @@ def main():
         default=None,
         help="Number of training batches between each validation check. If <1.0, this is a fraction of the total training batches.",
     )
+    parser.add_argument(
+        "--check_val_every_n_epoch",
+        type=int,
+        default=1,
+        help="Number of training epochs between each validation check. If set, this "
+        "overrides val_check_interval for epoch-based validation checking "
+        "(i.e., validation will be checked every N epochs regardless of the "
+        "number of training batches).",
+    )
     parser.add_argument("--shuffle_val_test_indices", type=str2bool, default=False)
     parser.add_argument("--seed_for_initial_shuffling", type=int, default=None)
     parser.add_argument(
@@ -136,7 +146,14 @@ def main():
     parser.add_argument("--feature_drop", type=float, default=0.1)
     parser.add_argument("--num_tokens", type=int, default=4)
     parser.add_argument("--radius", type=float, default=0.4)
-    parser.add_argument("--patience", type=int, default=20)
+    parser.add_argument(
+        "--patience",
+        type=int,
+        default=20,
+        help="Number of validation checks with no improvement after which"
+        " training will be stopped. Set to 0 or negative to disable early"
+        " stopping.",
+    )
     parser.add_argument(
         "--mode",
         type=str,
@@ -206,6 +223,12 @@ def main():
     parser.add_argument("--use_int", type=str2bool, default=True)
     parser.add_argument("--test", type=str2bool, default=False)
     parser.add_argument("--fine_tune", type=str2bool, default=False)
+    parser.add_argument(
+        "--treat_gen_pidembed_and_condembed_as_last_layer",
+        type=str2bool,
+        default=False,
+        help="Treat generator.pid_embed and body.cond_embed parameters as last-layer (i.e. apply lr_factor when fine-tuning)",
+    )
     parser.add_argument("--use_one_cycle", type=str2bool, default=False)
 
     # Logging
@@ -235,18 +258,38 @@ def main():
     args = parser.parse_args()
 
     # Handle run_dir argument
+    run_metadata = {}  # Will be populated from run_metadata.json on resume
+    pretrained_ckpt = (
+        args.ckpt
+    )  # Save original pretrained ckpt path before it may be overwritten on resume
     if args.run_dir is not None:
         provided_run_dir = args.run_dir
 
         # Check if run_dir exists and contains a checkpoint
         last_ckpt_path = os.path.join(provided_run_dir, "checkpoints", "last.ckpt")
 
+        # Check if run already finished (e.g. manually placed finished.txt to prevent restart)
+        finished_file_path = os.path.join(provided_run_dir, "finished.txt")
+        if os.path.exists(finished_file_path):
+            print(f"Found finished.txt in {provided_run_dir}. Skipping run.")
+            return
+
         if os.path.exists(last_ckpt_path):
             # Continue from last checkpoint
             print(f"Found existing checkpoint at {last_ckpt_path}")
-            print(f"Continuing training from checkpoint...")
+            print("Continuing training from checkpoint...")
             args.resume = True
             args.ckpt = last_ckpt_path
+            print(f"The ckpt used is: {args.ckpt}")
+
+            # Load run metadata from previous run (save_tag, wandb_run_id)
+            metadata_path = os.path.join(provided_run_dir, "run_metadata.json")
+            if os.path.exists(metadata_path):
+                with open(metadata_path, "r") as f:
+                    run_metadata = json.load(f)
+                print(f"Loaded run metadata from {metadata_path}: {run_metadata}")
+            else:
+                raise ValueError(f"No run_metadata.json found at {metadata_path}")
         else:
             # Start new run in this directory
             print(f"Starting new run in directory: {provided_run_dir}")
@@ -277,12 +320,24 @@ def main():
     save_tag = f"_{args.model_size}_{args.mode}_{args.dataset}_dataset_{args.dataset_size}_{user}"
 
     ckpt_tag = ""
+
+    # Compute ckpt_tag from the original pretrained checkpoint (needed for all_head logic below)
     if args.dataset != "jetclass":
         if args.fine_tune:
-            ckpt_tag = extract_pretrained_ckpt_prefix(args.ckpt)
+            ckpt_tag = extract_pretrained_ckpt_prefix(pretrained_ckpt)
         else:
             ckpt_tag = "from_scratch"
-        save_tag = save_tag + "_ckpt_" + ckpt_tag
+
+    # Override save_tag from metadata when resuming via run_dir
+    if provided_run_dir is not None and args.resume:
+        if run_metadata.get("save_tag"):
+            print(f"Overriding save_tag from run_metadata: {run_metadata['save_tag']}")
+            save_tag = run_metadata["save_tag"]
+        else:
+            raise ValueError("'save_tag' not found in metadata!")
+    else:
+        if args.dataset != "jetclass":
+            save_tag = save_tag + "_ckpt_" + ckpt_tag
 
     # from omnilearn_lightning.callbacks.masked_prediction_callback import (
     #     MaskedPredictionCallback,
@@ -394,6 +449,7 @@ def main():
         use_perturbed_loss_terms=args.use_perturbed_loss_terms,
         fine_tune=args.fine_tune,
         all_head=all_head,
+        treat_gen_pidembed_and_condembed_as_last_layer=args.treat_gen_pidembed_and_condembed_as_last_layer,
         use_weights_in_mpm=args.use_weights_in_mpm,
         mpm_features=args.mpm_features,
         mpm_label_smoothing=args.mpm_label_smoothing,
@@ -485,17 +541,51 @@ def main():
         # add SLURM job id if it exists
         if "SLURM_JOB_ID" in os.environ:
             hparams["slurm_job_id"] = os.environ["SLURM_JOB_ID"]
+        else:
+            hparams["slurm_job_id"] = None
 
-        wandb_logger = WandbLogger(
-            project=args.wandb_project,
-            name=run_name,
-            tags=args.wandb_tag,
-            save_dir=args.outdir,
-            entity=args.wandb_entity,
-        )
+        # Resume existing wandb run if we have a saved run ID, otherwise start new
+        prev_wandb_id = run_metadata.get("wandb_run_id")
+        if prev_wandb_id:
+            print(f"Resuming wandb run with id: {prev_wandb_id}")
+            wandb_logger = WandbLogger(
+                project=args.wandb_project,
+                name=run_name,
+                tags=args.wandb_tag,
+                save_dir=run_dir,
+                entity=args.wandb_entity,
+                id=prev_wandb_id,
+                resume="must",
+            )
+        else:
+            wandb_logger = WandbLogger(
+                project=args.wandb_project,
+                name=run_name,
+                tags=args.wandb_tag,
+                save_dir=run_dir,
+                entity=args.wandb_entity,
+            )
 
         wandb_logger.log_hyperparams(hparams)
         loggers.append(wandb_logger)
+
+        # Save run metadata (save_tag + wandb run ID) for future resumption
+        if rank_zero_only.rank == 0:
+            run_attempt = run_metadata.get("run_attempt", 0) + 1
+            metadata_to_save = {
+                "save_tag": save_tag,
+                "run_name": run_name,
+                "wandb_run_id": wandb_logger.experiment.id,
+                "seed_for_initial_shuffling": args.seed_for_initial_shuffling,
+                "run_attempt": run_attempt,
+                # list of job IDs
+                "slurm_job_ids": run_metadata.get("slurm_job_ids", [])
+                + [os.environ.get("SLURM_JOB_ID")],
+            }
+            metadata_path = os.path.join(run_dir, "run_metadata.json")
+            with open(metadata_path, "w") as f:
+                json.dump(metadata_to_save, f, indent=2)
+            print(f"Saved run metadata to {metadata_path}")
 
     checkpoint_step = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
@@ -529,13 +619,14 @@ def main():
     #     print("Using MaskedPredictionCallback for self-supervised learning")
     #     callbacks.append(masked_prediction_callback)
 
-    early_stop_callback = EarlyStopping(
-        monitor="val_loss",
-        patience=args.patience,
-        mode="min",
-        verbose=True,
-    )
-    callbacks.append(early_stop_callback)
+    if args.patience > 0:
+        early_stop_callback = EarlyStopping(
+            monitor="val_loss",
+            patience=args.patience,
+            mode="min",
+            verbose=True,
+        )
+        callbacks.append(early_stop_callback)
 
     if args.dataset != "jetclass":
         if not args.fine_tune and not args.resume:
@@ -576,6 +667,7 @@ def main():
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
         val_check_interval=args.val_check_interval,
+        check_val_every_n_epoch=args.check_val_every_n_epoch,
     )
 
     # Training
@@ -589,6 +681,12 @@ def main():
         print(f"Using best model from {best_model_path} for testing")
         trainer.test(model=model, datamodule=data_module, ckpt_path=best_model_path)
         print("Testing is complete!")
+
+    # Create a file finished.sh in the run directory to indicate that the run has finished (can be used by other scripts to check if the run is done)
+    finished_file = os.path.join(run_dir, "finished.txt")
+    with open(finished_file, "w") as f:
+        f.write("Run finished successfully.")
+    print(f"Created finished file at {finished_file}")
 
 
 if __name__ == "__main__":

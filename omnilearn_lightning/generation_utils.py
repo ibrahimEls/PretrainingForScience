@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 
@@ -6,6 +7,7 @@ import omnilearned
 import pandas as pd
 import torch
 import vector
+import wandb
 from tqdm import tqdm
 
 from omnilearn_lightning.array_utils import np_to_ak, p4s_from_ptetaphimass
@@ -229,7 +231,11 @@ def generate_or_load(
 
 
 def get_metrics_and_gen_jets_vs_epoch(
-    output_path_gen_vs_epoch: str, n_jets: int, skip_epoch_zero: bool = False
+    output_path_gen_vs_epoch: str,
+    n_jets: int,
+    skip_epoch_zero: bool = False,
+    return_logs_df: bool = False,
+    wandb_entity: str = "joschka-birk",
 ):
     """
     Parameters
@@ -249,8 +255,51 @@ def get_metrics_and_gen_jets_vs_epoch(
         |------- metrics.csv
         ...
         ```
+    n_jets : int
+        The number of jets that were generated and stored in the parquet files, which is used to identify the correct parquet files in the epoch folders.
+    skip_epoch_zero : bool
+        Whether to skip epoch 0 when loading the generated output and metrics. This can be useful if epoch 0 corresponds to the original data without any training, and you only want to analyze the epochs where the model has been trained.
+    return_logs_csvs : bool
+        Whether to also return the metrics.csv from the training. The function looks
+        for this file in the parent folder of `generation_output`.
     """
     output_path_gen_vs_epoch = Path(output_path_gen_vs_epoch)
+
+    if return_logs_df:
+        print(
+            f"Looking for run_metadata.json in parent folder: {output_path_gen_vs_epoch.parent}"
+        )
+        metadata_json_path = output_path_gen_vs_epoch.parent / "run_metadata.json"
+        if metadata_json_path.exists():
+            print(f"Found run_metadata.json at {metadata_json_path}")
+            with open(metadata_json_path, "r") as f:
+                metadata = json.load(f)
+            wandb_run_id = metadata.get("wandb_run_id", None)
+            if wandb_run_id is not None:
+                print(f"Found wandb_run_id: {wandb_run_id} in metadata")
+                api = wandb.Api()
+                run = api.run(f"{wandb_entity}/omnilearned/{wandb_run_id}")
+                logs_df = run.history(samples=10_000)
+                # only keep certain columns
+                columns_to_keep = [
+                    "trainer/global_step",
+                    "epoch",
+                    "train_loss_gen_epoch",
+                    "train_loss_gen_step",
+                    "val_loss_gen",
+                ]
+                logs_df = logs_df[columns_to_keep]
+                print(f"Loaded logs from wandb run {wandb_run_id}")
+            else:
+                print(
+                    f"No wandb_run_id found in metadata. Cannot load logs from wandb."
+                )
+                logs_df = None
+        else:
+            print(
+                f"No run_metadata.json found at {metadata_json_path}. Cannot load logs."
+            )
+            logs_df = None
 
     df_list = []
 
@@ -294,5 +343,8 @@ def get_metrics_and_gen_jets_vs_epoch(
 
     # sort the list of dicts by epoch
     df_list = sorted(df_list, key=lambda x: x["epoch"])
+
+    if return_logs_df:
+        return df_list, logs_df
 
     return df_list

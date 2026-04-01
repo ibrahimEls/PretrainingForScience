@@ -89,7 +89,9 @@ def main():
                     hparams = yaml.safe_load(f)
                 if hparams.get("tokenizer_ckpt", None) is None:
                     method += "regress"
-                if hparams.get("use_perturbed_loss_terms", False):
+                if hparams.get("use_perturbed_loss_terms", False) and (
+                    "classifier" in method or "pretrain" in method
+                ):
                     method += "_perturb"
 
             dataset_size = name_parts[5]

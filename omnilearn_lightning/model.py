@@ -388,6 +388,7 @@ class PETLightning(LightningModule):
         add_dim=4,
         num_gen_classes=1,
         all_head=False,
+        treat_gen_pidembed_and_condembed_as_last_layer=False,
         use_weights_in_mpm=False,
         mpm_features="kin",
         mpm_label_smoothing=0.0,
@@ -511,6 +512,9 @@ class PETLightning(LightningModule):
         self.use_amp = use_amp
         self.fine_tune = fine_tune
         self.all_head = all_head
+        self.treat_gen_pidembed_and_condembed_as_last_layer = (
+            treat_gen_pidembed_and_condembed_as_last_layer
+        )
         self.ckpt_loaded = ckpt_loaded
         self.use_pid = use_pid
         self.use_add = use_add
@@ -764,6 +768,7 @@ class PETLightning(LightningModule):
             lr_factor=self.lr_factor,
             fine_tune=self.fine_tune,
             all_head=self.all_head,
+            treat_gen_pidembed_and_condembed_as_last_layer=self.treat_gen_pidembed_and_condembed_as_last_layer,
         )
 
         if self.use_one_cycle:
@@ -827,25 +832,25 @@ class PETLightning(LightningModule):
                 },
             }
 
-    def on_load_checkpoint(self, checkpoint: dict) -> None:
-        # if fine_tuning a pretrained body, filter shapes
-        # NOTE: I actually think that this method is incompatible with the current
-        # repo, cause our models don't have the key `body` in the state dict.
-        # Instead, it should be `model.body`
-        if self.fine_tune and self.ckpt_loaded:
-            print(
-                "[WARNING] both fine_tune and ckpt_loaded are set. This will "
-                "load the checkpoint with strict=False, which may lead to unexpected "
-                "behavior if the checkpoint is not compatible with the current model "
-                "architecture."
-            )
-            ck = torch.load(self.ckpt_loaded, map_location="cpu")
-            body_sd = ck["body"]
-            self.model.body.load_state_dict(body_sd, strict=False)
+    # def on_load_checkpoint(self, checkpoint: dict) -> None:
+    #     # if fine_tuning a pretrained body, filter shapes
+    #     # NOTE: I actually think that this method is incompatible with the current
+    #     # repo, cause our models don't have the key `body` in the state dict.
+    #     # Instead, it should be `model.body`
+    #     if self.fine_tune and self.ckpt_loaded:
+    #         print(
+    #             "[WARNING] both fine_tune and ckpt_loaded are set. This will "
+    #             "load the checkpoint with strict=False, which may lead to unexpected "
+    #             "behavior if the checkpoint is not compatible with the current model "
+    #             "architecture."
+    #         )
+    #         ck = torch.load(self.ckpt_loaded, map_location="cpu")
+    #         body_sd = ck["body"]
+    #         self.model.body.load_state_dict(body_sd, strict=False)
 
-            # classifier_head / generator_head if present...
-            for head in ("classifier_head", "generator_head"):
-                if head in ck and getattr(self.model, head[:-5], None) is not None:
-                    getattr(self.model, head[:-5]).load_state_dict(
-                        ck[head], strict=False
-                    )
+    #         # classifier_head / generator_head if present...
+    #         for head in ("classifier_head", "generator_head"):
+    #             if head in ck and getattr(self.model, head[:-5], None) is not None:
+    #                 getattr(self.model, head[:-5]).load_state_dict(
+    #                     ck[head], strict=False
+    #                 )

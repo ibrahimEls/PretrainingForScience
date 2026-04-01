@@ -81,13 +81,15 @@ def get_pretrained_ckpts(
     modes: list[str],
     pretrain_datasetsize_ids: list[str],
     model_sizes: list[str],
+    return_with_info: bool = False,
 ):
     """Extract all pretrained checkpoint paths from the pretrained ckpts JSON, filtered by the given criteria."""
 
     with open(pretrained_ckpts_json_path, "r") as f:
         pretrained_ckpts = json.load(f)
 
-    ckpt_paths = []
+    ckpt_paths = [] if not return_with_info else {}
+
     for model_size in pretrained_ckpts:
         if model_size not in model_sizes:
             continue
@@ -98,7 +100,28 @@ def get_pretrained_ckpts(
                 if pretrain_datasetsize_id not in pretrain_datasetsize_ids:
                     continue
                 ckpt_path = pretrained_ckpts[model_size][mode][pretrain_datasetsize_id]
-                ckpt_paths.append(ckpt_path)
+                if not ckpt_path.endswith(".ckpt"):
+                    print(
+                        f"Warning: Skipping invalid checkpoint path '{ckpt_path}' for model_size='{model_size}', mode='{mode}', pretrain_datasetsize_id='{pretrain_datasetsize_id}'"
+                    )
+                    continue
+                # check if path exists
+                if not Path(ckpt_path).is_file():
+                    print(f"File doesn't exist: {ckpt_path}")
+                    continue
+                try:
+                    with open(ckpt_path) as f:
+                        pass
+                except Exception as exc:
+                    print(f"Error opening ckpt path: {ckpt_path} -- {exc}")
+                if return_with_info:
+                    ckpt_paths[ckpt_path] = {
+                        "mode": mode,
+                        "model_size": model_size,
+                        "pretrain_dataset_size": pretrain_datasetsize_id,
+                    }
+                else:
+                    ckpt_paths.append(ckpt_path)
 
     return ckpt_paths
 

@@ -1,3 +1,4 @@
+import hashlib
 import os
 from argparse import ArgumentParser
 from pathlib import Path
@@ -42,6 +43,63 @@ class PETDataModule(LightningDataModule):
         self.seed_for_initial_shuffling = seed_for_initial_shuffling
         self.load_val = load_val
         self.use_cond = use_cond
+
+    def _indices_hash(self, dataloader):
+        """Compute a SHA-256 hash of the dataset's file_indices."""
+        indices_bytes = np.asarray(dataloader.dataset.file_indices).tobytes()
+        return hashlib.sha256(indices_bytes).hexdigest()
+
+    def state_dict(self):
+        """Save dataset configuration that must be consistent across resumes."""
+        state = {
+            "seed_for_initial_shuffling": self.seed_for_initial_shuffling,
+            "num_samples": self.num_samples,
+        }
+        if hasattr(self, "train_dataset"):
+            state["train_indices_hash"] = self._indices_hash(self.train_dataset)
+        if hasattr(self, "val_dataset"):
+            state["val_indices_hash"] = self._indices_hash(self.val_dataset)
+        if hasattr(self, "test_dataset"):
+            state["test_indices_hash"] = self._indices_hash(self.test_dataset)
+        return state
+
+    def load_state_dict(self, state_dict):
+        """Verify dataset configuration matches the checkpoint's configuration."""
+        saved_seed = state_dict.get("seed_for_initial_shuffling")
+        saved_num_samples = state_dict.get("num_samples")
+
+        if saved_seed != self.seed_for_initial_shuffling:
+            raise ValueError(
+                f"seed_for_initial_shuffling mismatch: checkpoint has {saved_seed}, "
+                f"but current run uses {self.seed_for_initial_shuffling}. "
+                "This would result in a different dataset subset."
+            )
+        if saved_num_samples != self.num_samples:
+            raise ValueError(
+                f"num_samples mismatch: checkpoint has {saved_num_samples}, "
+                f"but current run uses {self.num_samples}. "
+                "This would result in a different dataset subset."
+            )
+
+        # Verify indices hashes if available in both checkpoint and current run
+        for split in ("train", "val", "test"):
+            hash_key = f"{split}_indices_hash"
+            saved_hash = state_dict.get(hash_key)
+            dataset_attr = f"{split}_dataset"
+            if saved_hash is not None and hasattr(self, dataset_attr):
+                current_hash = self._indices_hash(getattr(self, dataset_attr))
+                print(
+                    f"Verifying {split} dataset indices hash: checkpoint has "
+                    f"{saved_hash[:16]}..., current run has {current_hash[:16]}..."
+                )
+                if saved_hash != current_hash:
+                    raise ValueError(
+                        f"{split} dataset indices hash mismatch: checkpoint has "
+                        f"{saved_hash[:16]}..., but current run has "
+                        f"{current_hash[:16]}.... "
+                        "The dataset indices have changed since the checkpoint "
+                        "was saved."
+                    )
 
     def setup(self, stage=None):
         """Called at the beginning of fit/test to set up data."""
@@ -282,6 +340,9 @@ def load_data(
                 rng = np.random.default_rng(seed=seed_for_shuffling)
                 perm = rng.permutation(len(indices))
                 indices = indices[perm]
+                print(
+                    f"Shuffled indices for dataset {names[iname]} with seed {seed_for_shuffling}."
+                )
             file_indices.extend(
                 (file_idx + index_shift, sample_idx) for file_idx, sample_idx in indices
             )
@@ -310,6 +371,9 @@ def load_data(
                 rng = np.random.default_rng(seed=seed_for_shuffling)
                 perm = rng.permutation(len(file_indices))
                 file_indices = file_indices[perm]
+                print(
+                    f"Shuffled indices for dataset {names[iname]} with seed {seed_for_shuffling}."
+                )
 
     # Shift labels if they are not used for pretrain
     label_shift = {"jetclass": 2, "aspen": 12, "jetclass2": 13}

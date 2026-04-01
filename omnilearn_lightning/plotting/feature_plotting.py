@@ -51,10 +51,10 @@ DEFAULT_COLORS = [
     "#832db6",  # purple
     "#b9ac70",  # olive
     "#92dadd",  # light blue
-    "#817175",  # grey (darker)
+    # "#817175",  # grey (darker)
     "#a96b59",  # brown
     "#E76300",  # orange (red-ish)
-    "#a4a294",  # grey
+    # "#a4a294",  # grey
 ]
 DEFAULT_ALPHA = 0.95
 rcParams = mpl.rcParams
