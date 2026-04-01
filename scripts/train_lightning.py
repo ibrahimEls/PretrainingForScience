@@ -211,6 +211,11 @@ def main():
         help="Features to use for MPM ('kin', 'kin_pid_add')",
     )
 
+    # Point-LeJEPA
+    parser.add_argument("--lejepa_lambda", type=float, default=0.05)
+    parser.add_argument("--lejepa_proj_dim", type=int, default=256)
+    parser.add_argument("--sigreg_n_directions", type=int, default=1024)
+
     # Additional features
     parser.add_argument("--use_pid", type=str2bool, default=False)
     parser.add_argument("--use_add", type=str2bool, default=False)
@@ -451,6 +456,9 @@ def main():
         optimizer_type=args.optimizer_type,
         conditional=args.use_cond,
         use_int=args.use_int,
+        lejepa_lambda=args.lejepa_lambda,
+        lejepa_proj_dim=args.lejepa_proj_dim,
+        sigreg_n_directions=args.sigreg_n_directions,
     )
     if rank_zero_only.rank == 0:
         print("Model initialized.")

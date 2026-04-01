@@ -1,6 +1,7 @@
 import torch
 import torch.amp as amp
 import torch.nn as nn
+import torch.nn.functional as F
 from diffusers.optimization import get_cosine_schedule_with_warmup
 from omnilearned.diffusion import get_logsnr_alpha_sigma, perturb
 from omnilearned.layers import DynamicTanh
@@ -61,6 +62,7 @@ class PET2(nn.Module):
         num_gen_classes=1,
         mpm_features="kin",
         use_perturbed_loss_terms=True,
+        lejepa_proj_dim=256,
     ):
         super().__init__()
         self.mode = mode
@@ -75,6 +77,7 @@ class PET2(nn.Module):
             "classifier+mpm",
             "generator+mpm",
             "pretrain",
+            "point_lejepa",
         ]:
             raise ValueError(f"Mode '{self.mode}' not supported.")
 
@@ -167,6 +170,15 @@ class PET2(nn.Module):
             max_particles = 150  # maximum number of particles
             self.mask_embeddings = torch.nn.Parameter(
                 torch.randn(max_particles, base_dim)
+            )
+
+        if "point_lejepa" in mode:
+            token_dim = num_tokens * base_dim
+            proj_dim = lejepa_proj_dim
+            self.lejepa_proj = nn.Sequential(
+                nn.Linear(token_dim, token_dim),
+                nn.GELU(),
+                nn.Linear(token_dim, proj_dim),
             )
 
         self.initialize_weights()
@@ -296,6 +308,27 @@ class PET2(nn.Module):
                 self.mpm_head(x_body_masked, mask=mask_for_masked_pred_head.bool())
             )
 
+        z_v1 = None
+        z_v2 = None
+        if "point_lejepa" in self.mode:
+            mask_before = (x[:, :, 3] != 0).int()
+            frac1 = torch.empty(1).uniform_(0.6, 0.95).item()
+            frac2 = torch.empty(1).uniform_(0.6, 0.95).item()
+            mask_view1 = set_fraction_ones_to_zeros(mask_before, fraction=frac1)
+            mask_view2 = set_fraction_ones_to_zeros(mask_before, fraction=frac2)
+
+            x_v1 = x * mask_view1.unsqueeze(-1)
+            x_v2 = x * mask_view2.unsqueeze(-1)
+
+            body_v1 = self.body(x_v1, cond, pid, add_info, torch.zeros_like(time))
+            body_v2 = self.body(x_v2, cond, pid, add_info, torch.zeros_like(time))
+
+            tokens_v1 = body_v1[:, : self.body.num_tokens].reshape(x.shape[0], -1)
+            tokens_v2 = body_v2[:, : self.body.num_tokens].reshape(x.shape[0], -1)
+
+            z_v1 = self.lejepa_proj(tokens_v1)
+            z_v2 = self.lejepa_proj(tokens_v2)
+
         return {
             "y_pred": y_pred,
             "y_perturb": y_perturb,
@@ -311,6 +344,8 @@ class PET2(nn.Module):
             "pid": pid,
             "mask_valid_particle": mask_valid_particle,
             "mask_valid_particle_but_masked": mask_valid_particle_but_masked,
+            "z_v1": z_v1,
+            "z_v2": z_v2,
         }
 
 
@@ -368,6 +403,7 @@ class PETLightning(LightningModule):
 
         self.tokenizer = None
         self.use_mpm = "mpm" in mode or mode == "pretrain"
+        self.use_lejepa = "point_lejepa" in mode
         self.mpm_features = mpm_features
         number_continuous_features = num_feat
 
@@ -439,6 +475,7 @@ class PETLightning(LightningModule):
             mpm_features=mpm_features,
             use_perturbed_loss_terms=use_perturbed_loss_terms,
             conditional=conditional,
+            lejepa_proj_dim=kwargs.get("lejepa_proj_dim", 256),
             **model_params,
         )
 
@@ -459,6 +496,13 @@ class PETLightning(LightningModule):
             self.loss_masked_continuous = nn.L1Loss(reduction="mean")
 
         self.clip_loss = CLIPLoss()
+
+        if self.use_lejepa:
+            from omnilearn_lightning.utils import SIGReg
+
+            self.sigreg = SIGReg(n_directions=kwargs.get("sigreg_n_directions", 1024))
+            self.lejepa_lambda = kwargs.get("lejepa_lambda", 0.05)
+
         self.use_one_cycle = use_one_cycle
 
         # --- flags & params ---
@@ -556,6 +600,24 @@ class PETLightning(LightningModule):
 
         return mpm_logs, loss
 
+    def _compute_lejepa_loss(self, outputs):
+        logs = {}
+        loss = torch.tensor(0.0, device=self.device)
+        if outputs.get("z_v1") is not None:
+            z1, z2 = outputs["z_v1"], outputs["z_v2"]
+            pred_loss = F.mse_loss(z1, z2)
+            z_all = torch.cat([z1, z2], dim=0)
+            sigreg_loss = self.sigreg(z_all)
+            loss = (
+                1 - self.lejepa_lambda
+            ) * pred_loss + self.lejepa_lambda * sigreg_loss
+            logs["lejepa_pred_loss"] = pred_loss
+            logs["lejepa_sigreg_loss"] = sigreg_loss
+            logs["lejepa_loss"] = loss
+            logs["lejepa_z_norm"] = z1.norm(dim=-1).mean()
+            logs["lejepa_z_std"] = z1.std(dim=0).mean()
+        return logs, loss
+
     def _shared_step(self, batch, batch_idx, stage):
         """Shared logic for train/val/test steps."""
         X, y = batch["X"].float(), batch["y"]
@@ -609,7 +671,7 @@ class PETLightning(LightningModule):
                 # but when using only MPM, the code crashes when running
                 # loss.detach() here: https://github.com/ViniciusMikuni/OmniLearned/blob/922355db6269061af9e8a36a7c6a118e7c6609c4/src/omnilearned/utils.py#L272
                 # while being initialized as a standard python float here: https://github.com/ViniciusMikuni/OmniLearned/blob/922355db6269061af9e8a36a7c6a118e7c6609c4/src/omnilearned/utils.py#L221
-                if self.model.mode == "mpm":
+                if self.model.mode in ("mpm", "point_lejepa"):
                     loss = torch.tensor(0.0, device=self.device)
                 else:
                     loss = get_loss(
@@ -627,13 +689,15 @@ class PETLightning(LightningModule):
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
 
-                # Compute masked input perturbation loss
                 masked_input_logs, masked_input_loss = (
                     self._compute_masked_input_class_loss(out, y)
                 )
                 logs.update(masked_input_logs)
 
-                logs["loss"] = loss + mpm_loss + masked_input_loss
+                lejepa_logs, lejepa_loss = self._compute_lejepa_loss(out)
+                logs.update(lejepa_logs)
+
+                logs["loss"] = loss + mpm_loss + masked_input_loss + lejepa_loss
 
         else:
             with (
@@ -642,7 +706,7 @@ class PETLightning(LightningModule):
             ):
                 out = self(X, y, **model_kwargs)
                 # same reason as above
-                if self.model.mode == "mpm":
+                if self.model.mode in ("mpm", "point_lejepa"):
                     loss = torch.tensor(0.0, device=self.device)
                 else:
                     loss = get_loss(
@@ -660,18 +724,20 @@ class PETLightning(LightningModule):
                 mpm_logs, mpm_loss = self._compute_MPM_loss(out, y, y_masked=y_masked)
                 logs.update(mpm_logs)
 
-                # Compute masked input perturbation loss
                 masked_input_logs, masked_input_loss = (
                     self._compute_masked_input_class_loss(out, y)
                 )
                 logs.update(masked_input_logs)
 
-                logs["loss"] = loss + mpm_loss + masked_input_loss
+                lejepa_logs, lejepa_loss = self._compute_lejepa_loss(out)
+                logs.update(lejepa_logs)
+
+                logs["loss"] = loss + mpm_loss + masked_input_loss + lejepa_loss
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training
         for k, v in logs.items():
-            if "loss" not in k:
+            if "loss" not in k and "lejepa_z" not in k:
                 continue
             self.log(
                 f"{stage}_{k}",

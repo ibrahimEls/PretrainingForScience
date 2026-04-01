@@ -46,7 +46,10 @@
       "pretrain_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
-      "pretrainregress_perturb": {
+      "point_lejepa": {
+        "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
+      },
+        "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Micro/100M_pretrained/1M_top/"
       },
       "from_scratch": {
@@ -61,19 +64,19 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1M_top/"
       },
       "from_scratch": {
@@ -88,22 +91,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       },
-      "from_scratch":{
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1M_top/"
       }
     }
@@ -170,22 +173,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       },
-      "from_scratch":{
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/1k_top/"
       }
     },
@@ -197,22 +200,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       },
-      "from_scratch":{
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/1k_top/"
       }
     }
@@ -278,22 +281,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       },
-      "from_scratch":{
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/10k_top/"
       }
     },
@@ -305,22 +308,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       },
-      "from_scratch":{
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/10k_top/"
       }
     }
@@ -387,19 +390,19 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Small/100k_top/"
       },
       "from_scratch": {
@@ -414,22 +417,22 @@
       "generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
-      "mpm": {
+      "mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
       "classifier+generator": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
-      "classifier+mpm": {
+      "classifier+mpmregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
-      "generator+mpm": {
+      "generator+mpmregress": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
-      "pretrain": {
+      "pretrainregress_perturb": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       },
-      "from_scratch":  {
+      "from_scratch": {
         "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Top_Finetuned_Paths/Medium/100k_top/"
       }
     }

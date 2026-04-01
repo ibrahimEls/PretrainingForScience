@@ -38,14 +38,14 @@ MODEL_HPARAMS = {
         "scheduler_warmup_steps_fs": 0,
     },
     "medium": {
-        "num_workers": 32,
+        "num_workers": 2,
         "lr": 1e-6,
-        "lr_fs": 5e-5,
-        "weight_decay": 10,
+        "lr_fs": 5e-6,
+        "weight_decay": 2,
         "weight_decay_fs": 0.5,
         "batch_size": 64,
-        "lr_factor": 1,
-        "epoch": 10,
+        "lr_factor": 2,
+        "epoch": 30,
         "epoch_fs": 30,
         "scheduler_warmup_steps": 1028,
         "scheduler_warmup_steps_fs": 0,
@@ -300,6 +300,7 @@ def build_cmd_snippet(
         {ckpt_flag}
         {mode}
         {num_workers}, {num_nodes}, {lr}, {weight_decay}, {batch_size}
+        {max_training_steps}
     """
     shots = downstream_shots if downstream_shots is not None else -1
     shots = -1 if shots == 1_000_000 and dataset == "top" else shots
@@ -312,6 +313,12 @@ def build_cmd_snippet(
         ckpt_flag = ""
 
     hparams = get_model_hparams(model_size)
+
+    epoch = hparams["epoch"] if pretrain_ckpt else hparams["epoch_fs"]
+    gpus_per_node = 4
+    max_training_steps = (
+        1_200_000 // (hparams["batch_size"] * num_nodes * gpus_per_node)
+    ) * epoch
 
     fmt_kwargs = {
         "model_size": model_size,
@@ -338,7 +345,8 @@ def build_cmd_snippet(
         "output_dir": output_dir,
         "dataset_dir": dataset_dir,
         "lr_factor": hparams["lr_factor"] if pretrain_ckpt else 1,
-        "epoch": hparams["epoch"] if pretrain_ckpt else hparams["epoch_fs"],
+        "epoch": 99999,
+        "max_training_steps": max_training_steps,
         "scheduler_warmup_steps": hparams["scheduler_warmup_steps"]
         if pretrain_ckpt
         else hparams["scheduler_warmup_steps_fs"],
