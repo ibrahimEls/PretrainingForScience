@@ -44,10 +44,20 @@ class PETDataModule(LightningDataModule):
         self.load_val = load_val
         self.use_cond = use_cond
 
-    def _indices_hash(self, dataloader):
+    def _compute_indices_hash(self, dataloader):
         """Compute a SHA-256 hash of the dataset's file_indices."""
         indices_bytes = np.asarray(dataloader.dataset.file_indices).tobytes()
         return hashlib.sha256(indices_bytes).hexdigest()
+
+    def _get_indices_hash(self, split):
+        """Return the cached hash for the given split, or compute and cache it."""
+        if split not in self._indices_hash_cache:
+            dataset_attr = f"{split}_dataset"
+            if hasattr(self, dataset_attr):
+                self._indices_hash_cache[split] = self._compute_indices_hash(
+                    getattr(self, dataset_attr)
+                )
+        return self._indices_hash_cache.get(split)
 
     def state_dict(self):
         """Save dataset configuration that must be consistent across resumes."""
@@ -55,12 +65,10 @@ class PETDataModule(LightningDataModule):
             "seed_for_initial_shuffling": self.seed_for_initial_shuffling,
             "num_samples": self.num_samples,
         }
-        if hasattr(self, "train_dataset"):
-            state["train_indices_hash"] = self._indices_hash(self.train_dataset)
-        if hasattr(self, "val_dataset"):
-            state["val_indices_hash"] = self._indices_hash(self.val_dataset)
-        if hasattr(self, "test_dataset"):
-            state["test_indices_hash"] = self._indices_hash(self.test_dataset)
+        for split in ("train", "val", "test"):
+            h = self._get_indices_hash(split)
+            if h is not None:
+                state[f"{split}_indices_hash"] = h
         return state
 
     def load_state_dict(self, state_dict):
@@ -85,9 +93,8 @@ class PETDataModule(LightningDataModule):
         for split in ("train", "val", "test"):
             hash_key = f"{split}_indices_hash"
             saved_hash = state_dict.get(hash_key)
-            dataset_attr = f"{split}_dataset"
-            if saved_hash is not None and hasattr(self, dataset_attr):
-                current_hash = self._indices_hash(getattr(self, dataset_attr))
+            current_hash = self._get_indices_hash(split)
+            if saved_hash is not None and current_hash is not None:
                 print(
                     f"Verifying {split} dataset indices hash: checkpoint has "
                     f"{saved_hash[:16]}..., current run has {current_hash[:16]}..."
@@ -105,6 +112,9 @@ class PETDataModule(LightningDataModule):
         """Called at the beginning of fit/test to set up data."""
 
         print(f"Setting up datamodule for stage: {stage}")
+
+        # Reset the hash cache so hashes are recomputed for the new datasets
+        self._indices_hash_cache = {}
 
         loading_kwargs = dict(
             use_pid=self.use_pid,
@@ -145,6 +155,12 @@ class PETDataModule(LightningDataModule):
             )
         else:
             raise ValueError(f"Unknown stage: {stage}")
+
+        # Pre-compute and cache index hashes so that state_dict() (called on
+        # every checkpoint save) doesn't re-allocate ~1.6 GB of temporary
+        # memory each time for the full JetClass dataset.
+        for split in ("train", "val", "test"):
+            self._get_indices_hash(split)
 
     def train_dataloader(self):
         return self.train_dataset
