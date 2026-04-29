@@ -119,19 +119,19 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5089.ckpt"
     },
     "mpmregress": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/mpmregress_only_val_loss=0.2310.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/mpmregress_only_val_loss=0.2157.ckpt"
     },
     "classifier+generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_gen_val_loss=3.2382.ckpt"
     },
     "classifier+mpmregress_perturb": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/class_mpmregress_perturb_val_loss=1.7440.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/class_mpmregress_perturb_val_loss=1.0377.ckpt"
     },
     "generator+mpmregress": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/gen_mpmregress_val_loss=3.0195.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/gen_mpmregress_val_loss=2.7141.ckpt"
     },
     "pretrainregress_perturb": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/pretrainregress_perturb_val_loss=5.1156.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/pretrainregress_perturb_val_loss=3.8539.ckpt"
     }
   }
 }
