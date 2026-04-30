@@ -116,7 +116,7 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_only_val_loss=.4095.ckpt"
     },
     "generator": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5089.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5072.ckpt"
     },
     "mpmregress": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/mpmregress_only_val_loss=0.2310.ckpt"
