@@ -117,7 +117,7 @@ def main():
     parser.add_argument(
         "--save_top_k",
         type=int,
-        default=5,
+        default=-1,
         help="Number of top checkpoints to save based on validation metric. Use -1 to save all checkpoints.",
     )
     parser.add_argument(
@@ -576,6 +576,7 @@ def main():
         enable_progress_bar=(args.num_nodes == 1),
         limit_val_batches=args.limit_val_batches,
         val_check_interval=args.val_check_interval,
+        check_val_every_n_epoch=None if isinstance(args.val_check_interval, int) else 1,
     )
 
     # Training

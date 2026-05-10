@@ -304,9 +304,7 @@ def get_param_groups(model, wd, lr, lr_factor=1.0, fine_tune=False, all_head=Fal
                 "generator"
             )
         else:
-            is_last_layer = name.startswith("classifier.out") or name.startswith(
-                "generator.out"
-            )
+            is_last_layer = name.startswith("classifier.out")
 
         if is_last_layer:
             print(f"Identified last layer parameter: {name}")
@@ -424,6 +422,7 @@ def get_version_number(out_dir_save_tag):
 
 
 _PREFIXES = [
+    "class_point_lejepa",
     "point_lejepa",
     "mpmregress_only",
     "gen_mpmregress",

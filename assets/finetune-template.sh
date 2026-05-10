@@ -13,14 +13,14 @@ DATASET_SIZE="{downstream_shots}"
 POS_ENCODING_TYPE="sort_descending_in_masked_subset"
 MASKING_FRACTION=0.4
 
-VAL_CHECK=1
-PATIENCE=10
+VAL_CHECK=1171
+PATIENCE=5
 
 # For finetuning vs from-scratch
-TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${{VAL_CHECK}} --dataset=${{FINETUNING_DATASET}} --dataset_size=${{DATASET_SIZE}} {fine_tune_flag} {ckpt_flag} --use_pid n --use_add n --epoch={epoch} --max_training_steps={max_training_steps} --scheduler_total_steps={max_training_steps} --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${{OUTPUT_DIR}} --path=${{DATASET_PATH}} --shuffle_val_test_indices y --seed_for_initial_shuffling={seed} --patience=${{PATIENCE}} --pos_encoding_type=${{POS_ENCODING_TYPE}} --masking_fraction=${{MASKING_FRACTION}} --accumulate_grad_batches=1"
+TRAINING_CFG_ALL_SIZES="--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${{VAL_CHECK}} --dataset=${{FINETUNING_DATASET}} --dataset_size=${{DATASET_SIZE}} {fine_tune_flag} {ckpt_flag} --use_pid n --use_add n --epoch={epoch} --max_training_steps={max_training_steps} --scheduler_total_steps={max_training_steps} --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${{OUTPUT_DIR}} --path=${{DATASET_PATH}} --shuffle_val_test_indices y --seed_for_initial_shuffling={seed} --patience=${{PATIENCE}} --pos_encoding_type=${{POS_ENCODING_TYPE}} --masking_fraction=${{MASKING_FRACTION}} --accumulate_grad_batches=1 --use_one_cycle=n"
 
 # Size-specific hyperparams
-TRAINING_CFG_SIZE_SPECIFIC="--num_workers={num_workers} --num_nodes={num_nodes} --model_size={model_size} --lr {lr} --weight_decay {weight_decay} --batch_size={batch_size} --wandb_tag={dataset}-finetuning --lr_factor={lr_factor} --scheduler_warmup_steps={scheduler_warmup_steps}"
+TRAINING_CFG_SIZE_SPECIFIC="--num_workers={num_workers} --num_nodes={num_nodes} --model_size={model_size} --lr {lr} --weight_decay {weight_decay} --batch_size={batch_size} --wandb_tag={dataset}-finetuning --lr_factor={lr_factor} --scheduler_warmup_steps={scheduler_warmup_steps} --save_top_k=5"
 
 TRAINING_CFG="${{TRAINING_CFG_ALL_SIZES}} ${{TRAINING_CFG_SIZE_SPECIFIC}}"
 

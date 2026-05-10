@@ -78,6 +78,7 @@ class PET2(nn.Module):
             "generator+mpm",
             "pretrain",
             "point_lejepa",
+            "classifier+point_lejepa",
         ]:
             raise ValueError(f"Mode '{self.mode}' not supported.")
 
@@ -310,10 +311,16 @@ class PET2(nn.Module):
 
         z_v1 = None
         z_v2 = None
+        y_lejepa_v1 = None
+        y_lejepa_v2 = None
+        lejepa_frac1 = None
+        lejepa_frac2 = None
         if "point_lejepa" in self.mode:
             mask_before = (x[:, :, 3] != 0).int()
-            frac1 = torch.empty(1).uniform_(0.6, 0.95).item()
-            frac2 = torch.empty(1).uniform_(0.6, 0.95).item()
+            frac1 = torch.empty(1).uniform_(0.5, 0.95).item()
+            frac2 = torch.empty(1).uniform_(0.5, 0.95).item()
+            lejepa_frac1 = frac1
+            lejepa_frac2 = frac2
             mask_view1 = set_fraction_ones_to_zeros(mask_before, fraction=frac1)
             mask_view2 = set_fraction_ones_to_zeros(mask_before, fraction=frac2)
 
@@ -328,6 +335,10 @@ class PET2(nn.Module):
 
             z_v1 = self.lejepa_proj(tokens_v1)
             z_v2 = self.lejepa_proj(tokens_v2)
+
+            if self.use_perturbed_loss_terms and "classifier" in self.mode:
+                y_lejepa_v1 = self.classifier(body_v1)
+                y_lejepa_v2 = self.classifier(body_v2)
 
         return {
             "y_pred": y_pred,
@@ -346,6 +357,10 @@ class PET2(nn.Module):
             "mask_valid_particle_but_masked": mask_valid_particle_but_masked,
             "z_v1": z_v1,
             "z_v2": z_v2,
+            "y_lejepa_v1": y_lejepa_v1,
+            "y_lejepa_v2": y_lejepa_v2,
+            "lejepa_frac1": lejepa_frac1,
+            "lejepa_frac2": lejepa_frac2,
         }
 
 
@@ -614,6 +629,30 @@ class PETLightning(LightningModule):
             logs["lejepa_z_std"] = z1.std(dim=0).mean()
         return logs, loss
 
+    def _compute_lejepa_perturbed_class_loss(self, outputs, y):
+        loss = torch.tensor(0.0, device=self.device)
+        logs = {}
+        n_views = 0
+        for key, frac_key in [
+            ("y_lejepa_v1", "lejepa_frac1"),
+            ("y_lejepa_v2", "lejepa_frac2"),
+        ]:
+            if outputs.get(key) is not None:
+                frac = outputs[frac_key]
+                counts = torch.bincount(
+                    y, minlength=outputs["y_pred"].shape[-1]
+                ).float()
+                class_weights = 1.0 / (counts + 1e-6)
+                weights = class_weights[y]
+                weights = weights / weights.mean()
+                loss_v = torch.mean(weights * self.loss_class(outputs[key], y))
+                loss = loss + (1 - frac + 1e-6) * loss_v
+                n_views += 1
+        if n_views > 0:
+            loss = loss / n_views
+            logs["loss_class_lejepa_perturbed"] = loss.detach()
+        return logs, loss
+
     def _shared_step(self, batch, batch_idx, stage):
         """Shared logic for train/val/test steps."""
         X, y = batch["X"].float(), batch["y"]
@@ -693,7 +732,18 @@ class PETLightning(LightningModule):
                 lejepa_logs, lejepa_loss = self._compute_lejepa_loss(out)
                 logs.update(lejepa_logs)
 
-                logs["loss"] = loss + mpm_loss + masked_input_loss + lejepa_loss
+                lejepa_perturbed_logs, lejepa_perturbed_loss = (
+                    self._compute_lejepa_perturbed_class_loss(out, y)
+                )
+                logs.update(lejepa_perturbed_logs)
+
+                logs["loss"] = (
+                    loss
+                    + mpm_loss
+                    + masked_input_loss
+                    + lejepa_loss
+                    + lejepa_perturbed_loss
+                )
 
         else:
             with (
@@ -701,7 +751,6 @@ class PETLightning(LightningModule):
                 amp.autocast(enabled=self.use_amp, device_type="cuda"),
             ):
                 out = self(X, y, **model_kwargs)
-                # same reason as above
                 if self.model.mode in ("mpm", "point_lejepa"):
                     loss = torch.tensor(0.0, device=self.device)
                 else:
@@ -728,7 +777,18 @@ class PETLightning(LightningModule):
                 lejepa_logs, lejepa_loss = self._compute_lejepa_loss(out)
                 logs.update(lejepa_logs)
 
-                logs["loss"] = loss + mpm_loss + masked_input_loss + lejepa_loss
+                lejepa_perturbed_logs, lejepa_perturbed_loss = (
+                    self._compute_lejepa_perturbed_class_loss(out, y)
+                )
+                logs.update(lejepa_perturbed_logs)
+
+                logs["loss"] = (
+                    loss
+                    + mpm_loss
+                    + masked_input_loss
+                    + lejepa_loss
+                    + lejepa_perturbed_loss
+                )
 
         # Log losses with appropriate prefix and settings
         on_step = stage == "train"  # <-- only log on step during training

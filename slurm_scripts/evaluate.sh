@@ -29,6 +29,11 @@ EVAL_JSON="/global/homes/i/ibrahime/temp/OmniLearnLightining/assets/Results/Top-
 DATASET="top"
 GPU_ID=0
 TASK="top_tagging"
+MODEL_SIZES="medium"
+PRE_TRAINING_MODES="classifier+mpmregress_perturb,generator+mpmregress" #"all"
+PRE_TRAINING_MODES="mpmregress,pretrainregress_perturb" #"all"
+PRE_TRAINING_MODES="classifier+generator,classifier" #"all"
+PRE_TRAINING_MODES="generator,from_scratch" #"all"
 
 
 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.4 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && \
@@ -39,5 +44,7 @@ shifter --image=docker:jobirk/omnilearn-lightning:v1.0.4 bash -c "cd $REPO_DIR/s
   --path $DATASET_PATH \
   --outdir $OUTPUT_DIR \
   --gpuID $GPU_ID \
-  --task $TASK"
-#  --dry-run" # <---- Turn on to see what will be run without running it
+  --task $TASK \
+  --model_sizes $MODEL_SIZES \
+  --pre_training_modes $PRE_TRAINING_MODES"
+ # --dry-run" # <---- Turn on to see what will be run without running it

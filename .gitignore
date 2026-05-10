@@ -9,3 +9,4 @@ benchmarks/*
 slurm-*
 
 temp*
+*-temp.json

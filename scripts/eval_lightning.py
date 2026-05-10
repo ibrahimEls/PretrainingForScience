@@ -220,8 +220,32 @@ def main():
 
     # GPU selection
     parser.add_argument("--gpuID", type=int, default=0, help="GPU ID to use")
+    parser.add_argument(
+        "--model_sizes",
+        type=str,
+        default="all",
+        help="Comma-separated list of model sizes to evaluate (e.g. 'micro,small') or 'all'.",
+    )
+    parser.add_argument(
+        "--pre_training_modes",
+        type=str,
+        default="all",
+        help="Comma-separated list of pre-training modes to evaluate (e.g. 'classifier,mpmregress') or 'all'.",
+    )
 
     args = parser.parse_args()
+
+    model_sizes_filter = None
+    if args.model_sizes.lower() != "all":
+        model_sizes_filter = [
+            s.strip() for s in args.model_sizes.split(",") if s.strip()
+        ]
+
+    pre_training_modes_filter = None
+    if args.pre_training_modes.lower() != "all":
+        pre_training_modes_filter = [
+            s.strip() for s in args.pre_training_modes.split(",") if s.strip()
+        ]
 
     with open(args.states_json, "r") as f:
         states = json.load(f)
@@ -229,6 +253,13 @@ def main():
     prev_eval = load_json_or_empty(args.eval_json)
 
     eval_out: Dict[str, Any] = {}
+
+    for key in prev_eval:
+        if key not in eval_out:
+            eval_out[key] = {}
+        for ms in prev_eval[key]:
+            if ms not in eval_out[key]:
+                eval_out[key][ms] = dict(prev_eval[key][ms])
 
     if args.task != "top_tagging":
         raise ValueError("This script currently only supports --task top_tagging.")
@@ -254,14 +285,18 @@ def main():
 
             args.model_size = model_size
 
-            if (
-                model_size != "small"
-            ):  # model_size == "medium" or model_size == "small":
+            if model_sizes_filter is not None and model_size not in model_sizes_filter:
                 continue
 
             for head, head_dict in size_dict.items():  # e.g. "classifier"
                 eval_out[setup_name][model_size].setdefault(head, {})
                 prev_head = prev_size.get(head, {})
+
+                if (
+                    pre_training_modes_filter is not None
+                    and head not in pre_training_modes_filter
+                ):
+                    continue
 
                 for pretrain_label, group_list in head_dict.items():
                     if not isinstance(group_list, list):

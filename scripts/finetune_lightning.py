@@ -40,14 +40,14 @@ MODEL_HPARAMS = {
     "medium": {
         "num_workers": 2,
         "lr": 1e-6,
-        "lr_fs": 5e-6,
-        "weight_decay": 2,
+        "lr_fs": 1e-5,
+        "weight_decay": 5,
         "weight_decay_fs": 0.5,
         "batch_size": 64,
-        "lr_factor": 2,
+        "lr_factor": 5,
         "epoch": 30,
         "epoch_fs": 30,
-        "scheduler_warmup_steps": 1028,
+        "scheduler_warmup_steps": 0,
         "scheduler_warmup_steps_fs": 0,
     },
 }
