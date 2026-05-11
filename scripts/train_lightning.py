@@ -282,7 +282,8 @@ def main():
             args.ckpt = last_ckpt_path
             print(f"The ckpt used is: {args.ckpt}")
 
-            # Load run metadata from previous run (save_tag, wandb_run_id)
+            # Load immutable run metadata from previous run (save_tag, wandb_run_id).
+            # This file is written only once in the initial attempt and never updated.
             metadata_path = os.path.join(provided_run_dir, "run_metadata.json")
             if os.path.exists(metadata_path):
                 with open(metadata_path, "r") as f:
@@ -526,6 +527,7 @@ def main():
 
     # Configure loggers
     loggers = []
+    current_wandb_run_id = run_metadata.get("wandb_run_id")
 
     # Always include CSV logger for local logging
     csv_logger = CSVLogger(save_dir=run_dir, name=None, version="")
@@ -568,24 +570,43 @@ def main():
 
         wandb_logger.log_hyperparams(hparams)
         loggers.append(wandb_logger)
+        current_wandb_run_id = wandb_logger.experiment.id
 
-        # Save run metadata (save_tag + wandb run ID) for future resumption
-        if rank_zero_only.rank == 0:
-            run_attempt = run_metadata.get("run_attempt", 0) + 1
+    # Persist metadata on rank 0 only.
+    # - run_metadata.json is written once in attempt 1 and never updated.
+    # - run_attempt_metadata.json is updated each attempt with attempt/slurm tracking.
+    if rank_zero_only.rank == 0:
+        metadata_path = os.path.join(run_dir, "run_metadata.json")
+        if not os.path.exists(metadata_path):
             metadata_to_save = {
                 "save_tag": save_tag,
                 "run_name": run_name,
-                "wandb_run_id": wandb_logger.experiment.id,
+                "wandb_run_id": current_wandb_run_id,
                 "seed_for_initial_shuffling": args.seed_for_initial_shuffling,
-                "run_attempt": run_attempt,
-                # list of job IDs
-                "slurm_job_ids": run_metadata.get("slurm_job_ids", [])
-                + [os.environ.get("SLURM_JOB_ID")],
             }
-            metadata_path = os.path.join(run_dir, "run_metadata.json")
             with open(metadata_path, "w") as f:
                 json.dump(metadata_to_save, f, indent=2)
             print(f"Saved run metadata to {metadata_path}")
+        else:
+            print(f"Run metadata already exists, not modifying: {metadata_path}")
+
+        attempt_metadata_path = os.path.join(run_dir, "run_attempt_metadata.json")
+        if os.path.exists(attempt_metadata_path):
+            with open(attempt_metadata_path, "r") as f:
+                attempt_metadata = json.load(f)
+        else:
+            attempt_metadata = {"run_attempt": 0, "slurm_job_ids": []}
+
+        attempt_metadata["run_attempt"] = (
+            int(attempt_metadata.get("run_attempt", 0)) + 1
+        )
+        slurm_job_id = os.environ.get("SLURM_JOB_ID")
+        if slurm_job_id:
+            attempt_metadata.setdefault("slurm_job_ids", []).append(slurm_job_id)
+
+        with open(attempt_metadata_path, "w") as f:
+            json.dump(attempt_metadata, f, indent=2)
+        print(f"Saved run attempt metadata to {attempt_metadata_path}")
 
     checkpoint_step = ModelCheckpoint(
         filename=save_tag + "-{step:06d}-{train_loss_step:.4f}",
