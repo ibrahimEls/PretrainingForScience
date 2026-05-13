@@ -119,7 +119,7 @@
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/gen_only_val_loss=2.5072.ckpt"
     },
     "mpmregress": {
-      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/mpmregress_only_val_loss=0.2157.ckpt"
+      "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/100M/mpmregress_only_val_loss=0.2154.ckpt"
     },
     "classifier+generator": {
       "-1": "/global/cfs/cdirs/m3246/Omnilearned_Study/Model_Checkpoints/Medium/class_gen_val_loss=3.2066.ckpt"
