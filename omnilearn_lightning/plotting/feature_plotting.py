@@ -144,35 +144,35 @@ MODE_STYLE = {
     },
     "generator": {
         "name": "Generator",
-        "color": "#ffa90e",
+        "color": "#bd1f01",
     },
     "mpmregress": {
         "name": "MPM",
-        "color": "#832db6",
+        "color": "#ffa90e",
     },
     "classifier+generator": {
         "name": "Classifier + Generator",
-        "color": "#e76300",
+        "color": "#832db6",
     },
     "classifier+generator-preturb": {
         "name": "Classifier + Generator",
-        "color": "#e76300",
+        "color": "#832db6",
     },
     "classifier+mpmregress_perturb": {
         "name": "Classifier + MPM.",
-        "color": "#a96b59",
+        "color": "#b9ac70",
     },
     "generator+mpmregress": {
         "name": "Generator + MPM",
-        "color": "#b9ac70",
+        "color": "#92dadd",
     },
     "pretrainregress_perturb": {
         "name": "Classifier + Generator + MPM",
-        "color": "#92dadd",
+        "color": "#a96b59",
     },
     "from_scratch": {
         "name": "From Scratch",
-        "color": "#bd1f01",
+        "color": "#000000",
     },
 }
 
