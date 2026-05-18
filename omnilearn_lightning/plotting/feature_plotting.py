@@ -69,6 +69,111 @@ params_to_update = {
             for col in DEFAULT_COLORS
         ],
     ),
+    # ----------------------
+    # Increase display resolution
+    # "figure.dpi": 200,
+    # Line styles
+    "lines.linewidth": 1.5,
+    # prevents lines from being jagged
+    "lines.antialiased": True,
+    #
+    "lines.dashed_pattern": (2.8, 1.5),
+    "lines.dashdot_pattern": (4.8, 1.5, 0.8, 1.5),
+    # I have no idea what this does
+    "lines.dotted_pattern": (1.1, 1.1),
+    "lines.scale_dashes": True,
+    # Default colors
+    # 'axes.prop_cycle': cycler('color',['cornflowerblue','forestgreen','maroon','goldenrod','firebrick','mediumorchid','lightslategrey','darksalmon','olive'])
+    # Fonts
+    "font.family": "serif",
+    "font.serif": "DejaVu Serif",
+    "font.sans-serif": "DejaVu Sans",
+    # "text.usetex": False,
+    # Axes
+    # "axes.linewidth": 1.0,
+    # # "axes.labelsize": 25,
+    # "axes.labelpad": 9.0,
+    # # Title
+    # "axes.titlepad": 10.0,
+    # # Tick marks - the essence of life
+    "xtick.top": True,
+    "xtick.major.size": 5,
+    "xtick.minor.size": 2.5,
+    "xtick.major.width": 1.0,
+    "xtick.minor.width": 0.75,
+    "xtick.major.pad": 8,
+    # "xtick.labelsize": 22,
+    # default in mpl v2.0 is 'out'
+    "xtick.direction": "in",
+    "ytick.direction": "in",
+    "xtick.minor.visible": True,
+    "ytick.right": True,
+    "ytick.major.size": 5,
+    "ytick.minor.size": 2.5,
+    "ytick.major.width": 1.0,
+    "ytick.minor.width": 0.75,
+    "ytick.major.pad": 8,
+    # "ytick.labelsize": 22,
+    "ytick.minor.visible": True,
+    # # Error bar plots
+    # # default in mpl v2.0 is no caps on error bars
+    # # "errorbar.capsize": 3,
+    # # Legend
+    # # "legend.fontsize": 22,
+    "legend.frameon": True,
+    "legend.framealpha": 0.8,
+    "legend.edgecolor": "black",
+    "legend.fancybox": True,
+    "legend.borderpad": 0.4,  # border whitespace
+    "legend.labelspacing": 0.5,  # the vertical space between the legend entries
+    "legend.handlelength": 1.5,  # the length of the legend lines
+    "legend.handleheight": 0.7,  # the height of the legend handle
+    "legend.handletextpad": 0.5,  # the space between the legend line and legend text
+    "legend.borderaxespad": 0.5,  # the border between the axes and legend edge
+    "legend.columnspacing": 2.0,  # column separation
+    # # "figure.figsize": (12, 8),
+    "savefig.bbox": "tight",
+    # # "savefig.pad_inches": 0.1,
+    "savefig.dpi": 200,  # higher-res than default 100 dpi
+}
+
+MODE_STYLE = {
+    "classifier": {
+        "name": "Classifier",
+        "color": "#3f90da",
+    },
+    "generator": {
+        "name": "Generator",
+        "color": "#ffa90e",
+    },
+    "mpmregress": {
+        "name": "MPM",
+        "color": "#832db6",
+    },
+    "classifier+generator": {
+        "name": "Classifier + Generator",
+        "color": "#e76300",
+    },
+    "classifier+generator-preturb": {
+        "name": "Classifier + Generator",
+        "color": "#e76300",
+    },
+    "classifier+mpmregress_perturb": {
+        "name": "Classifier + MPM.",
+        "color": "#a96b59",
+    },
+    "generator+mpmregress": {
+        "name": "Generator + MPM",
+        "color": "#b9ac70",
+    },
+    "pretrainregress_perturb": {
+        "name": "Classifier + Generator + MPM",
+        "color": "#92dadd",
+    },
+    "from_scratch": {
+        "name": "From Scratch",
+        "color": "#bd1f01",
+    },
 }
 
 
