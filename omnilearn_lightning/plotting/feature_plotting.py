@@ -144,7 +144,7 @@ MODE_STYLE = {
     },
     "generator": {
         "name": "Generator",
-        "color": "#bd1f01",
+        "color": "#158341",
     },
     "mpmregress": {
         "name": "MPM",
@@ -168,7 +168,8 @@ MODE_STYLE = {
     },
     "pretrainregress_perturb": {
         "name": "Classifier + Generator + MPM",
-        "color": "#a96b59",
+        # "color": "#a96b59",
+        "color": "#bd1f01",
     },
     "from_scratch": {
         "name": "From Scratch",
