@@ -120,10 +120,27 @@ def eval_jet_generation(
 
     set_mpl_style()
 
+    # Detect truth-vs-truth reference format: y is stored as a dict with
+    # original/generated sub-fields (independent train/test labels).
+    # In the standard format, original and generated share the same y array.
+    y_original = (
+        gen_output.y.original if hasattr(gen_output.y, "original") else gen_output.y
+    )
+    y_generated = (
+        gen_output.y.generated if hasattr(gen_output.y, "generated") else gen_output.y
+    )
+
     # Loop over jet types
     for jet_type_i in jet_types:
-        mask_this_type = gen_output.y == jet_type_i
-        n_jets_this_type = ak.sum(mask_this_type)
+        mask_original = y_original == jet_type_i
+        mask_generated = y_generated == jet_type_i
+        n_jets_this_type = ak.sum(mask_original)
+        x_ak_original = gen_output.x_ak.original[mask_original]
+        x_ak_generated = gen_output.x_ak.generated[mask_generated]
+        substructure_original = gen_output.substructure.original[mask_original]
+        substructure_generated = gen_output.substructure.generated[mask_generated]
+        p4s_original = gen_output.p4s.original[mask_original]
+        p4s_generated = gen_output.p4s.generated[mask_generated]
 
         if n_jets_this_type == 0:
             print(f"No jets of type {jet_type_i}, skipping...")
@@ -146,8 +163,8 @@ def eval_jet_generation(
         # Plot particle features for this jet type
         fig, axarr = plot_features(
             {
-                "Target": gen_output[mask_this_type].x_ak.original,
-                "Generated": gen_output[mask_this_type].x_ak.generated,
+                "Target": x_ak_original,
+                "Generated": x_ak_generated,
             },
             bins_dict=bins_dict_particle,
             names=feature_names_x,
@@ -163,8 +180,8 @@ def eval_jet_generation(
         # Plot substructure features for this jet type
         fig, axarr = plot_features(
             {
-                "Target": gen_output[mask_this_type].substructure.original,
-                "Generated": gen_output[mask_this_type].substructure.generated,
+                "Target": substructure_original,
+                "Generated": substructure_generated,
             },
             names=names_substructure,
             bins_dict=bins_dict_substructure,
@@ -181,31 +198,31 @@ def eval_jet_generation(
 
         # Calculate metrics for particle-level features
         particle_metrics = calc_metrics_for_dict(
-            dict_reference=gen_output[mask_this_type].x_ak.original,
-            dict_approx=gen_output[mask_this_type].x_ak.generated,
+            dict_reference=x_ak_original,
+            dict_approx=x_ak_generated,
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
         # Calculate the baseline values (i.e. the KLD/W1 when sampling from the
         # same distribution) for reference
         particle_metrics_baseline = calc_metrics_for_dict(
-            dict_reference=gen_output[mask_this_type].x_ak.original,
-            dict_approx=gen_output[mask_this_type].x_ak.original,
+            dict_reference=x_ak_original,
+            dict_approx=x_ak_original,
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
 
         # Calculate the JetNet default metrics w1p, w1m, w1efp
         jetnet_library_metrics = get_jetnet_default_metrics(
-            p4s_ref=gen_output[mask_this_type].p4s.original,
-            p4s_gen=gen_output[mask_this_type].p4s.generated,
+            p4s_ref=p4s_original,
+            p4s_gen=p4s_generated,
             num_eval_samples=num_eval_samples,
             num_batches=num_batches,
             divide_pt_by_sum_pt=True,  # use pT fractions for JetNet metrics by default
         )
         jetnet_library_metrics_non_relative_pT = get_jetnet_default_metrics(
-            p4s_ref=gen_output[mask_this_type].p4s.original,
-            p4s_gen=gen_output[mask_this_type].p4s.generated,
+            p4s_ref=p4s_original,
+            p4s_gen=p4s_generated,
             num_eval_samples=num_eval_samples,
             num_batches=num_batches,
             divide_pt_by_sum_pt=False,  # also calculate with non-relative pT for reference
@@ -276,15 +293,15 @@ def eval_jet_generation(
 
         # Calculate metrics for jet-level (substructure) features
         jet_metrics = calc_metrics_for_dict(
-            dict_reference=gen_output[mask_this_type].substructure.original,
-            dict_approx=gen_output[mask_this_type].substructure.generated,
+            dict_reference=substructure_original,
+            dict_approx=substructure_generated,
             names=list(names_substructure.keys()),
             **metrics_calc_kwargs,
         )
         # Calculate baseline metrics for jet-level features
         jet_metrics_baseline = calc_metrics_for_dict(
-            dict_reference=gen_output[mask_this_type].substructure.original,
-            dict_approx=gen_output[mask_this_type].substructure.original,
+            dict_reference=substructure_original,
+            dict_approx=substructure_original,
             names=list(names_substructure.keys()),
             **metrics_calc_kwargs,
         )
