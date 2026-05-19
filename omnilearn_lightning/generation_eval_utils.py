@@ -16,6 +16,7 @@ def get_jetnet_default_metrics(
     num_eval_samples: int,
     num_batches: int,
     use_mask: bool = True,
+    divide_pt_by_sum_pt: bool = True,
 ):
     """Calculate default JetNet evaluation metrics for ref and generated jets.
 
@@ -38,14 +39,16 @@ def get_jetnet_default_metrics(
         Number of batches for evaluation.
     use_mask : bool
         Whether to use a mask for selecting specific jets. Default is True.
+    divide_pt_by_sum_pt : bool
+        Whether to divide the pT of each particle by the jet pT (pT of the vector sum)
 
     """
     # Convert to numpy arrays for metric calculations
     p4s_ref_np, mask_ref_np = p4s_to_jetnet_eval_np_stack(
-        p4s_ref, divide_pt_by_sum_pt=True
+        p4s_ref, divide_pt_by_sum_pt=divide_pt_by_sum_pt
     )
     p4s_gen_np, mask_gen_np = p4s_to_jetnet_eval_np_stack(
-        p4s_gen, divide_pt_by_sum_pt=True
+        p4s_gen, divide_pt_by_sum_pt=divide_pt_by_sum_pt
     )
     mask_ref_np = ak.values_astype(mask_ref_np, int).to_numpy()
     mask_gen_np = ak.values_astype(mask_gen_np, int).to_numpy()

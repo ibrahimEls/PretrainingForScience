@@ -201,6 +201,14 @@ def eval_jet_generation(
             p4s_gen=gen_output[mask_this_type].p4s.generated,
             num_eval_samples=num_eval_samples,
             num_batches=num_batches,
+            divide_pt_by_sum_pt=True,  # use pT fractions for JetNet metrics by default
+        )
+        jetnet_library_metrics_non_relative_pT = get_jetnet_default_metrics(
+            p4s_ref=gen_output[mask_this_type].p4s.original,
+            p4s_gen=gen_output[mask_this_type].p4s.generated,
+            num_eval_samples=num_eval_samples,
+            num_batches=num_batches,
+            divide_pt_by_sum_pt=False,  # also calculate with non-relative pT for reference
         )
 
         print(f"Particle-level metrics for {jet_type_label}:")
@@ -245,6 +253,22 @@ def eval_jet_generation(
                     "level": "particle",
                     "feature": metric_name,  # use metric name as feature for these
                     "metric": metric_name,
+                    "mean": mean_val,
+                    "std": std_val,
+                }
+            )
+        for metric_name, (
+            mean_val,
+            std_val,
+        ) in jetnet_library_metrics_non_relative_pT.items():
+            print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
+            all_metrics.append(
+                {
+                    "jet_type": jet_type_label,
+                    "jet_type_idx": jet_type_i,
+                    "level": "particle",
+                    "feature": f"{metric_name}_non_relative_pT",  # use metric name as feature for these
+                    "metric": f"{metric_name}_non_relative_pT",
                     "mean": mean_val,
                     "std": std_val,
                 }
