@@ -175,6 +175,10 @@ MODE_STYLE = {
         "name": "From Scratch",
         "color": "#000000",
     },
+    "truth_vs_truth_reference": {
+        "name": "JetNet vs. JetNet",
+        "color": "#000000",
+    },
 }
 
 
