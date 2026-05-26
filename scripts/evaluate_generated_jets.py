@@ -21,6 +21,33 @@ from omnilearn_lightning.utils_lightweight import (
 )
 
 
+def eta_jet_per_particle(x_ak):
+    """Per-particle jet eta estimate: -delta_eta + arccosh(E / pT)."""
+    return -x_ak["eta"] + np.arccosh(np.exp(x_ak["log_E"]) / np.exp(x_ak["log_pt"]))
+
+
+def compute_jet_eta_and_energy(x_ak):
+    """Compute recovered jet eta and jet energy from particle-level features.
+
+    Jet eta is the mean per-jet of eta_jet_per_particle (massless assumption).
+    Jet energy is the scalar sum of per-particle energies.
+
+    Parameters
+    ----------
+    x_ak : awkward array
+        Particle-level features with fields: eta, phi, log_pt, log_E,
+        eta_jet_per_particle.
+
+    Returns
+    -------
+    jet_eta : awkward array, shape (n_jets,)
+    jet_energy : awkward array, shape (n_jets,)
+    """
+    jet_eta = ak.mean(x_ak["eta_jet_per_particle"], axis=1)
+    jet_energy = ak.sum(np.exp(x_ak["log_E"]), axis=1)
+    return jet_eta, jet_energy
+
+
 def eval_jet_generation(
     gen_output_path,
     results_output_path=None,
@@ -73,6 +100,7 @@ def eval_jet_generation(
         "phi": "Particle $\\Delta\\phi$",
         "log_pt": "Particle $\\log(p_{T})$",
         "log_E": "Particle $\\log(E)$",
+        "eta_jet_per_particle": "Particle $\\eta_{jet}$ estimate",
     }
 
     bins_dict_particle = {
@@ -80,6 +108,7 @@ def eval_jet_generation(
         "phi": np.linspace(-1, 1, 50),
         "log_pt": np.linspace(-3, 6.5, 50),
         "log_E": np.linspace(-3, 6.5, 50),
+        "eta_jet_per_particle": np.linspace(0, 3, 50),
     }
 
     bins_dict_substructure = {
@@ -89,6 +118,8 @@ def eval_jet_generation(
         "jet_pt": np.linspace(400, 1400, 60),
         "jet_n_constituents": np.linspace(-0.5, 150.5, 152),
         "d2": np.linspace(0, 12, 50),
+        "jet_eta": np.linspace(0, 3, 60),
+        "jet_energy": np.linspace(400, 2000, 60),
     }
 
     names_substructure = {
@@ -98,6 +129,8 @@ def eval_jet_generation(
         "jet_mass": "Jet mass [GeV]",
         "jet_pt": "Jet $p_{T}$ [GeV]",
         "jet_n_constituents": "Particle multiplicity",
+        "jet_eta": "Jet $\\eta$ (recovered)",
+        "jet_energy": "Jet energy [GeV]",
     }
 
     plot_save_kwargs = dict(dpi=200, bbox_inches="tight")
@@ -137,6 +170,14 @@ def eval_jet_generation(
         n_jets_this_type = ak.sum(mask_original)
         x_ak_original = gen_output.x_ak.original[mask_original]
         x_ak_generated = gen_output.x_ak.generated[mask_generated]
+
+        # Attach per-particle jet eta estimate to x_ak
+        x_ak_original = ak.with_field(
+            x_ak_original, eta_jet_per_particle(x_ak_original), "eta_jet_per_particle"
+        )
+        x_ak_generated = ak.with_field(
+            x_ak_generated, eta_jet_per_particle(x_ak_generated), "eta_jet_per_particle"
+        )
         substructure_original = gen_output.substructure.original[mask_original]
         substructure_generated = gen_output.substructure.generated[mask_generated]
         p4s_original = gen_output.p4s.original[mask_original]
@@ -176,6 +217,24 @@ def eval_jet_generation(
         fig.savefig(outfile, **plot_save_kwargs)
         print(f"Saved {outfile}")
         plt.close(fig)
+
+        # Compute and attach jet eta and jet energy to substructure arrays
+        jet_eta_original, jet_energy_original = compute_jet_eta_and_energy(
+            x_ak_original
+        )
+        jet_eta_generated, jet_energy_generated = compute_jet_eta_and_energy(
+            x_ak_generated
+        )
+        substructure_original = ak.with_field(
+            ak.with_field(substructure_original, jet_eta_original, "jet_eta"),
+            jet_energy_original,
+            "jet_energy",
+        )
+        substructure_generated = ak.with_field(
+            ak.with_field(substructure_generated, jet_eta_generated, "jet_eta"),
+            jet_energy_generated,
+            "jet_energy",
+        )
 
         # Plot substructure features for this jet type
         fig, axarr = plot_features(
