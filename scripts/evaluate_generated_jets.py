@@ -308,6 +308,9 @@ def eval_jet_generation(
         # Add baseline metrics with prefix
         for metric_name, metric_values in particle_metrics_baseline.items():
             for feature_name, (mean_val, std_val) in metric_values.items():
+                print(
+                    f"  {metric_name}_{feature_name}_baseline: {mean_val:.4f} +/- {std_val:.4f}"
+                )
                 all_metrics.append(
                     {
                         "jet_type": jet_type_label,
