@@ -168,15 +168,19 @@ def eval_jet_generation(
         mask_original = y_original == jet_type_i
         mask_generated = y_generated == jet_type_i
         n_jets_this_type = ak.sum(mask_original)
-        x_ak_original = gen_output.x_ak.original[mask_original]
-        x_ak_generated = gen_output.x_ak.generated[mask_generated]
+        x_ak_original_this_type = gen_output.x_ak.original[mask_original]
+        x_ak_generated_this_type = gen_output.x_ak.generated[mask_generated]
 
         # Attach per-particle jet eta estimate to x_ak
-        x_ak_original = ak.with_field(
-            x_ak_original, eta_jet_per_particle(x_ak_original), "eta_jet_per_particle"
+        x_ak_original_this_type = ak.with_field(
+            x_ak_original_this_type,
+            eta_jet_per_particle(x_ak_original_this_type),
+            "eta_jet_per_particle",
         )
-        x_ak_generated = ak.with_field(
-            x_ak_generated, eta_jet_per_particle(x_ak_generated), "eta_jet_per_particle"
+        x_ak_generated_this_type = ak.with_field(
+            x_ak_generated_this_type,
+            eta_jet_per_particle(x_ak_generated_this_type),
+            "eta_jet_per_particle",
         )
         substructure_original = gen_output.substructure.original[mask_original]
         substructure_generated = gen_output.substructure.generated[mask_generated]
@@ -204,8 +208,8 @@ def eval_jet_generation(
         # Plot particle features for this jet type
         fig, axarr = plot_features(
             {
-                "Target": x_ak_original,
-                "Generated": x_ak_generated,
+                "Target": x_ak_original_this_type,
+                "Generated": x_ak_generated_this_type,
             },
             bins_dict=bins_dict_particle,
             names=feature_names_x,
@@ -220,10 +224,10 @@ def eval_jet_generation(
 
         # Compute and attach jet eta and jet energy to substructure arrays
         jet_eta_original, jet_energy_original = compute_jet_eta_and_energy(
-            x_ak_original
+            x_ak_original_this_type
         )
         jet_eta_generated, jet_energy_generated = compute_jet_eta_and_energy(
-            x_ak_generated
+            x_ak_generated_this_type
         )
         substructure_original = ak.with_field(
             ak.with_field(substructure_original, jet_eta_original, "jet_eta"),
@@ -257,16 +261,16 @@ def eval_jet_generation(
 
         # Calculate metrics for particle-level features
         particle_metrics = calc_metrics_for_dict(
-            dict_reference=x_ak_original,
-            dict_approx=x_ak_generated,
+            dict_reference=x_ak_original_this_type,
+            dict_approx=x_ak_generated_this_type,
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
         # Calculate the baseline values (i.e. the KLD/W1 when sampling from the
         # same distribution) for reference
         particle_metrics_baseline = calc_metrics_for_dict(
-            dict_reference=x_ak_original,
-            dict_approx=x_ak_original,
+            dict_reference=x_ak_original_this_type,
+            dict_approx=x_ak_original_this_type,
             names=list(feature_names_x.keys()),
             **metrics_calc_kwargs,
         )
