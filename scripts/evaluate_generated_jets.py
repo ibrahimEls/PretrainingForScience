@@ -163,27 +163,51 @@ def eval_jet_generation(
         gen_output.y.generated if hasattr(gen_output.y, "generated") else gen_output.y
     )
 
+    # -------------------------------------------------------------------------
+    # Build enriched x_ak and substructure arrays (all jet types, full dataset).
+    # Derived fields (eta_jet_per_particle, jet_eta, jet_energy) are computed
+    # once here so they are available both inside the per-type loop and in the
+    # enriched parquet written at the end.
+    # -------------------------------------------------------------------------
+    x_ak_orig_full = gen_output.x_ak.original
+    x_ak_gen_full = gen_output.x_ak.generated
+
+    x_ak_orig_full = ak.with_field(
+        x_ak_orig_full,
+        eta_jet_per_particle(x_ak_orig_full),
+        "eta_jet_per_particle",
+    )
+    x_ak_gen_full = ak.with_field(
+        x_ak_gen_full,
+        eta_jet_per_particle(x_ak_gen_full),
+        "eta_jet_per_particle",
+    )
+
+    jet_eta_orig_full, jet_energy_orig_full = compute_jet_eta_and_energy(x_ak_orig_full)
+    jet_eta_gen_full, jet_energy_gen_full = compute_jet_eta_and_energy(x_ak_gen_full)
+
+    substructure_orig_full = ak.with_field(
+        ak.with_field(gen_output.substructure.original, jet_eta_orig_full, "jet_eta"),
+        jet_energy_orig_full,
+        "jet_energy",
+    )
+    substructure_gen_full = ak.with_field(
+        ak.with_field(gen_output.substructure.generated, jet_eta_gen_full, "jet_eta"),
+        jet_energy_gen_full,
+        "jet_energy",
+    )
+
     # Loop over jet types
     for jet_type_i in jet_types:
         mask_original = y_original == jet_type_i
         mask_generated = y_generated == jet_type_i
         n_jets_this_type = ak.sum(mask_original)
-        x_ak_original_this_type = gen_output.x_ak.original[mask_original]
-        x_ak_generated_this_type = gen_output.x_ak.generated[mask_generated]
-
-        # Attach per-particle jet eta estimate to x_ak
-        x_ak_original_this_type = ak.with_field(
-            x_ak_original_this_type,
-            eta_jet_per_particle(x_ak_original_this_type),
-            "eta_jet_per_particle",
-        )
-        x_ak_generated_this_type = ak.with_field(
-            x_ak_generated_this_type,
-            eta_jet_per_particle(x_ak_generated_this_type),
-            "eta_jet_per_particle",
-        )
-        substructure_original = gen_output.substructure.original[mask_original]
-        substructure_generated = gen_output.substructure.generated[mask_generated]
+        # Slice from the pre-enriched full arrays (eta_jet_per_particle,
+        # jet_eta, jet_energy already attached before the loop).
+        x_ak_original_this_type = x_ak_orig_full[mask_original]
+        x_ak_generated_this_type = x_ak_gen_full[mask_generated]
+        substructure_original = substructure_orig_full[mask_original]
+        substructure_generated = substructure_gen_full[mask_generated]
         p4s_original = gen_output.p4s.original[mask_original]
         p4s_generated = gen_output.p4s.generated[mask_generated]
 
@@ -221,24 +245,6 @@ def eval_jet_generation(
         fig.savefig(outfile, **plot_save_kwargs)
         print(f"Saved {outfile}")
         plt.close(fig)
-
-        # Compute and attach jet eta and jet energy to substructure arrays
-        jet_eta_original, jet_energy_original = compute_jet_eta_and_energy(
-            x_ak_original_this_type
-        )
-        jet_eta_generated, jet_energy_generated = compute_jet_eta_and_energy(
-            x_ak_generated_this_type
-        )
-        substructure_original = ak.with_field(
-            ak.with_field(substructure_original, jet_eta_original, "jet_eta"),
-            jet_energy_original,
-            "jet_energy",
-        )
-        substructure_generated = ak.with_field(
-            ak.with_field(substructure_generated, jet_eta_generated, "jet_eta"),
-            jet_energy_generated,
-            "jet_energy",
-        )
 
         # Plot substructure features for this jet type
         fig, axarr = plot_features(
@@ -403,6 +409,42 @@ def eval_jet_generation(
                         "std": std_val,
                     }
                 )
+
+    # -------------------------------------------------------------------------
+    # Write enriched parquet alongside the original.
+    # Contains the same structure as the input but with derived fields added:
+    #   x_ak:         + eta_jet_per_particle
+    #   substructure: + jet_eta, jet_energy
+    # -------------------------------------------------------------------------
+    enriched_path = gen_output_path.replace(".parquet", "_enriched.parquet")
+    # The enriched parquet always uses the truth-vs-truth struct layout
+    # (original/generated sub-fields for every top-level field), regardless
+    # of whether the input was in standard format (flat y array) or
+    # truth-vs-truth format (y.original / y.generated).
+    # load_gen_jets_for_jet_type in plotting.py handles both layouts via the
+    # hasattr(gen_jets.y, "original") branch, so this is transparent to callers.
+    enriched = ak.Array(
+        {
+            "x_ak": {
+                "original": x_ak_orig_full,
+                "generated": x_ak_gen_full,
+            },
+            "substructure": {
+                "original": substructure_orig_full,
+                "generated": substructure_gen_full,
+            },
+            "p4s": {
+                "original": gen_output.p4s.original,
+                "generated": gen_output.p4s.generated,
+            },
+            "y": {
+                "original": y_original,
+                "generated": y_generated,
+            },
+        }
+    )
+    ak.to_parquet(enriched, enriched_path)
+    print(f"Saved enriched parquet to {enriched_path}")
 
     # Save metrics to CSV
     metrics_df = pd.DataFrame(all_metrics)
