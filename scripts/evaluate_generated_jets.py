@@ -30,7 +30,7 @@ def eta_jet_per_particle(x_ak):
     """
     eps = 1e-6
     ratio = np.exp(x_ak["log_E"]) / np.exp(x_ak["log_pt"])
-    ratio_clipped = np.clip(ratio, 1.0 + eps, None)
+    ratio_clipped = ak.where(ratio < 1.0 + eps, 1.0 + eps, ratio)
     return -x_ak["eta"] + np.arccosh(ratio_clipped)
 
 
