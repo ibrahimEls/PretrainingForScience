@@ -22,8 +22,16 @@ from omnilearn_lightning.utils_lightweight import (
 
 
 def eta_jet_per_particle(x_ak):
-    """Per-particle jet eta estimate: -delta_eta + arccosh(E / pT)."""
-    return -x_ak["eta"] + np.arccosh(np.exp(x_ak["log_E"]) / np.exp(x_ak["log_pt"]))
+    """Per-particle jet eta estimate: -delta_eta + arccosh(E / pT).
+
+    The argument of arccosh is clipped to [1+eps, inf) so that unphysical
+    generated particles with E < pT (which would give arccosh < 1) produce
+    eta ~ 0 rather than NaN.
+    """
+    eps = 1e-6
+    ratio = np.exp(x_ak["log_E"]) / np.exp(x_ak["log_pt"])
+    ratio_clipped = np.clip(ratio, 1.0 + eps, None)
+    return -x_ak["eta"] + np.arccosh(ratio_clipped)
 
 
 def compute_jet_eta_and_energy(x_ak):
