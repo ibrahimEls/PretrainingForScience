@@ -159,7 +159,7 @@ MODE_STYLE = {
         "color": "#832db6",
     },
     "classifier+mpmregress_perturb": {
-        "name": "Classifier + MPM.",
+        "name": "Classifier + MPM",
         "color": "#b9ac70",
     },
     "generator+mpmregress": {

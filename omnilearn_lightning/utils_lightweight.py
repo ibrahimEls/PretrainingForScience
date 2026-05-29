@@ -20,9 +20,9 @@ jet_types_dict_jetclass = {
 }
 
 jet_types_dict_jetnet = {
-    0: {"label": "gluon", "tex_label": "$g$", "color": "C0"},
-    1: {"label": "light_quark", "tex_label": "$q$", "color": "C1"},
-    2: {"label": "top", "tex_label": "$t$", "color": "C2"},
+    0: {"label": "gluon", "tex_label": "gluon", "color": "C0"},
+    1: {"label": "light_quark", "tex_label": "light quark", "color": "C1"},
+    2: {"label": "top", "tex_label": "top", "color": "C2"},
     3: {"label": "W", "tex_label": "$W$", "color": "C3"},
     4: {"label": "Z", "tex_label": "$Z$", "color": "C4"},
 }
