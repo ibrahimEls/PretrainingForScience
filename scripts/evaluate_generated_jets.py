@@ -62,6 +62,7 @@ def eval_jet_generation(
     dataset_type="jetnet150",
     num_eval_samples=10000,
     num_batches=10,
+    calc_baseline=False,
 ):
     """Evaluate generated jets with per-jet-type plotting and metrics.
 
@@ -78,6 +79,8 @@ def eval_jet_generation(
         Number of samples per batch for metric calculation.
     num_batches : int
         Number of batches for computing mean and std of metrics.
+    calc_baseline : bool
+        If True, also compute truth-vs-truth ("baseline") metrics. Default False.
     """
     print(f"Loading generated data from output path: {gen_output_path}")
     gen_output = ak.from_parquet(gen_output_path)
@@ -282,12 +285,13 @@ def eval_jet_generation(
         )
         # Calculate the baseline values (i.e. the KLD/W1 when sampling from the
         # same distribution) for reference
-        particle_metrics_baseline = calc_metrics_for_dict(
-            dict_reference=x_ak_original_this_type,
-            dict_approx=x_ak_original_this_type,
-            names=list(feature_names_x.keys()),
-            **metrics_calc_kwargs,
-        )
+        if calc_baseline:
+            particle_metrics_baseline = calc_metrics_for_dict(
+                dict_reference=x_ak_original_this_type,
+                dict_approx=x_ak_original_this_type,
+                names=list(feature_names_x.keys()),
+                **metrics_calc_kwargs,
+            )
 
         # Calculate the JetNet default metrics w1p, w1m, w1efp
         jetnet_library_metrics = get_jetnet_default_metrics(
@@ -324,22 +328,23 @@ def eval_jet_generation(
                 )
 
         # Add baseline metrics with prefix
-        for metric_name, metric_values in particle_metrics_baseline.items():
-            for feature_name, (mean_val, std_val) in metric_values.items():
-                print(
-                    f"  {metric_name}_{feature_name}_baseline: {mean_val:.4f} +/- {std_val:.4f}"
-                )
-                all_metrics.append(
-                    {
-                        "jet_type": jet_type_label,
-                        "jet_type_idx": jet_type_i,
-                        "level": "particle",
-                        "feature": feature_name,
-                        "metric": f"{metric_name}_baseline",
-                        "mean": mean_val,
-                        "std": std_val,
-                    }
-                )
+        if calc_baseline:
+            for metric_name, metric_values in particle_metrics_baseline.items():
+                for feature_name, (mean_val, std_val) in metric_values.items():
+                    print(
+                        f"  {metric_name}_{feature_name}_baseline: {mean_val:.4f} +/- {std_val:.4f}"
+                    )
+                    all_metrics.append(
+                        {
+                            "jet_type": jet_type_label,
+                            "jet_type_idx": jet_type_i,
+                            "level": "particle",
+                            "feature": feature_name,
+                            "metric": f"{metric_name}_baseline",
+                            "mean": mean_val,
+                            "std": std_val,
+                        }
+                    )
         # Add JetNet library metrics
         for metric_name, (mean_val, std_val) in jetnet_library_metrics.items():
             print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
@@ -379,12 +384,13 @@ def eval_jet_generation(
             **metrics_calc_kwargs,
         )
         # Calculate baseline metrics for jet-level features
-        jet_metrics_baseline = calc_metrics_for_dict(
-            dict_reference=substructure_original,
-            dict_approx=substructure_original,
-            names=list(names_substructure.keys()),
-            **metrics_calc_kwargs,
-        )
+        if calc_baseline:
+            jet_metrics_baseline = calc_metrics_for_dict(
+                dict_reference=substructure_original,
+                dict_approx=substructure_original,
+                names=list(names_substructure.keys()),
+                **metrics_calc_kwargs,
+            )
 
         print(f"Jet-level metrics for {jet_type_label}:")
         for metric_name, metric_values in jet_metrics.items():
@@ -404,19 +410,20 @@ def eval_jet_generation(
                     }
                 )
         # Add baseline metrics with prefix
-        for metric_name, metric_values in jet_metrics_baseline.items():
-            for feature_name, (mean_val, std_val) in metric_values.items():
-                all_metrics.append(
-                    {
-                        "jet_type": jet_type_label,
-                        "jet_type_idx": jet_type_i,
-                        "level": "jet",
-                        "feature": feature_name,
-                        "metric": f"{metric_name}_baseline",
-                        "mean": mean_val,
-                        "std": std_val,
-                    }
-                )
+        if calc_baseline:
+            for metric_name, metric_values in jet_metrics_baseline.items():
+                for feature_name, (mean_val, std_val) in metric_values.items():
+                    all_metrics.append(
+                        {
+                            "jet_type": jet_type_label,
+                            "jet_type_idx": jet_type_i,
+                            "level": "jet",
+                            "feature": feature_name,
+                            "metric": f"{metric_name}_baseline",
+                            "mean": mean_val,
+                            "std": std_val,
+                        }
+                    )
 
     # -------------------------------------------------------------------------
     # Write enriched parquet alongside the original.
@@ -500,6 +507,12 @@ if __name__ == "__main__":
         # default=10,
         help="Number of batches for computing mean and std",
     )
+    parser.add_argument(
+        "--calc_baseline",
+        action="store_true",
+        default=False,
+        help="Also compute truth-vs-truth baseline metrics (default: False)",
+    )
 
     args = parser.parse_args()
 
@@ -509,4 +522,5 @@ if __name__ == "__main__":
         dataset_type=args.dataset_type,
         num_eval_samples=args.num_eval_samples,
         num_batches=args.num_batches,
+        calc_baseline=args.calc_baseline,
     )
