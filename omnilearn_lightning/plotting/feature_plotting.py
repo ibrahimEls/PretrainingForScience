@@ -12,6 +12,7 @@ import seaborn as sns
 import vector
 from cycler import cycler
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 import omnilearn_lightning.plotting.utils as plot_utils
 from omnilearn_lightning.array_utils import combine_ak_arrays
@@ -229,6 +230,7 @@ def plot_features(
     logscale_features: list[str] = None,
     colors: Union[list[str], dict[str, str]] = None,
     linestyles: Union[list[str], dict[str, str]] = None,
+    histtypes: Union[list[str], dict[str, str]] = None,
     ax_size: tuple[int, int] = (3, 2),
     ylabel: str = None,
     ratio: bool = False,
@@ -287,6 +289,11 @@ def plot_features(
         List of linestyles for the histograms. Has to have the same length as the
         number of arrays. If shorter, the linestyles will be repeated.
         If a dict is given, it has to be of the form {"array_name": "linestyle", ...}.
+    histtypes : list or dict, optional
+        List of histtypes for the histograms (e.g. "step", "stepfilled", "bar").
+        Has to have the same length as the number of arrays.
+        If a dict is given, it has to be of the form {"array_name": "histtype", ...}.
+        If None, uses the value from histkwargs (default: "step").
     ax_size : tuple, optional
         Size of the axes. Default is (3, 2).
     ylabel : str, optional
@@ -458,6 +465,11 @@ def plot_features(
         else:
             histkwargs["linestyle"] = "solid"
 
+        if histtypes is not None:
+            histkwargs["histtype"] = (
+                histtypes[i_label] if isinstance(histtypes, list) else histtypes[label]
+            )
+
         legend_labels.append(ak_array_dict_labels[label])
         for i, (feat, feat_label) in enumerate(names.items()):
             # if multiple ratio references are use: draw horizontal line
@@ -524,16 +536,26 @@ def plot_features(
             if ylabel is not None:
                 axarr_main[i].set_ylabel(ylabel)
             if i == 0:
-                legend_handles.append(
-                    Line2D(
-                        [],
-                        [],
-                        color=patches[0].get_edgecolor(),
-                        lw=patches[0].get_linewidth(),
-                        label=ak_array_dict_labels[label],
-                        linestyle=patches[0].get_linestyle(),
+                current_histtype = histkwargs.get("histtype", "step")
+                if current_histtype == "stepfilled":
+                    legend_handles.append(
+                        Patch(
+                            facecolor=color,
+                            edgecolor=color,
+                            label=ak_array_dict_labels[label],
+                        )
                     )
-                )
+                else:
+                    legend_handles.append(
+                        Line2D(
+                            [],
+                            [],
+                            color=patches[0].get_edgecolor(),
+                            lw=patches[0].get_linewidth(),
+                            label=ak_array_dict_labels[label],
+                            linestyle=patches[0].get_linestyle(),
+                        )
+                    )
 
             if ratio:
                 if label in base_label:
