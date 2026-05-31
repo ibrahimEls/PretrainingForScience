@@ -63,6 +63,7 @@ def eval_jet_generation(
     num_eval_samples=10000,
     num_batches=10,
     calc_baseline=False,
+    metrics_filename="metrics.csv",
 ):
     """Evaluate generated jets with per-jet-type plotting and metrics.
 
@@ -463,7 +464,7 @@ def eval_jet_generation(
 
     # Save metrics to CSV
     metrics_df = pd.DataFrame(all_metrics)
-    csv_path = os.path.join(output_path, "metrics.csv")
+    csv_path = os.path.join(output_path, metrics_filename)
     metrics_df.to_csv(csv_path, index=False)
     print(f"\nSaved metrics to {csv_path}")
 
@@ -513,6 +514,12 @@ if __name__ == "__main__":
         default=False,
         help="Also compute truth-vs-truth baseline metrics (default: False)",
     )
+    parser.add_argument(
+        "--metrics_filename",
+        type=str,
+        default="metrics.csv",
+        help="Filename for the saved metrics CSV (default: metrics.csv)",
+    )
 
     args = parser.parse_args()
 
@@ -523,4 +530,5 @@ if __name__ == "__main__":
         num_eval_samples=args.num_eval_samples,
         num_batches=args.num_batches,
         calc_baseline=args.calc_baseline,
+        metrics_filename=args.metrics_filename,
     )
