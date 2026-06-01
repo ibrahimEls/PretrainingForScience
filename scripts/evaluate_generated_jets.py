@@ -64,6 +64,7 @@ def eval_jet_generation(
     num_batches=10,
     calc_baseline=False,
     metrics_filename="metrics.csv",
+    jet_types=None,
 ):
     """Evaluate generated jets with per-jet-type plotting and metrics.
 
@@ -82,6 +83,9 @@ def eval_jet_generation(
         Number of batches for computing mean and std of metrics.
     calc_baseline : bool
         If True, also compute truth-vs-truth ("baseline") metrics. Default False.
+    jet_types : list of int, optional
+        Subset of numeric jet-type labels to evaluate. If None or empty, all jet
+        types for the dataset are evaluated.
     """
     print(f"Loading generated data from output path: {gen_output_path}")
     gen_output = ak.from_parquet(gen_output_path)
@@ -96,16 +100,31 @@ def eval_jet_generation(
 
     # Select jet types based on dataset
     if dataset_type == "jetclass":
-        jet_types = range(10)
+        jet_types_all = range(10)
         jet_types_dict = jet_types_dict_jetclass
     elif dataset_type in ["jetnet30", "jetnet150"]:
-        jet_types = range(5)
+        jet_types_all = range(5)
         jet_types_dict = jet_types_dict_jetnet
     else:
         raise ValueError(
             f"Unknown dataset_type: {dataset_type}. "
             "Supported: jetnet30, jetnet150, jetclass"
         )
+
+    # Optionally restrict to a subset of (numeric) jet-type labels, preserving
+    # the canonical ordering. None/empty means evaluate all jet types.
+    if jet_types:
+        requested = set(jet_types)
+        unknown = requested - set(jet_types_all)
+        if unknown:
+            raise ValueError(
+                f"Requested jet types {sorted(unknown)} are not valid for "
+                f"dataset_type '{dataset_type}'. Valid: {list(jet_types_all)}"
+            )
+        jet_types = [t for t in jet_types_all if t in requested]
+        print(f"Restricting evaluation to jet types: {jet_types}")
+    else:
+        jet_types = list(jet_types_all)
 
     feature_names_x = {
         "eta": "Particle $\\Delta\\eta$",
@@ -520,8 +539,21 @@ if __name__ == "__main__":
         default="metrics.csv",
         help="Filename for the saved metrics CSV (default: metrics.csv)",
     )
+    parser.add_argument(
+        "--jet_types",
+        type=str,
+        default="",
+        help="Comma-separated numeric jet-type labels to evaluate (e.g. '0,1'). "
+        "Empty (default) evaluates all jet types for the dataset.",
+    )
 
     args = parser.parse_args()
+
+    jet_types = (
+        [int(t.strip()) for t in args.jet_types.split(",") if t.strip()]
+        if args.jet_types
+        else None
+    )
 
     eval_jet_generation(
         gen_output_path=args.gen_output_path,
@@ -531,4 +563,5 @@ if __name__ == "__main__":
         num_batches=args.num_batches,
         calc_baseline=args.calc_baseline,
         metrics_filename=args.metrics_filename,
+        jet_types=jet_types,
     )
