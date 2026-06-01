@@ -65,6 +65,7 @@ def eval_jet_generation(
     calc_baseline=False,
     metrics_filename="metrics.csv",
     jet_types=None,
+    calc_jetnet_metrics=True,
 ):
     """Evaluate generated jets with per-jet-type plotting and metrics.
 
@@ -86,6 +87,9 @@ def eval_jet_generation(
     jet_types : list of int, optional
         Subset of numeric jet-type labels to evaluate. If None or empty, all jet
         types for the dataset are evaluated.
+    calc_jetnet_metrics : bool
+        If True (default), compute the JetNet-library default metrics
+        (w1p, w1m, w1efp). Disable to skip this (relatively expensive) step.
     """
     print(f"Loading generated data from output path: {gen_output_path}")
     gen_output = ak.from_parquet(gen_output_path)
@@ -313,21 +317,22 @@ def eval_jet_generation(
                 **metrics_calc_kwargs,
             )
 
-        # Calculate the JetNet default metrics w1p, w1m, w1efp
-        jetnet_library_metrics = get_jetnet_default_metrics(
-            p4s_ref=p4s_original,
-            p4s_gen=p4s_generated,
-            num_eval_samples=num_eval_samples,
-            num_batches=num_batches,
-            divide_pt_by_sum_pt=True,  # use pT fractions for JetNet metrics by default
-        )
-        jetnet_library_metrics_non_relative_pT = get_jetnet_default_metrics(
-            p4s_ref=p4s_original,
-            p4s_gen=p4s_generated,
-            num_eval_samples=num_eval_samples,
-            num_batches=num_batches,
-            divide_pt_by_sum_pt=False,  # also calculate with non-relative pT for reference
-        )
+        # Calculate the JetNet default metrics w1p, w1m, w1efp (optional)
+        if calc_jetnet_metrics:
+            jetnet_library_metrics = get_jetnet_default_metrics(
+                p4s_ref=p4s_original,
+                p4s_gen=p4s_generated,
+                num_eval_samples=num_eval_samples,
+                num_batches=num_batches,
+                divide_pt_by_sum_pt=True,  # use pT fractions for JetNet metrics by default
+            )
+            jetnet_library_metrics_non_relative_pT = get_jetnet_default_metrics(
+                p4s_ref=p4s_original,
+                p4s_gen=p4s_generated,
+                num_eval_samples=num_eval_samples,
+                num_batches=num_batches,
+                divide_pt_by_sum_pt=False,  # also calculate with non-relative pT for reference
+            )
 
         print(f"Particle-level metrics for {jet_type_label}:")
         for metric_name, metric_values in particle_metrics.items():
@@ -365,36 +370,37 @@ def eval_jet_generation(
                             "std": std_val,
                         }
                     )
-        # Add JetNet library metrics
-        for metric_name, (mean_val, std_val) in jetnet_library_metrics.items():
-            print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
-            all_metrics.append(
-                {
-                    "jet_type": jet_type_label,
-                    "jet_type_idx": jet_type_i,
-                    "level": "particle",
-                    "feature": metric_name,  # use metric name as feature for these
-                    "metric": metric_name,
-                    "mean": mean_val,
-                    "std": std_val,
-                }
-            )
-        for metric_name, (
-            mean_val,
-            std_val,
-        ) in jetnet_library_metrics_non_relative_pT.items():
-            print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
-            all_metrics.append(
-                {
-                    "jet_type": jet_type_label,
-                    "jet_type_idx": jet_type_i,
-                    "level": "particle",
-                    "feature": f"{metric_name}_non_relative_pT",  # use metric name as feature for these
-                    "metric": f"{metric_name}_non_relative_pT",
-                    "mean": mean_val,
-                    "std": std_val,
-                }
-            )
+        # Add JetNet library metrics (optional)
+        if calc_jetnet_metrics:
+            for metric_name, (mean_val, std_val) in jetnet_library_metrics.items():
+                print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
+                all_metrics.append(
+                    {
+                        "jet_type": jet_type_label,
+                        "jet_type_idx": jet_type_i,
+                        "level": "particle",
+                        "feature": metric_name,  # use metric name as feature for these
+                        "metric": metric_name,
+                        "mean": mean_val,
+                        "std": std_val,
+                    }
+                )
+            for metric_name, (
+                mean_val,
+                std_val,
+            ) in jetnet_library_metrics_non_relative_pT.items():
+                print(f"  {metric_name}: {mean_val:.4f} +/- {std_val:.4f}")
+                all_metrics.append(
+                    {
+                        "jet_type": jet_type_label,
+                        "jet_type_idx": jet_type_i,
+                        "level": "particle",
+                        "feature": f"{metric_name}_non_relative_pT",  # use metric name as feature for these
+                        "metric": f"{metric_name}_non_relative_pT",
+                        "mean": mean_val,
+                        "std": std_val,
+                    }
+                )
 
         # Calculate metrics for jet-level (substructure) features
         jet_metrics = calc_metrics_for_dict(
@@ -546,6 +552,13 @@ if __name__ == "__main__":
         help="Comma-separated numeric jet-type labels to evaluate (e.g. '0,1'). "
         "Empty (default) evaluates all jet types for the dataset.",
     )
+    parser.add_argument(
+        "--no_jetnet_metrics",
+        dest="calc_jetnet_metrics",
+        action="store_false",
+        default=True,
+        help="Skip the JetNet-library default metrics (w1p, w1m, w1efp).",
+    )
 
     args = parser.parse_args()
 
@@ -564,4 +577,5 @@ if __name__ == "__main__":
         calc_baseline=args.calc_baseline,
         metrics_filename=args.metrics_filename,
         jet_types=jet_types,
+        calc_jetnet_metrics=args.calc_jetnet_metrics,
     )
