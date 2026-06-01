@@ -34,6 +34,35 @@ def eta_jet_per_particle(x_ak):
     return -x_ak["eta"] + np.arccosh(ratio_clipped)
 
 
+def min_pairwise_dot(p4s):
+    """Per-jet minimum Minkowski dot product over distinct particle pairs.
+
+    For each jet, form all unordered distinct particle pairs (i < j) and
+    compute the Minkowski dot product p_i . p_j = E_i E_j - vec(p_i).vec(p_j).
+    The metric is the minimum of that over all pairs in the jet:
+
+        min_{i<j} ( p_i . p_j )
+
+    Parameters
+    ----------
+    p4s : awkward array of Momentum4D
+        Per-particle four-momenta (vector library "Momentum4D" records),
+        shape (n_jets, var n_particles).
+
+    Returns
+    -------
+    min_dot : awkward array, shape (n_jets,)
+        Minimum pairwise Minkowski dot product per jet. Jets with fewer than
+        two particles (no pairs) yield None.
+    """
+    # Unordered distinct pairs (i < j) along the particle axis.
+    pairs = ak.combinations(p4s, 2, axis=1, fields=["p_i", "p_j"])
+    # Momentum4D .dot() is the Minkowski (invariant) dot product
+    #   p_i . p_j = E_i E_j - px_i px_j - py_i py_j - pz_i pz_j
+    dot = pairs["p_i"].dot(pairs["p_j"])
+    return ak.min(dot, axis=1)
+
+
 def compute_jet_eta_and_energy(x_ak):
     """Compute recovered jet eta and jet energy from particle-level features.
 
@@ -155,6 +184,7 @@ def eval_jet_generation(
         "d2": np.linspace(0, 12, 50),
         "jet_eta": np.linspace(0, 3, 60),
         "jet_energy": np.linspace(400, 2000, 60),
+        "min_pairwise_dot": np.linspace(-0.002, 0.01, 60),
     }
 
     names_substructure = {
@@ -166,6 +196,7 @@ def eval_jet_generation(
         "jet_n_constituents": "Particle multiplicity",
         "jet_eta": "Jet $\\eta$ (recovered)",
         "jet_energy": "Jet energy [GeV]",
+        "min_pairwise_dot": "$\\min_{i<j}\\,(p_i \\cdot p_j)$",
     }
 
     plot_save_kwargs = dict(dpi=200, bbox_inches="tight")
@@ -221,15 +252,31 @@ def eval_jet_generation(
     jet_eta_orig_full, jet_energy_orig_full = compute_jet_eta_and_energy(x_ak_orig_full)
     jet_eta_gen_full, jet_energy_gen_full = compute_jet_eta_and_energy(x_ak_gen_full)
 
+    # Per-jet minimum pairwise Minkowski dot product (one scalar per jet).
+    min_pair_dot_orig_full = min_pairwise_dot(gen_output.p4s.original)
+    min_pair_dot_gen_full = min_pairwise_dot(gen_output.p4s.generated)
+
     substructure_orig_full = ak.with_field(
-        ak.with_field(gen_output.substructure.original, jet_eta_orig_full, "jet_eta"),
-        jet_energy_orig_full,
-        "jet_energy",
+        ak.with_field(
+            ak.with_field(
+                gen_output.substructure.original, jet_eta_orig_full, "jet_eta"
+            ),
+            jet_energy_orig_full,
+            "jet_energy",
+        ),
+        min_pair_dot_orig_full,
+        "min_pairwise_dot",
     )
     substructure_gen_full = ak.with_field(
-        ak.with_field(gen_output.substructure.generated, jet_eta_gen_full, "jet_eta"),
-        jet_energy_gen_full,
-        "jet_energy",
+        ak.with_field(
+            ak.with_field(
+                gen_output.substructure.generated, jet_eta_gen_full, "jet_eta"
+            ),
+            jet_energy_gen_full,
+            "jet_energy",
+        ),
+        min_pair_dot_gen_full,
+        "min_pairwise_dot",
     )
 
     # Loop over jet types
