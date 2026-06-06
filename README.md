@@ -46,15 +46,13 @@ The container definition lives in [`docker/`](docker/): a [`Dockerfile`](docker/
 
 ## SLURM scripts
 
-Job submission scripts for Perlmutter live in [`slurm_scripts/`](slurm_scripts/); each sets up the Shifter image and launches a script from [`scripts/`](scripts/).
+Job submission scripts for Perlmutter live in [`slurm_scripts/`](slurm_scripts/). Each sets up the Shifter image and launches a script from [`scripts/`](scripts/).
 
 | Script | Purpose |
 | --- | --- |
-| [`pretrain.sh`](slurm_scripts/pretrain.sh) | Pre-train a model on JetClass under a chosen objective (`classifier`, `generator`, `mpm`, combinations). |
-| [`finetune.sh`](slurm_scripts/finetune.sh) | Fine-tune pre-trained models on top tagging across dataset sizes, seeds, and objectives. |
-| [`finetune_debug.sh`](slurm_scripts/finetune_debug.sh) | Debug-queue version of the top-tagging fine-tuning sweep. |
+| [`pretrain.sh`](slurm_scripts/pretrain.sh) | Pre-train a model on JetClass for a chosen pre-train mode (`classifier`, `generator`, `mpm`, combinations). |
+| [`finetune.sh`](slurm_scripts/finetune.sh) | Fine-tune pre-trained models on top tagging across dataset sizes, seeds, and pre-train modes. |
 | [`finetune_gen.sh`](slurm_scripts/finetune_gen.sh) | Fine-tune for generation on JetNet (jetnet30 / jetnet150). |
 | [`evaluate.sh`](slurm_scripts/evaluate.sh) | Evaluate fine-tuned checkpoints and write results JSON. |
 | [`finetune_pretrain_sweep.sh`](slurm_scripts/finetune_pretrain_sweep.sh) | Sweep across pre-training checkpoints (every Nth val-loss step) of one run, fine-tuning each on the downstream task and copying the best checkpoints out. |
 | [`evaluate_pretrain_sweep.sh`](slurm_scripts/evaluate_pretrain_sweep.sh) | Evaluate the fine-tuned checkpoints produced by the pre-train sweep, writing per-step results to an eval JSON. |
-| [`benchmark.sh`](slurm_scripts/benchmark.sh) | Throughput/scaling benchmark of the model across node/GPU configurations. |
