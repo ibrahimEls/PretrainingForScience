@@ -42,7 +42,7 @@ Relative `W_1` distances versus the number of JetNet jets used for fine-tuning, 
 
 ## Docker, environment
 
-The container definition lives in [`docker/`](docker/): a [`Dockerfile`](docker/Dockerfile) (PyTorch 2.8 + CUDA 12.6, MPICH for Shifter, `vqtorch`) plus [`requirements.txt`](docker/requirements.txt) and [`requirements_jetnet.txt`](docker/requirements_jetnet.txt). On NERSC the prebuilt image is pulled via Shifter (`docker:jobirk/omnilearn-lightning:v1.0.4`).
+The container definition lives in [`docker/`](docker/), a [`Dockerfile`](docker/Dockerfile). On NERSC the prebuilt image is pulled via Shifter (`docker:jobirk/omnilearn-lightning:v1.0.4`).
 
 ## SLURM scripts
 
