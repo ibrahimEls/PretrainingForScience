@@ -89,7 +89,8 @@ params_to_update = {
     "font.family": "serif",
     "font.serif": "DejaVu Serif",
     "font.sans-serif": "DejaVu Sans",
-    # "text.usetex": False,
+    # NOTE: text.usetex is intentionally NOT set here so this style works in
+    # containers without a LaTeX install. Opt in via set_mpl_style(usetex=True).
     # Axes
     # "axes.linewidth": 1.0,
     # # "axes.labelsize": 25,
@@ -188,10 +189,21 @@ def reset_mpl_style():
     rcParams.update(mpl.rcParamsDefault)
 
 
-def set_mpl_style(darkmode=False):
-    """Set matplotlib rcParams to custom configuration."""
+def set_mpl_style(darkmode=False, usetex=False):
+    """Set matplotlib rcParams to custom configuration.
+
+    Parameters
+    ----------
+    darkmode : bool
+        Reserved for a dark colour scheme (currently unused).
+    usetex : bool
+        If True, render all text with a real LaTeX install
+        (``text.usetex=True``). Defaults to False so this style also works in
+        environments without LaTeX. Enable only where a working LaTeX exists.
+    """
     reset_mpl_style()
     rcParams.update(params_to_update)
+    rcParams["text.usetex"] = usetex
 
 
 def get_bin_centers_and_bin_heights_from_hist(hist):
@@ -226,6 +238,7 @@ def plot_features(
     ak_array_dict_labels: dict = None,
     ax_rows: int = 1,
     decorate_ax_kwargs: dict = {},
+    decorate_ax_kwargs_per_feature: dict = None,
     bins_dict: dict = None,
     logscale_features: list[str] = None,
     colors: Union[list[str], dict[str, str]] = None,
@@ -276,7 +289,11 @@ def plot_features(
     ax_rows : int, optional
         Number of rows of the subplot grid. Default is 1.
     decorate_ax_kwargs : dict, optional
-        Keyword arguments passed to `decorate_ax`.
+        Keyword arguments passed to `decorate_ax` for all features.
+    decorate_ax_kwargs_per_feature : dict, optional
+        Dict of {feature_name: kwargs} to override `decorate_ax_kwargs` for specific features.
+        Useful for setting `yscale` differently per feature, e.g.
+        ``{"jet_mass": {"yscale": 1.5}, "tau21": {"yscale": 2.0}}``.
     bins_dict : dict, optional
         Dict of {name: bins} for the histograms. `name` has to be the same as the keys in `names`.
     logscale_features : list, optional
@@ -658,7 +675,11 @@ def plot_features(
                 logscale_features == "all"
             ):
                 _ax.set_yscale("log")
-            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+            _feat_decorate_kwargs = {
+                **decorate_ax_kwargs,
+                **(decorate_ax_kwargs_per_feature or {}).get(feat_name, {}),
+            }
+            plot_utils.decorate_ax(_ax, **_feat_decorate_kwargs)
 
     # Apply log scale and decorations for all axes (in case fig_legend_kwargs was used)
     for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
@@ -668,7 +689,11 @@ def plot_features(
             _ax.set_yscale("log")
         if fig_legend_kwargs is not None:
             # Only apply decorations if we didn't already do it above
-            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+            _feat_decorate_kwargs = {
+                **decorate_ax_kwargs,
+                **(decorate_ax_kwargs_per_feature or {}).get(feat_name, {}),
+            }
+            plot_utils.decorate_ax(_ax, **_feat_decorate_kwargs)
 
     # make empty plots invisible
     for i in range(len(names), len(axarr_main)):
