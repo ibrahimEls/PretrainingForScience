@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import argparse
 import json
-import math
 import os
 from typing import Any, Dict, List, Optional
 
 from omnilearn_lightning.eval_tasks import eval_top_tagging
-
 
 METRIC_KEYS = ("avg_loss", "auc", "inv_bkg_eff")
 
@@ -81,7 +79,9 @@ def main() -> None:
     )
 
     parser.add_argument("--path", type=str, default="/pscratch/sd/i/ibrahime/datasets/")
-    parser.add_argument("--outdir", type=str, default="/pscratch/sd/i/ibrahime/checkpoints/")
+    parser.add_argument(
+        "--outdir", type=str, default="/pscratch/sd/i/ibrahime/checkpoints/"
+    )
     parser.add_argument("--dataset", type=str, default="top")
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--num_workers", type=int, default=32)
@@ -164,7 +164,9 @@ def main() -> None:
             n_missing += 1
         elif not os.path.exists(ckpt_path):
             new_run["status"] = "missing_file"
-            print(f"[WARN] step={pretrain_step}: ckpt does not exist on disk: {ckpt_path}")
+            print(
+                f"[WARN] step={pretrain_step}: ckpt does not exist on disk: {ckpt_path}"
+            )
             n_missing += 1
         else:
             if args.dry_run:
@@ -188,8 +190,14 @@ def main() -> None:
             safe_write_json(args.eval_json, out)
 
     print("\n" + "=" * 80)
-    print(f"[DONE] runs evaluated: {n_run}, skipped (cached): {n_skip}, missing ckpt: {n_missing}")
-    print(f"[DONE] eval JSON written to: {args.eval_json}" if not args.dry_run else "[DRYRUN] no JSON written")
+    print(
+        f"[DONE] runs evaluated: {n_run}, skipped (cached): {n_skip}, missing ckpt: {n_missing}"
+    )
+    print(
+        f"[DONE] eval JSON written to: {args.eval_json}"
+        if not args.dry_run
+        else "[DRYRUN] no JSON written"
+    )
     print("=" * 80)
 
 

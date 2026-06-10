@@ -229,7 +229,7 @@ def generate_jets(
 
     datamodule = PETDataModule(
         dataset=dataset_type,
-        path="/pscratch/sd/j/jobirk/omnilearn_datasets_dev/",
+        path="/pscratch/sd/j/jobirk/omnilearn_datasets/",
         batch_size=batch_size,
         num_samples=n_jets_to_generate,
         use_pid=dataset_type == "jetclass",

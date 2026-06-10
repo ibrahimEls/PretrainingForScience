@@ -12,6 +12,7 @@ import seaborn as sns
 import vector
 from cycler import cycler
 from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 import omnilearn_lightning.plotting.utils as plot_utils
 from omnilearn_lightning.array_utils import combine_ak_arrays
@@ -88,7 +89,8 @@ params_to_update = {
     "font.family": "serif",
     "font.serif": "DejaVu Serif",
     "font.sans-serif": "DejaVu Sans",
-    # "text.usetex": False,
+    # NOTE: text.usetex is intentionally NOT set here so this style works in
+    # containers without a LaTeX install. Opt in via set_mpl_style(usetex=True).
     # Axes
     # "axes.linewidth": 1.0,
     # # "axes.labelsize": 25,
@@ -159,7 +161,7 @@ MODE_STYLE = {
         "color": "#832db6",
     },
     "classifier+mpmregress_perturb": {
-        "name": "Classifier + MPM.",
+        "name": "Classifier + MPM",
         "color": "#b9ac70",
     },
     "generator+mpmregress": {
@@ -175,6 +177,10 @@ MODE_STYLE = {
         "name": "From Scratch",
         "color": "#000000",
     },
+    "truth_vs_truth_reference": {
+        "name": "JetNet vs. JetNet",
+        "color": "#000000",
+    },
 }
 
 
@@ -183,10 +189,21 @@ def reset_mpl_style():
     rcParams.update(mpl.rcParamsDefault)
 
 
-def set_mpl_style(darkmode=False):
-    """Set matplotlib rcParams to custom configuration."""
+def set_mpl_style(darkmode=False, usetex=False):
+    """Set matplotlib rcParams to custom configuration.
+
+    Parameters
+    ----------
+    darkmode : bool
+        Reserved for a dark colour scheme (currently unused).
+    usetex : bool
+        If True, render all text with a real LaTeX install
+        (``text.usetex=True``). Defaults to False so this style also works in
+        environments without LaTeX. Enable only where a working LaTeX exists.
+    """
     reset_mpl_style()
     rcParams.update(params_to_update)
+    rcParams["text.usetex"] = usetex
 
 
 def get_bin_centers_and_bin_heights_from_hist(hist):
@@ -221,10 +238,12 @@ def plot_features(
     ak_array_dict_labels: dict = None,
     ax_rows: int = 1,
     decorate_ax_kwargs: dict = {},
+    decorate_ax_kwargs_per_feature: dict = None,
     bins_dict: dict = None,
     logscale_features: list[str] = None,
     colors: Union[list[str], dict[str, str]] = None,
     linestyles: Union[list[str], dict[str, str]] = None,
+    histtypes: Union[list[str], dict[str, str]] = None,
     ax_size: tuple[int, int] = (3, 2),
     ylabel: str = None,
     ratio: bool = False,
@@ -270,7 +289,11 @@ def plot_features(
     ax_rows : int, optional
         Number of rows of the subplot grid. Default is 1.
     decorate_ax_kwargs : dict, optional
-        Keyword arguments passed to `decorate_ax`.
+        Keyword arguments passed to `decorate_ax` for all features.
+    decorate_ax_kwargs_per_feature : dict, optional
+        Dict of {feature_name: kwargs} to override `decorate_ax_kwargs` for specific features.
+        Useful for setting `yscale` differently per feature, e.g.
+        ``{"jet_mass": {"yscale": 1.5}, "tau21": {"yscale": 2.0}}``.
     bins_dict : dict, optional
         Dict of {name: bins} for the histograms. `name` has to be the same as the keys in `names`.
     logscale_features : list, optional
@@ -283,6 +306,11 @@ def plot_features(
         List of linestyles for the histograms. Has to have the same length as the
         number of arrays. If shorter, the linestyles will be repeated.
         If a dict is given, it has to be of the form {"array_name": "linestyle", ...}.
+    histtypes : list or dict, optional
+        List of histtypes for the histograms (e.g. "step", "stepfilled", "bar").
+        Has to have the same length as the number of arrays.
+        If a dict is given, it has to be of the form {"array_name": "histtype", ...}.
+        If None, uses the value from histkwargs (default: "step").
     ax_size : tuple, optional
         Size of the axes. Default is (3, 2).
     ylabel : str, optional
@@ -454,6 +482,11 @@ def plot_features(
         else:
             histkwargs["linestyle"] = "solid"
 
+        if histtypes is not None:
+            histkwargs["histtype"] = (
+                histtypes[i_label] if isinstance(histtypes, list) else histtypes[label]
+            )
+
         legend_labels.append(ak_array_dict_labels[label])
         for i, (feat, feat_label) in enumerate(names.items()):
             # if multiple ratio references are use: draw horizontal line
@@ -520,16 +553,26 @@ def plot_features(
             if ylabel is not None:
                 axarr_main[i].set_ylabel(ylabel)
             if i == 0:
-                legend_handles.append(
-                    Line2D(
-                        [],
-                        [],
-                        color=patches[0].get_edgecolor(),
-                        lw=patches[0].get_linewidth(),
-                        label=ak_array_dict_labels[label],
-                        linestyle=patches[0].get_linestyle(),
+                current_histtype = histkwargs.get("histtype", "step")
+                if current_histtype == "stepfilled":
+                    legend_handles.append(
+                        Patch(
+                            facecolor=color,
+                            edgecolor=color,
+                            label=ak_array_dict_labels[label],
+                        )
                     )
-                )
+                else:
+                    legend_handles.append(
+                        Line2D(
+                            [],
+                            [],
+                            color=patches[0].get_edgecolor(),
+                            lw=patches[0].get_linewidth(),
+                            label=ak_array_dict_labels[label],
+                            linestyle=patches[0].get_linestyle(),
+                        )
+                    )
 
             if ratio:
                 if label in base_label:
@@ -632,7 +675,11 @@ def plot_features(
                 logscale_features == "all"
             ):
                 _ax.set_yscale("log")
-            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+            _feat_decorate_kwargs = {
+                **decorate_ax_kwargs,
+                **(decorate_ax_kwargs_per_feature or {}).get(feat_name, {}),
+            }
+            plot_utils.decorate_ax(_ax, **_feat_decorate_kwargs)
 
     # Apply log scale and decorations for all axes (in case fig_legend_kwargs was used)
     for i, (_ax, feat_name) in enumerate(zip(axarr_main, names.keys())):
@@ -642,7 +689,11 @@ def plot_features(
             _ax.set_yscale("log")
         if fig_legend_kwargs is not None:
             # Only apply decorations if we didn't already do it above
-            plot_utils.decorate_ax(_ax, **decorate_ax_kwargs)
+            _feat_decorate_kwargs = {
+                **decorate_ax_kwargs,
+                **(decorate_ax_kwargs_per_feature or {}).get(feat_name, {}),
+            }
+            plot_utils.decorate_ax(_ax, **_feat_decorate_kwargs)
 
     # make empty plots invisible
     for i in range(len(names), len(axarr_main)):
