@@ -10,7 +10,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-
 # Map raw pretrain mode strings to a tag substring that
 # omnilearn_lightning.utils.extract_pretrained_ckpt_prefix can recognize.
 MODE_TO_PREFIX = {
@@ -154,9 +153,7 @@ def get_model_hparams(model_size: str) -> Dict[str, Any]:
     }
 
 
-VAL_CKPT_RE = re.compile(
-    r"epoch=(\d+)-step=(\d+)-val_loss=([\d.]+)"
-)
+VAL_CKPT_RE = re.compile(r"epoch=(\d+)-step=(\d+)-val_loss=([\d.]+)")
 
 
 def stage_pretrain_ckpt(
@@ -427,7 +424,9 @@ def run_single_finetune(
     metrics_csv = os.path.join(run_dir, "metrics.csv")
     val_curve = extract_val_curve_from_csv(metrics_csv)
     if val_curve:
-        print(f"[INFO] Extracted finetuning val curve ({len(val_curve)} entries) from {metrics_csv}")
+        print(
+            f"[INFO] Extracted finetuning val curve ({len(val_curve)} entries) from {metrics_csv}"
+        )
     else:
         print(f"[WARN] No val curve extracted from {metrics_csv}")
 
@@ -581,7 +580,9 @@ def main() -> None:
                 staging_dir=staging_dir,
                 pretrain_prefix_override=args.pretrain_prefix,
             )
-            print(f"[INFO] Staged ckpt symlink: {staged_ckpt} -> {info['pretrain_ckpt']}")
+            print(
+                f"[INFO] Staged ckpt symlink: {staged_ckpt} -> {info['pretrain_ckpt']}"
+            )
         except Exception as e:
             print(f"[ERROR] step={step} could not stage symlink: {e}")
             staged_ckpt = info["pretrain_ckpt"]
