@@ -2,7 +2,7 @@
 #SBATCH -A m3246
 #SBATCH -C gpu
 #SBATCH -q regular
-#SBATCH -t 12:00:00
+#SBATCH -t 4:00:00
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=4
 #SBATCH -c 32
@@ -31,9 +31,12 @@ GPU_ID=0
 TASK="top_tagging"
 MODEL_SIZES="medium"
 PRE_TRAINING_MODES="classifier+mpmregress_perturb,generator+mpmregress" #"all"
-PRE_TRAINING_MODES="mpmregress,pretrainregress_perturb" #"all"
-PRE_TRAINING_MODES="classifier+generator,classifier" #"all"
-PRE_TRAINING_MODES="generator,from_scratch" #"all"
+#PRE_TRAINING_MODES="mpmregress,pretrainregress_perturb" #"all"
+#PRE_TRAINING_MODES="classifier+generator,classifier" #"all"
+#PRE_TRAINING_MODES="generator,from_scratch" #"all"
+
+#PRE_TRAINING_MODES="classifier+mpmregress_perturb,pretrainregress_perturb,mpmregress,generator+mpmregress" #"all"
+#PRE_TRAINING_MODES="from_scratch,classifier,classifier+generator,generator"
 
 
 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.4 bash -c "cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=$REPO_DIR:\$PYTHONPATH && \

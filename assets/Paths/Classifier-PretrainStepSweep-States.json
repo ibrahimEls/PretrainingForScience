@@ -1,0 +1,2663 @@
+{
+  "dest_dir": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/",
+  "downstream_key": "1M-Top",
+  "downstream_shots": -1,
+  "interval": 8,
+  "model_size": "medium",
+  "pre_training_mode": "classifier",
+  "pretrain_ckpt_dir": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/",
+  "runs": [
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00002500/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000029-step=035130-val_loss=0.1524-train_loss_step=0.1495.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v45_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000029-step=035130-val_loss=0.1524-train_loss_step=0.1495.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00002500-val_loss=0.7666.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00002500-val_loss=0.7666.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.16627001762390137,
+          "val_loss_class": 0.16627001762390137,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.16200241446495056,
+          "val_loss_class": 0.16200241446495056,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.15928611159324646,
+          "val_loss_class": 0.15928611159324646,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.15913136303424835,
+          "val_loss_class": 0.15913136303424835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.15761186182498932,
+          "val_loss_class": 0.15761186182498932,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1578022837638855,
+          "val_loss_class": 0.1578022837638855,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15670838952064514,
+          "val_loss_class": 0.15670838952064514,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1560317724943161,
+          "val_loss_class": 0.1560317724943161,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1551666408777237,
+          "val_loss_class": 0.1551666408777237,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.15464238822460175,
+          "val_loss_class": 0.15464238822460175,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.15561553835868835,
+          "val_loss_class": 0.15561553835868835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 11,
+          "step": 14051,
+          "val_loss": 0.15462344884872437,
+          "val_loss_class": 0.15462344884872437,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 12,
+          "step": 15222,
+          "val_loss": 0.15404397249221802,
+          "val_loss_class": 0.15404397249221802,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 13,
+          "step": 16393,
+          "val_loss": 0.15396764874458313,
+          "val_loss_class": 0.15396764874458313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 14,
+          "step": 17564,
+          "val_loss": 0.15370644629001617,
+          "val_loss_class": 0.15370644629001617,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 15,
+          "step": 18735,
+          "val_loss": 0.153600811958313,
+          "val_loss_class": 0.153600811958313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 16,
+          "step": 19906,
+          "val_loss": 0.15313439071178436,
+          "val_loss_class": 0.15313439071178436,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 17,
+          "step": 21077,
+          "val_loss": 0.15328115224838257,
+          "val_loss_class": 0.15328115224838257,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 18,
+          "step": 22248,
+          "val_loss": 0.15327003598213196,
+          "val_loss_class": 0.15327003598213196,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 19,
+          "step": 23419,
+          "val_loss": 0.15293240547180176,
+          "val_loss_class": 0.15293240547180176,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 20,
+          "step": 24590,
+          "val_loss": 0.152832493185997,
+          "val_loss_class": 0.152832493185997,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 21,
+          "step": 25761,
+          "val_loss": 0.15290625393390656,
+          "val_loss_class": 0.15290625393390656,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 22,
+          "step": 26932,
+          "val_loss": 0.15265291929244995,
+          "val_loss_class": 0.15265291929244995,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 23,
+          "step": 28103,
+          "val_loss": 0.15261025726795197,
+          "val_loss_class": 0.15261025726795197,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 24,
+          "step": 29274,
+          "val_loss": 0.15259578824043274,
+          "val_loss_class": 0.15259578824043274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 25,
+          "step": 30445,
+          "val_loss": 0.15278050303459167,
+          "val_loss_class": 0.15278050303459167,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 26,
+          "step": 31616,
+          "val_loss": 0.15244968235492706,
+          "val_loss_class": 0.15244968235492706,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 27,
+          "step": 32787,
+          "val_loss": 0.15244965255260468,
+          "val_loss_class": 0.15244965255260468,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 28,
+          "step": 33958,
+          "val_loss": 0.1524188369512558,
+          "val_loss_class": 0.1524188369512558,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 29,
+          "step": 35129,
+          "val_loss": 0.15241490304470062,
+          "val_loss_class": 0.15241490304470062,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000000-step=002500-val_loss=0.7666-train_loss_step=0.7859.ckpt",
+      "pretrain_epoch": 0,
+      "pretrain_step": 2500,
+      "pretrain_val_loss": 0.7666,
+      "run_index": 0,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00002500-val_loss=0.7666.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-10T17:15:22"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00014707/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000007-step=009368-val_loss=0.1445-train_loss_step=0.1455.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v113_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000007-step=009368-val_loss=0.1445-train_loss_step=0.1455.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00014707-val_loss=0.4501.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00014707-val_loss=0.4501.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1519608199596405,
+          "val_loss_class": 0.1519608199596405,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14700213074684143,
+          "val_loss_class": 0.14700213074684143,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1459721028804779,
+          "val_loss_class": 0.1459721028804779,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14521968364715576,
+          "val_loss_class": 0.14521968364715576,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14461669325828552,
+          "val_loss_class": 0.14461669325828552,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14476318657398224,
+          "val_loss_class": 0.14476318657398224,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1448720097541809,
+          "val_loss_class": 0.1448720097541809,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14448340237140656,
+          "val_loss_class": 0.14448340237140656,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14526313543319702,
+          "val_loss_class": 0.14526313543319702,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14456486701965332,
+          "val_loss_class": 0.14456486701965332,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.14498816430568695,
+          "val_loss_class": 0.14498816430568695,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 11,
+          "step": 14051,
+          "val_loss": 0.14520835876464844,
+          "val_loss_class": 0.14520835876464844,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 12,
+          "step": 15222,
+          "val_loss": 0.14531143009662628,
+          "val_loss_class": 0.14531143009662628,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000001-step=014707-val_loss=0.4501-train_loss_step=0.4886.ckpt",
+      "pretrain_epoch": 1,
+      "pretrain_step": 14707,
+      "pretrain_val_loss": 0.4501,
+      "run_index": 1,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00014707-val_loss=0.4501.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T15:05:40"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00026914/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1431-train_loss_step=0.1496.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v47_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1431-train_loss_step=0.1496.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00026914-val_loss=0.4299.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00026914-val_loss=0.4299.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14893123507499695,
+          "val_loss_class": 0.14893123507499695,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14495457708835602,
+          "val_loss_class": 0.14495457708835602,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14409250020980835,
+          "val_loss_class": 0.14409250020980835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14341408014297485,
+          "val_loss_class": 0.14341408014297485,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14305193722248077,
+          "val_loss_class": 0.14305193722248077,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14322340488433838,
+          "val_loss_class": 0.14322340488433838,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14359118044376373,
+          "val_loss_class": 0.14359118044376373,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14341676235198975,
+          "val_loss_class": 0.14341676235198975,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1439216434955597,
+          "val_loss_class": 0.1439216434955597,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14391294121742249,
+          "val_loss_class": 0.14391294121742249,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000002-step=026914-val_loss=0.4299-train_loss_step=0.4497.ckpt",
+      "pretrain_epoch": 2,
+      "pretrain_step": 26914,
+      "pretrain_val_loss": 0.4299,
+      "run_index": 1,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00026914-val_loss=0.4299.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-10T18:47:57"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00039121/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v117_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00039121-val_loss=0.4198.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00039121-val_loss=0.4198.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14684893190860748,
+          "val_loss_class": 0.14684893190860748,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14356356859207153,
+          "val_loss_class": 0.14356356859207153,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14276765286922455,
+          "val_loss_class": 0.14276765286922455,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1423109471797943,
+          "val_loss_class": 0.1423109471797943,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14216910302639008,
+          "val_loss_class": 0.14216910302639008,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14220719039440155,
+          "val_loss_class": 0.14220719039440155,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14252512156963348,
+          "val_loss_class": 0.14252512156963348,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1426234096288681,
+          "val_loss_class": 0.1426234096288681,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14303058385849,
+          "val_loss_class": 0.14303058385849,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14308451116085052,
+          "val_loss_class": 0.14308451116085052,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000003-step=039121-val_loss=0.4198-train_loss_step=0.4400.ckpt",
+      "pretrain_epoch": 3,
+      "pretrain_step": 39121,
+      "pretrain_val_loss": 0.4198,
+      "run_index": 3,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00039121-val_loss=0.4198.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T16:38:14"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00051328/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000005-step=007026-val_loss=0.1417-train_loss_step=0.1524.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v49_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000005-step=007026-val_loss=0.1417-train_loss_step=0.1524.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00051328-val_loss=0.4160.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00051328-val_loss=0.4160.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1475951224565506,
+          "val_loss_class": 0.1475951224565506,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14329709112644196,
+          "val_loss_class": 0.14329709112644196,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1425023376941681,
+          "val_loss_class": 0.1425023376941681,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1418585330247879,
+          "val_loss_class": 0.1418585330247879,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14172300696372986,
+          "val_loss_class": 0.14172300696372986,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14165174961090088,
+          "val_loss_class": 0.14165174961090088,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14207178354263306,
+          "val_loss_class": 0.14207178354263306,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1421925276517868,
+          "val_loss_class": 0.1421925276517868,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14244477450847626,
+          "val_loss_class": 0.14244477450847626,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14279577136039734,
+          "val_loss_class": 0.14279577136039734,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.14312967658042908,
+          "val_loss_class": 0.14312967658042908,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000004-step=051328-val_loss=0.4160-train_loss_step=0.4566.ckpt",
+      "pretrain_epoch": 4,
+      "pretrain_step": 51328,
+      "pretrain_val_loss": 0.416,
+      "run_index": 2,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00051328-val_loss=0.4160.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-10T20:29:32"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00063535/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1497.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v121_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1497.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00063535-val_loss=0.4139.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00063535-val_loss=0.4139.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14859119057655334,
+          "val_loss_class": 0.14859119057655334,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14344564080238342,
+          "val_loss_class": 0.14344564080238342,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14213015139102936,
+          "val_loss_class": 0.14213015139102936,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14163874089717865,
+          "val_loss_class": 0.14163874089717865,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14145390689373016,
+          "val_loss_class": 0.14145390689373016,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14164254069328308,
+          "val_loss_class": 0.14164254069328308,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14170993864536285,
+          "val_loss_class": 0.14170993864536285,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14191140234470367,
+          "val_loss_class": 0.14191140234470367,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1421000212430954,
+          "val_loss_class": 0.1421000212430954,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14255391061306,
+          "val_loss_class": 0.14255391061306,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000005-step=063535-val_loss=0.4139-train_loss_step=0.4133.ckpt",
+      "pretrain_epoch": 5,
+      "pretrain_step": 63535,
+      "pretrain_val_loss": 0.4139,
+      "run_index": 5,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00063535-val_loss=0.4139.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T18:10:56"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00075742/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1505.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v51_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1505.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00075742-val_loss=0.4119.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00075742-val_loss=0.4119.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14906960725784302,
+          "val_loss_class": 0.14906960725784302,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1431874930858612,
+          "val_loss_class": 0.1431874930858612,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14210724830627441,
+          "val_loss_class": 0.14210724830627441,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14160043001174927,
+          "val_loss_class": 0.14160043001174927,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14134684205055237,
+          "val_loss_class": 0.14134684205055237,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14149370789527893,
+          "val_loss_class": 0.14149370789527893,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14186853170394897,
+          "val_loss_class": 0.14186853170394897,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14194537699222565,
+          "val_loss_class": 0.14194537699222565,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14236941933631897,
+          "val_loss_class": 0.14236941933631897,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.142767533659935,
+          "val_loss_class": 0.142767533659935,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000006-step=075742-val_loss=0.4119-train_loss_step=0.4263.ckpt",
+      "pretrain_epoch": 6,
+      "pretrain_step": 75742,
+      "pretrain_val_loss": 0.4119,
+      "run_index": 3,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00075742-val_loss=0.4119.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-10T22:02:15"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00087949/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1484.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v125_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1484.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00087949-val_loss=0.4102.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00087949-val_loss=0.4102.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1468106210231781,
+          "val_loss_class": 0.1468106210231781,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14261795580387115,
+          "val_loss_class": 0.14261795580387115,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1416626274585724,
+          "val_loss_class": 0.1416626274585724,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14118154346942902,
+          "val_loss_class": 0.14118154346942902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14113326370716095,
+          "val_loss_class": 0.14113326370716095,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14120960235595703,
+          "val_loss_class": 0.14120960235595703,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14171390235424042,
+          "val_loss_class": 0.14171390235424042,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14199821650981903,
+          "val_loss_class": 0.14199821650981903,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14232569932937622,
+          "val_loss_class": 0.14232569932937622,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.142888143658638,
+          "val_loss_class": 0.142888143658638,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000007-step=087949-val_loss=0.4102-train_loss_step=0.4290.ckpt",
+      "pretrain_epoch": 7,
+      "pretrain_step": 87949,
+      "pretrain_val_loss": 0.4102,
+      "run_index": 7,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00087949-val_loss=0.4102.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T19:43:23"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00100156/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1482.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v53_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1482.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00100156-val_loss=0.4097.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00100156-val_loss=0.4097.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14703591167926788,
+          "val_loss_class": 0.14703591167926788,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14259590208530426,
+          "val_loss_class": 0.14259590208530426,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1416044533252716,
+          "val_loss_class": 0.1416044533252716,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1412392407655716,
+          "val_loss_class": 0.1412392407655716,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14113911986351013,
+          "val_loss_class": 0.14113911986351013,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1413930207490921,
+          "val_loss_class": 0.1413930207490921,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14181949198246002,
+          "val_loss_class": 0.14181949198246002,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14220577478408813,
+          "val_loss_class": 0.14220577478408813,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1425822377204895,
+          "val_loss_class": 0.1425822377204895,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14326097071170807,
+          "val_loss_class": 0.14326097071170807,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000008-step=100156-val_loss=0.4097-train_loss_step=0.4436.ckpt",
+      "pretrain_epoch": 8,
+      "pretrain_step": 100156,
+      "pretrain_val_loss": 0.4097,
+      "run_index": 4,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00100156-val_loss=0.4097.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-10T23:34:46"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00112363/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1470.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v129_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1470.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00112363-val_loss=0.4082.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00112363-val_loss=0.4082.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14882352948188782,
+          "val_loss_class": 0.14882352948188782,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14290685951709747,
+          "val_loss_class": 0.14290685951709747,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14179447293281555,
+          "val_loss_class": 0.14179447293281555,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14143505692481995,
+          "val_loss_class": 0.14143505692481995,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14128021895885468,
+          "val_loss_class": 0.14128021895885468,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1415749341249466,
+          "val_loss_class": 0.1415749341249466,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1420741230249405,
+          "val_loss_class": 0.1420741230249405,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1426003873348236,
+          "val_loss_class": 0.1426003873348236,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1432674527168274,
+          "val_loss_class": 0.1432674527168274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14430654048919678,
+          "val_loss_class": 0.14430654048919678,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000009-step=112363-val_loss=0.4082-train_loss_step=0.4184.ckpt",
+      "pretrain_epoch": 9,
+      "pretrain_step": 112363,
+      "pretrain_val_loss": 0.4082,
+      "run_index": 9,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00112363-val_loss=0.4082.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T21:16:19"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00124570/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1414-train_loss_step=0.1475.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v55_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1414-train_loss_step=0.1475.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00124570-val_loss=0.4062.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00124570-val_loss=0.4062.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14764522016048431,
+          "val_loss_class": 0.14764522016048431,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14285476505756378,
+          "val_loss_class": 0.14285476505756378,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1418781876564026,
+          "val_loss_class": 0.1418781876564026,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14156973361968994,
+          "val_loss_class": 0.14156973361968994,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14136657118797302,
+          "val_loss_class": 0.14136657118797302,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1417885571718216,
+          "val_loss_class": 0.1417885571718216,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14244307577610016,
+          "val_loss_class": 0.14244307577610016,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14294329285621643,
+          "val_loss_class": 0.14294329285621643,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1437324583530426,
+          "val_loss_class": 0.1437324583530426,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14478282630443573,
+          "val_loss_class": 0.14478282630443573,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000010-step=124570-val_loss=0.4062-train_loss_step=0.4317.ckpt",
+      "pretrain_epoch": 10,
+      "pretrain_step": 124570,
+      "pretrain_val_loss": 0.4062,
+      "run_index": 5,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00124570-val_loss=0.4062.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T01:07:20"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00136777/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1471.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v133_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1471.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00136777-val_loss=0.4039.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00136777-val_loss=0.4039.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14876756072044373,
+          "val_loss_class": 0.14876756072044373,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14304083585739136,
+          "val_loss_class": 0.14304083585739136,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14192615449428558,
+          "val_loss_class": 0.14192615449428558,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14167889952659607,
+          "val_loss_class": 0.14167889952659607,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14147694408893585,
+          "val_loss_class": 0.14147694408893585,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14204803109169006,
+          "val_loss_class": 0.14204803109169006,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1428469717502594,
+          "val_loss_class": 0.1428469717502594,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14383111894130707,
+          "val_loss_class": 0.14383111894130707,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14478103816509247,
+          "val_loss_class": 0.14478103816509247,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14614693820476532,
+          "val_loss_class": 0.14614693820476532,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000011-step=136777-val_loss=0.4039-train_loss_step=0.4221.ckpt",
+      "pretrain_epoch": 11,
+      "pretrain_step": 136777,
+      "pretrain_val_loss": 0.4039,
+      "run_index": 11,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00136777-val_loss=0.4039.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-18T22:48:59"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00148984/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1419-train_loss_step=0.1498.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v57_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1419-train_loss_step=0.1498.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00148984-val_loss=0.4070.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00148984-val_loss=0.4070.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1487683355808258,
+          "val_loss_class": 0.1487683355808258,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14348992705345154,
+          "val_loss_class": 0.14348992705345154,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.142304465174675,
+          "val_loss_class": 0.142304465174675,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1420503556728363,
+          "val_loss_class": 0.1420503556728363,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1418544054031372,
+          "val_loss_class": 0.1418544054031372,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1421491801738739,
+          "val_loss_class": 0.1421491801738739,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1431625932455063,
+          "val_loss_class": 0.1431625932455063,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14381474256515503,
+          "val_loss_class": 0.14381474256515503,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14493495225906372,
+          "val_loss_class": 0.14493495225906372,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.1461571305990219,
+          "val_loss_class": 0.1461571305990219,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000012-step=148984-val_loss=0.4070-train_loss_step=0.4366.ckpt",
+      "pretrain_epoch": 12,
+      "pretrain_step": 148984,
+      "pretrain_val_loss": 0.407,
+      "run_index": 6,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00148984-val_loss=0.4070.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T02:39:56"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00161191/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1469.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v137_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1469.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00161191-val_loss=0.4033.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00161191-val_loss=0.4033.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.15277889370918274,
+          "val_loss_class": 0.15277889370918274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1444285660982132,
+          "val_loss_class": 0.1444285660982132,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14298737049102783,
+          "val_loss_class": 0.14298737049102783,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14245086908340454,
+          "val_loss_class": 0.14245086908340454,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14222748577594757,
+          "val_loss_class": 0.14222748577594757,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14282895624637604,
+          "val_loss_class": 0.14282895624637604,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1438397765159607,
+          "val_loss_class": 0.1438397765159607,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14464224874973297,
+          "val_loss_class": 0.14464224874973297,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14596803486347198,
+          "val_loss_class": 0.14596803486347198,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.1474606990814209,
+          "val_loss_class": 0.1474606990814209,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000013-step=161191-val_loss=0.4033-train_loss_step=0.4278.ckpt",
+      "pretrain_epoch": 13,
+      "pretrain_step": 161191,
+      "pretrain_val_loss": 0.4033,
+      "run_index": 13,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00161191-val_loss=0.4033.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-19T00:23:17"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00175898/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000003-step=004684-val_loss=0.1419-train_loss_step=0.1488.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v59_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000003-step=004684-val_loss=0.1419-train_loss_step=0.1488.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00175898-val_loss=0.4036.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00175898-val_loss=0.4036.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1474679708480835,
+          "val_loss_class": 0.1474679708480835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14300574362277985,
+          "val_loss_class": 0.14300574362277985,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1420624554157257,
+          "val_loss_class": 0.1420624554157257,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14185146987438202,
+          "val_loss_class": 0.14185146987438202,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1420583426952362,
+          "val_loss_class": 0.1420583426952362,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14302146434783936,
+          "val_loss_class": 0.14302146434783936,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14439789950847626,
+          "val_loss_class": 0.14439789950847626,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14595572650432587,
+          "val_loss_class": 0.14595572650432587,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1479569524526596,
+          "val_loss_class": 0.1479569524526596,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000014-step=175898-val_loss=0.4036-train_loss_step=0.4233.ckpt",
+      "pretrain_epoch": 14,
+      "pretrain_step": 175898,
+      "pretrain_val_loss": 0.4036,
+      "run_index": 7,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00175898-val_loss=0.4036.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T04:03:25"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00188105/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000003-step=004684-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v141_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000003-step=004684-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00188105-val_loss=0.4053.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00188105-val_loss=0.4053.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1482251137495041,
+          "val_loss_class": 0.1482251137495041,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14318038523197174,
+          "val_loss_class": 0.14318038523197174,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.142316997051239,
+          "val_loss_class": 0.142316997051239,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14221422374248505,
+          "val_loss_class": 0.14221422374248505,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14247699081897736,
+          "val_loss_class": 0.14247699081897736,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14340008795261383,
+          "val_loss_class": 0.14340008795261383,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.145140141248703,
+          "val_loss_class": 0.145140141248703,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14686287939548492,
+          "val_loss_class": 0.14686287939548492,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1494024395942688,
+          "val_loss_class": 0.1494024395942688,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000015-step=188105-val_loss=0.4053-train_loss_step=0.4088.ckpt",
+      "pretrain_epoch": 15,
+      "pretrain_step": 188105,
+      "pretrain_val_loss": 0.4053,
+      "run_index": 15,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00188105-val_loss=0.4053.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-19T01:47:36"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00200312/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1325.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v61_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1325.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00200312-val_loss=0.4057.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00200312-val_loss=0.4057.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14687146246433258,
+          "val_loss_class": 0.14687146246433258,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.143066868185997,
+          "val_loss_class": 0.143066868185997,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14234121143817902,
+          "val_loss_class": 0.14234121143817902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14242984354496002,
+          "val_loss_class": 0.14242984354496002,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14289505779743195,
+          "val_loss_class": 0.14289505779743195,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1439972221851349,
+          "val_loss_class": 0.1439972221851349,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14632152020931244,
+          "val_loss_class": 0.14632152020931244,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14831583201885223,
+          "val_loss_class": 0.14831583201885223,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000016-step=200312-val_loss=0.4057-train_loss_step=0.4066.ckpt",
+      "pretrain_epoch": 16,
+      "pretrain_step": 200312,
+      "pretrain_val_loss": 0.4057,
+      "run_index": 8,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00200312-val_loss=0.4057.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T05:17:47"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00212519/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1365.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v145_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1365.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00212519-val_loss=0.4089.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00212519-val_loss=0.4089.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14623485505580902,
+          "val_loss_class": 0.14623485505580902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14293937385082245,
+          "val_loss_class": 0.14293937385082245,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14234326779842377,
+          "val_loss_class": 0.14234326779842377,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1423928290605545,
+          "val_loss_class": 0.1423928290605545,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14306426048278809,
+          "val_loss_class": 0.14306426048278809,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14402958750724792,
+          "val_loss_class": 0.14402958750724792,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14673085510730743,
+          "val_loss_class": 0.14673085510730743,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14886602759361267,
+          "val_loss_class": 0.14886602759361267,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000017-step=212519-val_loss=0.4089-train_loss_step=0.4088.ckpt",
+      "pretrain_epoch": 17,
+      "pretrain_step": 212519,
+      "pretrain_val_loss": 0.4089,
+      "run_index": 17,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00212519-val_loss=0.4089.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-19T03:03:38"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00224726/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1426-train_loss_step=0.1350.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v63_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1426-train_loss_step=0.1350.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00224726-val_loss=0.4095.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00224726-val_loss=0.4095.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14805446565151215,
+          "val_loss_class": 0.14805446565151215,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14345550537109375,
+          "val_loss_class": 0.14345550537109375,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14258542656898499,
+          "val_loss_class": 0.14258542656898499,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14268966019153595,
+          "val_loss_class": 0.14268966019153595,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1433364599943161,
+          "val_loss_class": 0.1433364599943161,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14475134015083313,
+          "val_loss_class": 0.14475134015083313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14780744910240173,
+          "val_loss_class": 0.14780744910240173,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1505705714225769,
+          "val_loss_class": 0.1505705714225769,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000018-step=224726-val_loss=0.4095-train_loss_step=0.4068.ckpt",
+      "pretrain_epoch": 18,
+      "pretrain_step": 224726,
+      "pretrain_val_loss": 0.4095,
+      "run_index": 9,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00224726-val_loss=0.4095.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T06:32:22"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00236933/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1428-train_loss_step=0.1315.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v149_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1428-train_loss_step=0.1315.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00236933-val_loss=0.4126.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00236933-val_loss=0.4126.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14723020792007446,
+          "val_loss_class": 0.14723020792007446,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1436060220003128,
+          "val_loss_class": 0.1436060220003128,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14280450344085693,
+          "val_loss_class": 0.14280450344085693,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14308665692806244,
+          "val_loss_class": 0.14308665692806244,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1436856985092163,
+          "val_loss_class": 0.1436856985092163,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14538361132144928,
+          "val_loss_class": 0.14538361132144928,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14861029386520386,
+          "val_loss_class": 0.14861029386520386,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1518595814704895,
+          "val_loss_class": 0.1518595814704895,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000019-step=236933-val_loss=0.4126-train_loss_step=0.4111.ckpt",
+      "pretrain_epoch": 19,
+      "pretrain_step": 236933,
+      "pretrain_val_loss": 0.4126,
+      "run_index": 19,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00236933-val_loss=0.4126.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-19T04:18:16"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00249140/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1430-train_loss_step=0.1372.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/v65_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1430-train_loss_step=0.1372.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00249140-val_loss=0.4134.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00249140-val_loss=0.4134.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14771032333374023,
+          "val_loss_class": 0.14771032333374023,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14359408617019653,
+          "val_loss_class": 0.14359408617019653,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1429632306098938,
+          "val_loss_class": 0.1429632306098938,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14345429837703705,
+          "val_loss_class": 0.14345429837703705,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14437182247638702,
+          "val_loss_class": 0.14437182247638702,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14644715189933777,
+          "val_loss_class": 0.14644715189933777,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15055394172668457,
+          "val_loss_class": 0.15055394172668457,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.15422500669956207,
+          "val_loss_class": 0.15422500669956207,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000020-step=249140-val_loss=0.4134-train_loss_step=0.3860.ckpt",
+      "pretrain_epoch": 20,
+      "pretrain_step": 249140,
+      "pretrain_val_loss": 0.4134,
+      "run_index": 10,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00249140-val_loss=0.4134.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-11T07:46:45"
+    },
+    {
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00261347/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1431-train_loss_step=0.1333.ckpt",
+      "best_ckpt_src": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/v153_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen/checkpoints/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1431-train_loss_step=0.1333.ckpt",
+      "cmd_snippet": "#!/bin/sh\n\nREPO_DIR=\"/global/homes/i/ibrahime/temp/OmniLearnLightining/\"\nOUTPUT_DIR=\"/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/\"\nDATASET_PATH=\"/pscratch/sd/i/ibrahime/datasets/\"\n\nPRETRAINED_CKPT=\"/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00261347-val_loss=0.4185.ckpt\"\nFINETUNING_DATASET=\"top\"\n\nTOKENIZER_CKPT=\"${REPO_DIR}/assets/kmeans_model_2025-12-17-19-08-10-Dry-Gondola_noAddInfo_8192_codes.pth\"\nDATASET_SIZE=\"-1\"\n\nPOS_ENCODING_TYPE=\"sort_descending_in_masked_subset\"\nMASKING_FRACTION=0.4\n\nVAL_CHECK=1171\nPATIENCE=5\n\n# For finetuning vs from-scratch\nTRAINING_CFG_ALL_SIZES=\"--use_wandb y --wandb_project omnilearned --limit_val_batches=1.0 --val_check_interval=${VAL_CHECK} --dataset=${FINETUNING_DATASET} --dataset_size=${DATASET_SIZE} --fine_tune y --ckpt /global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00261347-val_loss=0.4185.ckpt --use_pid n --use_add n --epoch=99999 --max_training_steps=35130 --scheduler_total_steps=35130 --adjust_scheduler_steps_to_trainer_estimated_steps n --outdir=${OUTPUT_DIR} --path=${DATASET_PATH} --shuffle_val_test_indices y --seed_for_initial_shuffling=0 --patience=${PATIENCE} --pos_encoding_type=${POS_ENCODING_TYPE} --masking_fraction=${MASKING_FRACTION} --accumulate_grad_batches=1 --use_one_cycle=n\"\n\n# Size-specific hyperparams\nTRAINING_CFG_SIZE_SPECIFIC=\"--num_workers=2 --num_nodes=4 --model_size=medium --lr 1e-06 --weight_decay 5 --batch_size=64 --wandb_tag=top-finetuning --lr_factor=5 --scheduler_warmup_steps=0 --save_top_k=5\"\n\nTRAINING_CFG=\"${TRAINING_CFG_ALL_SIZES} ${TRAINING_CFG_SIZE_SPECIFIC}\"\n\n# Final command\nsrun --gpus-per-node 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n\n#srun --gpus-per-node 4 --gpus-per-task=1 -N 4 shifter --image=docker:jobirk/omnilearn-lightning:v1.0.3 bash -c \"cd $REPO_DIR/scripts/ && source /opt/conda/bin/activate && export PYTHONPATH=${REPO_DIR}:$PYTHONPATH && python3 train_lightning.py $TRAINING_CFG --mode=classifier\"\n",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.148093119263649,
+          "val_loss_class": 0.148093119263649,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14383336901664734,
+          "val_loss_class": 0.14383336901664734,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14312492311000824,
+          "val_loss_class": 0.14312492311000824,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14342956244945526,
+          "val_loss_class": 0.14342956244945526,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1444437950849533,
+          "val_loss_class": 0.1444437950849533,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14630413055419922,
+          "val_loss_class": 0.14630413055419922,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15028783679008484,
+          "val_loss_class": 0.15028783679008484,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.15459655225276947,
+          "val_loss_class": 0.15459655225276947,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000021-step=261347-val_loss=0.4185-train_loss_step=0.3750.ckpt",
+      "pretrain_epoch": 21,
+      "pretrain_step": 261347,
+      "pretrain_val_loss": 0.4185,
+      "run_index": 21,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00261347-val_loss=0.4185.ckpt",
+      "status": "ok",
+      "timestamp": "2026-05-19T05:32:42"
+    }
+  ]
+}

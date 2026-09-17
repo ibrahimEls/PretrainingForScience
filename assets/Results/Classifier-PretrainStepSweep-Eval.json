@@ -1,0 +1,2641 @@
+{
+  "dest_dir": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/",
+  "downstream_key": "1M-Top",
+  "downstream_shots": -1,
+  "interval": 8,
+  "model_size": "medium",
+  "pre_training_mode": "classifier",
+  "pretrain_ckpt_dir": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/",
+  "runs": [
+    {
+      "auc": 0.9856314132616313,
+      "avg_loss": 0.5418725000134892,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00002500/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000029-step=035130-val_loss=0.1524-train_loss_step=0.1495.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.16627001762390137,
+          "val_loss_class": 0.16627001762390137,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.16200241446495056,
+          "val_loss_class": 0.16200241446495056,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.15928611159324646,
+          "val_loss_class": 0.15928611159324646,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.15913136303424835,
+          "val_loss_class": 0.15913136303424835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.15761186182498932,
+          "val_loss_class": 0.15761186182498932,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1578022837638855,
+          "val_loss_class": 0.1578022837638855,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15670838952064514,
+          "val_loss_class": 0.15670838952064514,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1560317724943161,
+          "val_loss_class": 0.1560317724943161,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1551666408777237,
+          "val_loss_class": 0.1551666408777237,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.15464238822460175,
+          "val_loss_class": 0.15464238822460175,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.15561553835868835,
+          "val_loss_class": 0.15561553835868835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 11,
+          "step": 14051,
+          "val_loss": 0.15462344884872437,
+          "val_loss_class": 0.15462344884872437,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 12,
+          "step": 15222,
+          "val_loss": 0.15404397249221802,
+          "val_loss_class": 0.15404397249221802,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 13,
+          "step": 16393,
+          "val_loss": 0.15396764874458313,
+          "val_loss_class": 0.15396764874458313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 14,
+          "step": 17564,
+          "val_loss": 0.15370644629001617,
+          "val_loss_class": 0.15370644629001617,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 15,
+          "step": 18735,
+          "val_loss": 0.153600811958313,
+          "val_loss_class": 0.153600811958313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 16,
+          "step": 19906,
+          "val_loss": 0.15313439071178436,
+          "val_loss_class": 0.15313439071178436,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 17,
+          "step": 21077,
+          "val_loss": 0.15328115224838257,
+          "val_loss_class": 0.15328115224838257,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 18,
+          "step": 22248,
+          "val_loss": 0.15327003598213196,
+          "val_loss_class": 0.15327003598213196,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 19,
+          "step": 23419,
+          "val_loss": 0.15293240547180176,
+          "val_loss_class": 0.15293240547180176,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 20,
+          "step": 24590,
+          "val_loss": 0.152832493185997,
+          "val_loss_class": 0.152832493185997,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 21,
+          "step": 25761,
+          "val_loss": 0.15290625393390656,
+          "val_loss_class": 0.15290625393390656,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 22,
+          "step": 26932,
+          "val_loss": 0.15265291929244995,
+          "val_loss_class": 0.15265291929244995,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 23,
+          "step": 28103,
+          "val_loss": 0.15261025726795197,
+          "val_loss_class": 0.15261025726795197,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 24,
+          "step": 29274,
+          "val_loss": 0.15259578824043274,
+          "val_loss_class": 0.15259578824043274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 25,
+          "step": 30445,
+          "val_loss": 0.15278050303459167,
+          "val_loss_class": 0.15278050303459167,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 26,
+          "step": 31616,
+          "val_loss": 0.15244968235492706,
+          "val_loss_class": 0.15244968235492706,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 27,
+          "step": 32787,
+          "val_loss": 0.15244965255260468,
+          "val_loss_class": 0.15244965255260468,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 28,
+          "step": 33958,
+          "val_loss": 0.1524188369512558,
+          "val_loss_class": 0.1524188369512558,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 29,
+          "step": 35129,
+          "val_loss": 0.15241490304470062,
+          "val_loss_class": 0.15241490304470062,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 1696.7563025210086,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000000-step=002500-val_loss=0.7666-train_loss_step=0.7859.ckpt",
+      "pretrain_epoch": 0,
+      "pretrain_step": 2500,
+      "pretrain_val_loss": 0.7666,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00002500-val_loss=0.7666.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9871841235946963,
+      "avg_loss": 0.5397565190801904,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00014707/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000007-step=009368-val_loss=0.1445-train_loss_step=0.1455.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1519608199596405,
+          "val_loss_class": 0.1519608199596405,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14700213074684143,
+          "val_loss_class": 0.14700213074684143,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1459721028804779,
+          "val_loss_class": 0.1459721028804779,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14521968364715576,
+          "val_loss_class": 0.14521968364715576,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14461669325828552,
+          "val_loss_class": 0.14461669325828552,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14476318657398224,
+          "val_loss_class": 0.14476318657398224,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1448720097541809,
+          "val_loss_class": 0.1448720097541809,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14448340237140656,
+          "val_loss_class": 0.14448340237140656,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14526313543319702,
+          "val_loss_class": 0.14526313543319702,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14456486701965332,
+          "val_loss_class": 0.14456486701965332,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.14498816430568695,
+          "val_loss_class": 0.14498816430568695,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 11,
+          "step": 14051,
+          "val_loss": 0.14520835876464844,
+          "val_loss_class": 0.14520835876464844,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 12,
+          "step": 15222,
+          "val_loss": 0.14531143009662628,
+          "val_loss_class": 0.14531143009662628,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2243.4888888888886,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000001-step=014707-val_loss=0.4501-train_loss_step=0.4886.ckpt",
+      "pretrain_epoch": 1,
+      "pretrain_step": 14707,
+      "pretrain_val_loss": 0.4501,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00014707-val_loss=0.4501.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9874965088806781,
+      "avg_loss": 0.5402457035974102,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00026914/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1431-train_loss_step=0.1496.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14893123507499695,
+          "val_loss_class": 0.14893123507499695,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14495457708835602,
+          "val_loss_class": 0.14495457708835602,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14409250020980835,
+          "val_loss_class": 0.14409250020980835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14341408014297485,
+          "val_loss_class": 0.14341408014297485,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14305193722248077,
+          "val_loss_class": 0.14305193722248077,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14322340488433838,
+          "val_loss_class": 0.14322340488433838,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14359118044376373,
+          "val_loss_class": 0.14359118044376373,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14341676235198975,
+          "val_loss_class": 0.14341676235198975,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1439216434955597,
+          "val_loss_class": 0.1439216434955597,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14391294121742249,
+          "val_loss_class": 0.14391294121742249,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2765.945205479452,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000002-step=026914-val_loss=0.4299-train_loss_step=0.4497.ckpt",
+      "pretrain_epoch": 2,
+      "pretrain_step": 26914,
+      "pretrain_val_loss": 0.4299,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00026914-val_loss=0.4299.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9876619096727289,
+      "avg_loss": 0.5399781849296676,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00039121/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14684893190860748,
+          "val_loss_class": 0.14684893190860748,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14356356859207153,
+          "val_loss_class": 0.14356356859207153,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14276765286922455,
+          "val_loss_class": 0.14276765286922455,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1423109471797943,
+          "val_loss_class": 0.1423109471797943,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14216910302639008,
+          "val_loss_class": 0.14216910302639008,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14220719039440155,
+          "val_loss_class": 0.14220719039440155,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14252512156963348,
+          "val_loss_class": 0.14252512156963348,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1426234096288681,
+          "val_loss_class": 0.1426234096288681,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14303058385849,
+          "val_loss_class": 0.14303058385849,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14308451116085052,
+          "val_loss_class": 0.14308451116085052,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 3059.30303030303,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000003-step=039121-val_loss=0.4198-train_loss_step=0.4400.ckpt",
+      "pretrain_epoch": 3,
+      "pretrain_step": 39121,
+      "pretrain_val_loss": 0.4198,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00039121-val_loss=0.4198.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9877604346169205,
+      "avg_loss": 0.5394943918754241,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00051328/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000005-step=007026-val_loss=0.1417-train_loss_step=0.1524.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1475951224565506,
+          "val_loss_class": 0.1475951224565506,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14329709112644196,
+          "val_loss_class": 0.14329709112644196,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1425023376941681,
+          "val_loss_class": 0.1425023376941681,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1418585330247879,
+          "val_loss_class": 0.1418585330247879,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14172300696372986,
+          "val_loss_class": 0.14172300696372986,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14165174961090088,
+          "val_loss_class": 0.14165174961090088,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14207178354263306,
+          "val_loss_class": 0.14207178354263306,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1421925276517868,
+          "val_loss_class": 0.1421925276517868,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14244477450847626,
+          "val_loss_class": 0.14244477450847626,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14279577136039734,
+          "val_loss_class": 0.14279577136039734,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 10,
+          "step": 12880,
+          "val_loss": 0.14312967658042908,
+          "val_loss_class": 0.14312967658042908,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2969.3235294117644,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000004-step=051328-val_loss=0.4160-train_loss_step=0.4566.ckpt",
+      "pretrain_epoch": 4,
+      "pretrain_step": 51328,
+      "pretrain_val_loss": 0.416,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00051328-val_loss=0.4160.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878119536777592,
+      "avg_loss": 0.5396136633286911,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00063535/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1497.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14859119057655334,
+          "val_loss_class": 0.14859119057655334,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14344564080238342,
+          "val_loss_class": 0.14344564080238342,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14213015139102936,
+          "val_loss_class": 0.14213015139102936,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14163874089717865,
+          "val_loss_class": 0.14163874089717865,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14145390689373016,
+          "val_loss_class": 0.14145390689373016,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14164254069328308,
+          "val_loss_class": 0.14164254069328308,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14170993864536285,
+          "val_loss_class": 0.14170993864536285,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14191140234470367,
+          "val_loss_class": 0.14191140234470367,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1421000212430954,
+          "val_loss_class": 0.1421000212430954,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14255391061306,
+          "val_loss_class": 0.14255391061306,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 3106.369230769231,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000005-step=063535-val_loss=0.4139-train_loss_step=0.4133.ckpt",
+      "pretrain_epoch": 5,
+      "pretrain_step": 63535,
+      "pretrain_val_loss": 0.4139,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00063535-val_loss=0.4139.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878159073238412,
+      "avg_loss": 0.5396035947897135,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00075742/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1505.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14906960725784302,
+          "val_loss_class": 0.14906960725784302,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1431874930858612,
+          "val_loss_class": 0.1431874930858612,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14210724830627441,
+          "val_loss_class": 0.14210724830627441,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14160043001174927,
+          "val_loss_class": 0.14160043001174927,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14134684205055237,
+          "val_loss_class": 0.14134684205055237,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14149370789527893,
+          "val_loss_class": 0.14149370789527893,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14186853170394897,
+          "val_loss_class": 0.14186853170394897,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14194537699222565,
+          "val_loss_class": 0.14194537699222565,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14236941933631897,
+          "val_loss_class": 0.14236941933631897,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.142767533659935,
+          "val_loss_class": 0.142767533659935,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2926.289855072464,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000006-step=075742-val_loss=0.4119-train_loss_step=0.4263.ckpt",
+      "pretrain_epoch": 6,
+      "pretrain_step": 75742,
+      "pretrain_val_loss": 0.4119,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00075742-val_loss=0.4119.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878386991685704,
+      "avg_loss": 0.5394513746688121,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00087949/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1484.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1468106210231781,
+          "val_loss_class": 0.1468106210231781,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14261795580387115,
+          "val_loss_class": 0.14261795580387115,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1416626274585724,
+          "val_loss_class": 0.1416626274585724,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14118154346942902,
+          "val_loss_class": 0.14118154346942902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14113326370716095,
+          "val_loss_class": 0.14113326370716095,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14120960235595703,
+          "val_loss_class": 0.14120960235595703,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14171390235424042,
+          "val_loss_class": 0.14171390235424042,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14199821650981903,
+          "val_loss_class": 0.14199821650981903,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14232569932937622,
+          "val_loss_class": 0.14232569932937622,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.142888143658638,
+          "val_loss_class": 0.142888143658638,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 3106.369230769231,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000007-step=087949-val_loss=0.4102-train_loss_step=0.4290.ckpt",
+      "pretrain_epoch": 7,
+      "pretrain_step": 87949,
+      "pretrain_val_loss": 0.4102,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00087949-val_loss=0.4102.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878427148649753,
+      "avg_loss": 0.5393958407700893,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00100156/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1411-train_loss_step=0.1482.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14703591167926788,
+          "val_loss_class": 0.14703591167926788,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14259590208530426,
+          "val_loss_class": 0.14259590208530426,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1416044533252716,
+          "val_loss_class": 0.1416044533252716,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1412392407655716,
+          "val_loss_class": 0.1412392407655716,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14113911986351013,
+          "val_loss_class": 0.14113911986351013,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1413930207490921,
+          "val_loss_class": 0.1413930207490921,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14181949198246002,
+          "val_loss_class": 0.14181949198246002,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14220577478408813,
+          "val_loss_class": 0.14220577478408813,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1425822377204895,
+          "val_loss_class": 0.1425822377204895,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14326097071170807,
+          "val_loss_class": 0.14326097071170807,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 3106.369230769231,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000008-step=100156-val_loss=0.4097-train_loss_step=0.4436.ckpt",
+      "pretrain_epoch": 8,
+      "pretrain_step": 100156,
+      "pretrain_val_loss": 0.4097,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00100156-val_loss=0.4097.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878453021783862,
+      "avg_loss": 0.5394115304180123,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00112363/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1413-train_loss_step=0.1470.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14882352948188782,
+          "val_loss_class": 0.14882352948188782,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14290685951709747,
+          "val_loss_class": 0.14290685951709747,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14179447293281555,
+          "val_loss_class": 0.14179447293281555,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14143505692481995,
+          "val_loss_class": 0.14143505692481995,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14128021895885468,
+          "val_loss_class": 0.14128021895885468,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1415749341249466,
+          "val_loss_class": 0.1415749341249466,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1420741230249405,
+          "val_loss_class": 0.1420741230249405,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1426003873348236,
+          "val_loss_class": 0.1426003873348236,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1432674527168274,
+          "val_loss_class": 0.1432674527168274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14430654048919678,
+          "val_loss_class": 0.14430654048919678,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2804.3611111111113,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000009-step=112363-val_loss=0.4082-train_loss_step=0.4184.ckpt",
+      "pretrain_epoch": 9,
+      "pretrain_step": 112363,
+      "pretrain_val_loss": 0.4082,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00112363-val_loss=0.4082.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9878416825231007,
+      "avg_loss": 0.539367925446523,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00124570/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1414-train_loss_step=0.1475.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14764522016048431,
+          "val_loss_class": 0.14764522016048431,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14285476505756378,
+          "val_loss_class": 0.14285476505756378,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1418781876564026,
+          "val_loss_class": 0.1418781876564026,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14156973361968994,
+          "val_loss_class": 0.14156973361968994,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14136657118797302,
+          "val_loss_class": 0.14136657118797302,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1417885571718216,
+          "val_loss_class": 0.1417885571718216,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14244307577610016,
+          "val_loss_class": 0.14244307577610016,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14294329285621643,
+          "val_loss_class": 0.14294329285621643,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1437324583530426,
+          "val_loss_class": 0.1437324583530426,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14478282630443573,
+          "val_loss_class": 0.14478282630443573,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2804.3611111111113,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000010-step=124570-val_loss=0.4062-train_loss_step=0.4317.ckpt",
+      "pretrain_epoch": 10,
+      "pretrain_step": 124570,
+      "pretrain_val_loss": 0.4062,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00124570-val_loss=0.4062.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9877800896787183,
+      "avg_loss": 0.5393520322438278,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00136777/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1415-train_loss_step=0.1471.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14876756072044373,
+          "val_loss_class": 0.14876756072044373,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14304083585739136,
+          "val_loss_class": 0.14304083585739136,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14192615449428558,
+          "val_loss_class": 0.14192615449428558,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14167889952659607,
+          "val_loss_class": 0.14167889952659607,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14147694408893585,
+          "val_loss_class": 0.14147694408893585,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14204803109169006,
+          "val_loss_class": 0.14204803109169006,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1428469717502594,
+          "val_loss_class": 0.1428469717502594,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14383111894130707,
+          "val_loss_class": 0.14383111894130707,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14478103816509247,
+          "val_loss_class": 0.14478103816509247,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.14614693820476532,
+          "val_loss_class": 0.14614693820476532,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2656.763157894737,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000011-step=136777-val_loss=0.4039-train_loss_step=0.4221.ckpt",
+      "pretrain_epoch": 11,
+      "pretrain_step": 136777,
+      "pretrain_val_loss": 0.4039,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00136777-val_loss=0.4039.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9877287065084548,
+      "avg_loss": 0.539579641399728,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00148984/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000004-step=005855-val_loss=0.1419-train_loss_step=0.1498.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1487683355808258,
+          "val_loss_class": 0.1487683355808258,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14348992705345154,
+          "val_loss_class": 0.14348992705345154,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.142304465174675,
+          "val_loss_class": 0.142304465174675,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1420503556728363,
+          "val_loss_class": 0.1420503556728363,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1418544054031372,
+          "val_loss_class": 0.1418544054031372,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1421491801738739,
+          "val_loss_class": 0.1421491801738739,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1431625932455063,
+          "val_loss_class": 0.1431625932455063,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14381474256515503,
+          "val_loss_class": 0.14381474256515503,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14493495225906372,
+          "val_loss_class": 0.14493495225906372,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.1461571305990219,
+          "val_loss_class": 0.1461571305990219,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2656.763157894737,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000012-step=148984-val_loss=0.4070-train_loss_step=0.4366.ckpt",
+      "pretrain_epoch": 12,
+      "pretrain_step": 148984,
+      "pretrain_val_loss": 0.407,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00148984-val_loss=0.4070.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9876537229396376,
+      "avg_loss": 0.5397664737735411,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00161191/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000004-step=005855-val_loss=0.1422-train_loss_step=0.1469.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.15277889370918274,
+          "val_loss_class": 0.15277889370918274,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1444285660982132,
+          "val_loss_class": 0.1444285660982132,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14298737049102783,
+          "val_loss_class": 0.14298737049102783,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14245086908340454,
+          "val_loss_class": 0.14245086908340454,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14222748577594757,
+          "val_loss_class": 0.14222748577594757,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14282895624637604,
+          "val_loss_class": 0.14282895624637604,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.1438397765159607,
+          "val_loss_class": 0.1438397765159607,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14464224874973297,
+          "val_loss_class": 0.14464224874973297,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.14596803486347198,
+          "val_loss_class": 0.14596803486347198,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 9,
+          "step": 11709,
+          "val_loss": 0.1474606990814209,
+          "val_loss_class": 0.1474606990814209,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2969.3235294117644,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000013-step=161191-val_loss=0.4033-train_loss_step=0.4278.ckpt",
+      "pretrain_epoch": 13,
+      "pretrain_step": 161191,
+      "pretrain_val_loss": 0.4033,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00161191-val_loss=0.4033.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9877236211517406,
+      "avg_loss": 0.5388533005205246,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00175898/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000003-step=004684-val_loss=0.1419-train_loss_step=0.1488.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1474679708480835,
+          "val_loss_class": 0.1474679708480835,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14300574362277985,
+          "val_loss_class": 0.14300574362277985,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1420624554157257,
+          "val_loss_class": 0.1420624554157257,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14185146987438202,
+          "val_loss_class": 0.14185146987438202,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1420583426952362,
+          "val_loss_class": 0.1420583426952362,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14302146434783936,
+          "val_loss_class": 0.14302146434783936,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14439789950847626,
+          "val_loss_class": 0.14439789950847626,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14595572650432587,
+          "val_loss_class": 0.14595572650432587,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1479569524526596,
+          "val_loss_class": 0.1479569524526596,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2555.873417721519,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000014-step=175898-val_loss=0.4036-train_loss_step=0.4233.ckpt",
+      "pretrain_epoch": 14,
+      "pretrain_step": 175898,
+      "pretrain_val_loss": 0.4036,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00175898-val_loss=0.4036.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9877266611886221,
+      "avg_loss": 0.5389043120112558,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00188105/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000003-step=004684-val_loss=0.1422-train_loss_step=0.1471.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.1482251137495041,
+          "val_loss_class": 0.1482251137495041,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14318038523197174,
+          "val_loss_class": 0.14318038523197174,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.142316997051239,
+          "val_loss_class": 0.142316997051239,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14221422374248505,
+          "val_loss_class": 0.14221422374248505,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14247699081897736,
+          "val_loss_class": 0.14247699081897736,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14340008795261383,
+          "val_loss_class": 0.14340008795261383,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.145140141248703,
+          "val_loss_class": 0.145140141248703,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14686287939548492,
+          "val_loss_class": 0.14686287939548492,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 8,
+          "step": 10538,
+          "val_loss": 0.1494024395942688,
+          "val_loss_class": 0.1494024395942688,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2926.289855072464,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000015-step=188105-val_loss=0.4053-train_loss_step=0.4088.ckpt",
+      "pretrain_epoch": 15,
+      "pretrain_step": 188105,
+      "pretrain_val_loss": 0.4053,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00188105-val_loss=0.4053.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.987704186066488,
+      "avg_loss": 0.5399381720162314,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00200312/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1325.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14687146246433258,
+          "val_loss_class": 0.14687146246433258,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.143066868185997,
+          "val_loss_class": 0.143066868185997,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14234121143817902,
+          "val_loss_class": 0.14234121143817902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14242984354496002,
+          "val_loss_class": 0.14242984354496002,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14289505779743195,
+          "val_loss_class": 0.14289505779743195,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.1439972221851349,
+          "val_loss_class": 0.1439972221851349,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14632152020931244,
+          "val_loss_class": 0.14632152020931244,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14831583201885223,
+          "val_loss_class": 0.14831583201885223,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2555.873417721519,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000016-step=200312-val_loss=0.4057-train_loss_step=0.4066.ckpt",
+      "pretrain_epoch": 16,
+      "pretrain_step": 200312,
+      "pretrain_val_loss": 0.4057,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00200312-val_loss=0.4057.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9876847114077625,
+      "avg_loss": 0.54001497975887,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00212519/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1423-train_loss_step=0.1365.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14623485505580902,
+          "val_loss_class": 0.14623485505580902,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14293937385082245,
+          "val_loss_class": 0.14293937385082245,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14234326779842377,
+          "val_loss_class": 0.14234326779842377,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.1423928290605545,
+          "val_loss_class": 0.1423928290605545,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14306426048278809,
+          "val_loss_class": 0.14306426048278809,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14402958750724792,
+          "val_loss_class": 0.14402958750724792,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14673085510730743,
+          "val_loss_class": 0.14673085510730743,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.14886602759361267,
+          "val_loss_class": 0.14886602759361267,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2804.3611111111113,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000017-step=212519-val_loss=0.4089-train_loss_step=0.4088.ckpt",
+      "pretrain_epoch": 17,
+      "pretrain_step": 212519,
+      "pretrain_val_loss": 0.4089,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00212519-val_loss=0.4089.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9876055127922432,
+      "avg_loss": 0.5400071631177448,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00224726/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1426-train_loss_step=0.1350.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14805446565151215,
+          "val_loss_class": 0.14805446565151215,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14345550537109375,
+          "val_loss_class": 0.14345550537109375,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14258542656898499,
+          "val_loss_class": 0.14258542656898499,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14268966019153595,
+          "val_loss_class": 0.14268966019153595,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1433364599943161,
+          "val_loss_class": 0.1433364599943161,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14475134015083313,
+          "val_loss_class": 0.14475134015083313,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14780744910240173,
+          "val_loss_class": 0.14780744910240173,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1505705714225769,
+          "val_loss_class": 0.1505705714225769,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 3013.6417910447763,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000018-step=224726-val_loss=0.4095-train_loss_step=0.4068.ckpt",
+      "pretrain_epoch": 18,
+      "pretrain_step": 224726,
+      "pretrain_val_loss": 0.4095,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00224726-val_loss=0.4095.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9875715701012526,
+      "avg_loss": 0.5401579593845345,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00236933/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1428-train_loss_step=0.1315.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14723020792007446,
+          "val_loss_class": 0.14723020792007446,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.1436060220003128,
+          "val_loss_class": 0.1436060220003128,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14280450344085693,
+          "val_loss_class": 0.14280450344085693,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14308665692806244,
+          "val_loss_class": 0.14308665692806244,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1436856985092163,
+          "val_loss_class": 0.1436856985092163,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14538361132144928,
+          "val_loss_class": 0.14538361132144928,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.14861029386520386,
+          "val_loss_class": 0.14861029386520386,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.1518595814704895,
+          "val_loss_class": 0.1518595814704895,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2728.5675675675675,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000019-step=236933-val_loss=0.4126-train_loss_step=0.4111.ckpt",
+      "pretrain_epoch": 19,
+      "pretrain_step": 236933,
+      "pretrain_val_loss": 0.4126,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00236933-val_loss=0.4126.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9875190929922502,
+      "avg_loss": 0.5401274158002004,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00249140/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_only-epoch=000002-step=003513-val_loss=0.1430-train_loss_step=0.1372.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.14771032333374023,
+          "val_loss_class": 0.14771032333374023,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14359408617019653,
+          "val_loss_class": 0.14359408617019653,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.1429632306098938,
+          "val_loss_class": 0.1429632306098938,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14345429837703705,
+          "val_loss_class": 0.14345429837703705,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.14437182247638702,
+          "val_loss_class": 0.14437182247638702,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14644715189933777,
+          "val_loss_class": 0.14644715189933777,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15055394172668457,
+          "val_loss_class": 0.15055394172668457,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.15422500669956207,
+          "val_loss_class": 0.15422500669956207,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2588.6410256410254,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000020-step=249140-val_loss=0.4134-train_loss_step=0.3860.ckpt",
+      "pretrain_epoch": 20,
+      "pretrain_step": 249140,
+      "pretrain_val_loss": 0.4134,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_only-step=00249140-val_loss=0.4134.ckpt",
+      "status": "ok"
+    },
+    {
+      "auc": 0.9875396545794862,
+      "avg_loss": 0.540099825601463,
+      "best_ckpt_dest": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/step_00261347/_medium_classifier_top_dataset_-1_ibrahime_ckpt_class_gen-epoch=000002-step=003513-val_loss=0.1431-train_loss_step=0.1333.ckpt",
+      "finetune_val_curve": [
+        {
+          "epoch": 0,
+          "step": 1170,
+          "val_loss": 0.148093119263649,
+          "val_loss_class": 0.148093119263649,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 1,
+          "step": 2341,
+          "val_loss": 0.14383336901664734,
+          "val_loss_class": 0.14383336901664734,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 2,
+          "step": 3512,
+          "val_loss": 0.14312492311000824,
+          "val_loss_class": 0.14312492311000824,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 3,
+          "step": 4683,
+          "val_loss": 0.14342956244945526,
+          "val_loss_class": 0.14342956244945526,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 4,
+          "step": 5854,
+          "val_loss": 0.1444437950849533,
+          "val_loss_class": 0.1444437950849533,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 5,
+          "step": 7025,
+          "val_loss": 0.14630413055419922,
+          "val_loss_class": 0.14630413055419922,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 6,
+          "step": 8196,
+          "val_loss": 0.15028783679008484,
+          "val_loss_class": 0.15028783679008484,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        },
+        {
+          "epoch": 7,
+          "step": 9367,
+          "val_loss": 0.15459655225276947,
+          "val_loss_class": 0.15459655225276947,
+          "val_loss_class_event": 0.0,
+          "val_loss_class_masked_input": 0.0,
+          "val_loss_clip": 0.0,
+          "val_loss_gen": 0.0
+        }
+      ],
+      "inv_bkg_eff": 2523.9249999999997,
+      "pretrain_ckpt": "/pscratch/sd/i/ibrahime/checkpoints/pretrained_micro_super_gen/_medium_classifier_jetclass_dataset_-1_ibrahime/v10_medium_classifier_jetclass_dataset_-1_ibrahime/checkpoints/_medium_classifier_jetclass_dataset_-1_ibrahime-epoch=000021-step=261347-val_loss=0.4185-train_loss_step=0.3750.ckpt",
+      "pretrain_epoch": 21,
+      "pretrain_step": 261347,
+      "pretrain_val_loss": 0.4185,
+      "seed": 0,
+      "staged_pretrain_ckpt": "/global/cfs/cdirs/m3246/Omnilearned_Study/PretrainStepSweep/Medium/classifier/.staged/class_gen-step=00261347-val_loss=0.4185.ckpt",
+      "status": "ok"
+    }
+  ]
+}
